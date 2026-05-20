@@ -1,1 +1,2755 @@
-# TalkMate
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TalkMate - Pro</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tone.js & Emoji Picker -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #00BCD4; 
+            --primary-gradient: linear-gradient(180deg, #00e5ff 0%, #00BCD4 100%);
+            --bg-body: #f4f7f6;
+            --bg-card: #ffffff;
+            --text-dark: #1f1f1f;
+            --text-grey: #8a8a8a;
+            --text-white: #ffffff;
+            --bubble-me: #00BCD4;
+            --bubble-me-text: #ffffff;
+            --bubble-other: #ffffff;
+            --bubble-other-text: #1f1f1f;
+            --danger: #ff4757;
+            --success: #2ed573;
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+            --border-color: #f0f0f5;
+        }
+
+        body.dark-mode {
+            --bg-body: #121212;
+            --bg-card: #1e1e1e;
+            --text-dark: #e0e0e0;
+            --text-grey: #a0a0a0;
+            --bubble-other: #2c2c2c;
+            --bubble-other-text: #e0e0e0;
+            --border-color: #333;
+            --shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        body.dark-mode input, body.dark-mode textarea { background: #2c2c2c; color: white; }
+        body.dark-mode .list-item:hover { background: #2c2c2c; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s;
+        }
+
+        #app-container {
+            width: 100%; max-width: 414px; height: 100vh; max-height: 896px;
+            background-color: var(--bg-card); position: relative; overflow: hidden;
+            display: flex; flex-direction: column; box-shadow: var(--shadow);
+            transition: background 0.3s;
+        }
+
+        @media (min-width: 450px) {
+            #app-container { height: 95vh; border-radius: 40px; border: 8px solid #fff; }
+            body.dark-mode #app-container { border-color: #333; }
+        }
+
+        .hidden { display: none !important; }
+        .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: var(--bg-card); overflow-y: auto;}
+        .btn { border: none; padding: 12px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 0.95rem; }
+        .btn-primary { background: var(--primary-color); color: white; box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3); }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-icon { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-dark); padding: 8px; }
+        
+        .verified-badge { color: #1da1f2; margin-left: 4px; font-size: 0.85rem; display: inline-flex; align-items: center; }
+        .avatar, #fp-img, #menu-dp, #chat-header-img, #header-avatar, #incoming-avatar, #call-avatar { object-fit: cover !important; object-position: center !important; }
+
+        .chat-link { color: #00e5ff; text-decoration: underline; transition: color 0.2s ease; word-break: break-all; cursor: pointer; }
+        .chat-link:hover { color: #00b8cc; }
+
+        .copy-icon, .del-icon { transition: transform 0.2s ease, color 0.2s ease; }
+        .copy-icon:hover { transform: scale(1.15); color: var(--primary-color); }
+
+        input, textarea { 
+            background: #f4f4f8; border: none; color: var(--text-dark); 
+            padding: 15px 20px; border-radius: 20px; width: 100%; outline: none; 
+            margin-bottom: 12px; font-family: inherit; font-size: 0.95rem;
+        }
+        textarea { resize: none; height: 120px; }
+
+        .pass-wrapper { position: relative; width: 100%; margin-bottom: 12px; }
+        .pass-wrapper input { margin-bottom: 0; width: 100%; padding-right: 45px; }
+        .toggle-pass { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--text-grey); transition: 0.2s; }
+        .toggle-pass:hover { color: var(--primary-color); }
+
+        header#main-header { padding: 20px 25px 10px 25px; background: var(--bg-card); z-index: 5; transition: background 0.3s; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+
+        .view { flex: 1; overflow-y: auto; padding-bottom: 90px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; will-change: transform; }
+        .list-item { display: flex; align-items: center; padding: 15px 25px; cursor: pointer; transition: background 0.2s; border-bottom: 1px solid var(--border-color); }
+        .list-item:hover { background: var(--border-color); }
+        
+        .swipe-container { position: relative; overflow: hidden; padding: 0 !important; }
+        .swipe-delete-bg { position: absolute; top: 0; right: 0; width: 100px; height: 100%; background: var(--danger); display: flex; align-items: center; justify-content: center; color: white; z-index: 1; font-size: 1.2rem; cursor: pointer;}
+        .swipe-content { position: relative; width: 100%; display: flex; align-items: center; padding: 15px 25px; background: var(--bg-card); z-index: 2; transition: transform 0.2s ease-out; touch-action: pan-y; }
+        body.dark-mode .swipe-content { background: var(--bg-card); }
+        body.dark-mode .swipe-container:hover .swipe-content { background: #2c2c2c; }
+
+        .avatar { width: 55px; height: 55px; border-radius: 50%; border: 2px solid transparent; }
+        .avatar.online { border-color: var(--success); }
+        .item-info { flex: 1; margin-left: 10px; }
+        .item-name { font-weight: 600; font-size: 1.05rem; color: var(--text-dark); display: flex; align-items: center;}
+        .item-sub { font-size: 0.85rem; color: var(--text-grey); margin-top: 2px; }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .post-card { background: var(--bg-card); margin: 15px; padding: 15px 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.06); animation: fadeInUp 0.4s ease-out; transition: transform 0.3s; border-bottom: none; }
+        body.dark-mode .post-card { box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; }
+        .post-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
+        .post-content { font-size: 0.95rem; margin-bottom: 10px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.5; color: var(--text-dark); text-align: left; }
+        .post-img { width: 100%; border-radius: 15px; margin-bottom: 10px; object-fit: cover; }
+        .post-actions { display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 15px; }
+        .post-action { display: flex; align-items: center; gap: 8px; color: var(--text-dark); cursor: pointer; transition: 0.2s; font-size: 1.1rem; font-weight: 500;}
+        .post-action:hover { color: var(--primary-color); }
+        .post-action.liked { color: var(--danger); }
+
+        .post-carousel { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
+        .post-carousel::-webkit-scrollbar { display: none; }
+        .post-carousel > div { flex: 0 0 100%; scroll-snap-align: center; position: relative; }
+
+        .glass-panel { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.4); border-radius: 15px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05); }
+        body.dark-mode .glass-panel { background: rgba(40, 40, 40, 0.4); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
+
+        .bottom-nav {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 65px; background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); display: flex; justify-content: space-around;
+            align-items: center; border-top: 1px solid rgba(0,0,0,0.05); z-index: 50;
+        }
+        body.dark-mode .bottom-nav { background: rgba(30, 30, 30, 0.85); border-top: 1px solid rgba(255,255,255,0.05); }
+        .nav-item { color: var(--text-grey); font-size: 1.4rem; cursor: pointer; transition: 0.3s; position: relative; padding: 10px; }
+        .nav-item.active { color: var(--primary-color); }
+        .nav-center-wrap { position: relative; top: -20px; border-radius: 50%; padding: 8px; display: flex; justify-content: center; align-items: center; }
+        .plus-btn { background: var(--primary-gradient); color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.8rem; box-shadow: 0 10px 20px rgba(0, 188, 212, 0.4); cursor: pointer; transition: transform 0.2s; }
+        .plus-btn:active { transform: scale(0.9); }
+        .req-dot { display: none; position: absolute; top: 10px; right: 8px; width: 8px; height: 8px; background: var(--danger); border-radius: 50%; box-shadow: 0 0 5px rgba(255,0,0,0.5); }
+        .req-dot.show { display: block; }
+
+        #side-menu {
+            position: absolute; top: 0; left: -100%; width: 85%; height: 100%;
+            background: var(--primary-gradient); z-index: 150; transition: 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 50px 30px; color: white; border-bottom-right-radius: 100px; box-shadow: 10px 0 30px rgba(0,0,0,0.2); display: flex; flex-direction: column;
+        }
+        #side-menu.open { left: 0; }
+        .menu-overlay { position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.3); z-index:140; display: none; backdrop-filter: blur(2px); }
+        .menu-overlay.open { display: block; }
+        .menu-header { display: flex; align-items: center; margin-bottom: 50px; }
+        .menu-header img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); margin-right: 15px; }
+        .menu-list { list-style: none; flex: 1; overflow-y: auto; }
+        .menu-list li { margin-bottom: 25px; display: flex; align-items: center; font-size: 1rem; cursor: pointer; opacity: 0.9; transition: 0.2s; }
+        .menu-list li:hover { opacity: 1; transform: translateX(5px); }
+        .menu-list li i { width: 30px; font-size: 1.1rem; }
+
+        #chat-interface { background: var(--bg-body); display: flex; flex-direction: column; z-index: 80; }
+        .chat-header {
+            display: flex; align-items: center; justify-content: space-between; padding: 40px 20px 20px 20px; 
+            background: var(--primary-color); color: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0, 188, 212, 0.2); position: relative; z-index: 5;
+        }
+        .chat-user-info { display: flex; align-items: center; flex: 1; margin-left: 10px; cursor: pointer; }
+        .chat-user-info img { width: 45px; height: 45px; border-radius: 50%; margin-right: 10px; border: 2px solid rgba(255,255,255,0.3); }
+        .header-actions { display: flex; gap: 15px; }
+        .action-btn { width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary-color); font-size: 1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
+        .dropdown-menu { position: absolute; top: 50px; right: 0; background: white; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 150px; overflow: hidden; display: none; z-index:100; }
+        .dropdown-item { padding: 12px 15px; color: var(--text-dark); font-weight: 500; cursor: pointer; font-size: 0.9rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; }
+        .dropdown-item:last-child { border-bottom: none; }
+        .dropdown-item:hover { background: var(--border-color); }
+        body.dark-mode .dropdown-menu { background: var(--bg-card); }
+
+        #chat-room { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .date-divider { text-align: center; margin: 15px 0; position: sticky; top: 10px; z-index: 2; }
+        .date-pill { background: rgba(0,0,0,0.1); color: var(--text-dark); padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; backdrop-filter: blur(5px); }
+        body.dark-mode .date-pill { background: rgba(255,255,255,0.15); color: white; }
+
+        .message-bubble { 
+            max-width: 75%; padding: 10px 15px; border-radius: 18px; 
+            font-size: 0.95rem; line-height: 1.4; position: relative; cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .msg-me { align-self: flex-end; margin-left: auto; background: var(--bubble-me); color: var(--bubble-me-text); border-bottom-right-radius: 4px; }
+        .msg-other { align-self: flex-start; margin-right: auto; background: var(--bubble-other); color: var(--bubble-other-text); border-bottom-left-radius: 4px; }
+        
+        .msg-meta { display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 0.65rem; margin-top: 4px; opacity: 0.8; }
+        .msg-tick { font-size: 0.7rem; }
+        .msg-tick.read { color: #51e2f5; }
+
+        #image-preview-wrapper { position: absolute; bottom: 100%; left: 0; width: 100%; padding: 10px 20px; display: none; background: var(--bg-card); border-top-left-radius: 20px; border-top-right-radius: 20px; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
+        #img-preview-tag { max-width: 80px; max-height: 80px; border-radius: 10px; object-fit: cover; }
+        .btn-close-preview { position: absolute; top: 5px; left: 85px; background: var(--danger); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .chat-msg-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: pointer; }
+
+        .chat-input-wrapper { padding: 10px 15px 20px 15px; background: transparent; position: relative; }
+        .chat-input-pill { background: var(--bg-card); border-radius: 30px; padding: 8px 10px; display: flex; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); transition: background 0.3s; }
+        body.dark-mode .chat-input-pill { background: #2c2c2c; }
+        .chat-input-pill input { background: transparent; margin: 0; padding: 10px; color: var(--text-dark); }
+        .send-btn { background: var(--primary-color); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; margin-left: 5px; }
+
+        emoji-picker { position: absolute; bottom: 80px; left: 10px; z-index: 100; --background: var(--bg-card); --border-color: var(--border-color); display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 20px; }
+        emoji-picker.show { display: block; }
+
+        #context-menu { position: absolute; background: var(--bg-card); border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 150; padding: 10px; display: none; min-width: 150px; flex-direction: column; gap: 5px; }
+        .ctx-item { padding: 10px 15px; display: flex; align-items: center; gap: 10px; color: var(--text-dark); cursor: pointer; border-radius: 8px; }
+        .ctx-item:hover { background: #f0f0f5; }
+        body.dark-mode .ctx-item:hover { background: #333; }
+        .reaction-bar { display: flex; gap: 10px; padding: 5px 10px; border-bottom: 1px solid #eee; margin-bottom: 5px; justify-content: center; }
+        .reaction-emoji { font-size: 1.5rem; cursor: pointer; transition: 0.2s; }
+        .reaction-emoji:hover { transform: scale(1.3); }
+
+        #auth-screen { padding: 40px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        #auth-screen h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 2.5rem; }
+        .modal-header { padding: 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); background: var(--bg-card); position: sticky; top: 0; z-index: 10;}
+        .modal-body { padding: 25px; }
+
+        #call-screen { background: #1a1a1a; display: flex; flex-direction: column; z-index: 150 !important; }
+        #remote-video { width: 100%; height: 100%; object-fit: cover; }
+        #local-video { position: absolute; width: 110px; height: 160px; background: #333; bottom: 120px; right: 20px; border-radius: 15px; object-fit: cover; border: 2px solid white; z-index: 20; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .call-controls-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 40px; display: flex; gap: 20px; z-index: 20; border: 1px solid rgba(255,255,255,0.2); }
+        .call-btn { width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-end { background: var(--danger) !important; }
+        .group-tag { font-size: 0.7rem; background: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 5px; }
+
+        .info-page { text-align: center; padding: 40px 20px; }
+        .info-logo { width: 80px; height: 80px; background: var(--primary-color); border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; transform: rotate(10deg); }
+        .dev-badge { background: #f0f0f5; padding: 8px 15px; border-radius: 20px; color: var(--text-dark); font-weight: 600; display: inline-block; margin-top: 10px; }
+        
+        #incoming-call-modal { z-index: 200 !important; }
+
+        .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(24px); }
+        
+        .notif-card { background: var(--border-color); padding: 15px; border-radius: 15px; margin-bottom: 15px; border-left: 5px solid var(--primary-color); }
+        .notif-time { font-size: 0.75rem; color: var(--text-grey); margin-bottom: 5px; }
+        .notif-msg { font-size: 0.95rem; line-height: 1.5; }
+
+        #toast {
+            position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.8); color: white; padding: 10px 20px;
+            border-radius: 20px; font-size: 0.9rem; z-index: 300;
+            display: none; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(5px);
+        }
+        #toast.show { display: block; animation: fadein 0.3s, fadeout 0.3s 2.7s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 85px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 85px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+
+        /* Splash Screen Additions */
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+
+    </style>
+</head>
+<body>
+
+<div id="toast">Copied!</div>
+
+<div id="app-container">
+
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="full-screen" style="display:flex; flex-direction:column; justify-content:center; align-items:center; background:var(--primary-gradient); color:white; z-index:9999; position:relative;">
+        <div style="text-align:center;">
+            <i class="fas fa-comments" style="font-size:4rem; margin-bottom:15px; animation: bounce 2s infinite;"></i>
+            <h1 style="font-size:2.5rem; font-weight:700; letter-spacing:1px; text-shadow: 0 4px 10px rgba(0,0,0,0.2);">TalkMate</h1>
+        </div>
+        <div style="position:absolute; bottom:30px; font-size:0.85rem; font-weight:500; opacity:0.9; text-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+            Powered by Shihab Mahmud
+        </div>
+    </div>
+    
+    <!-- Auth -->
+    <div id="auth-screen" class="full-screen hidden">
+        <h1>TalkMate</h1>
+        <p>Connect perfectly.</p>
+        <div id="auth-forms">
+            <div id="login-form">
+                <input type="email" id="login-email" placeholder="Email Address">
+                <div class="pass-wrapper">
+                    <input type="password" id="login-pass" placeholder="Password">
+                    <i class="fas fa-eye toggle-pass" id="login-eye" onclick="togglePassword('login-pass', 'login-eye')"></i>
+                </div>
+                <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="btn-login">Login</button>
+                <!-- Feature 1: Google Login Button -->
+                <button class="btn" style="width:100%; margin-top:10px; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="loginWithGoogle()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:20px;"> Continue with Google
+                </button>
+                <p style="margin-top:20px; font-size:0.9rem;">New? <a href="#" onclick="toggleAuth('signup')" style="color:var(--primary-color);">Sign Up</a></p>
+            </div>
+            <div id="signup-form" class="hidden">
+                <input type="email" id="signup-email" placeholder="Email Address">
+                <div class="pass-wrapper">
+                    <input type="password" id="signup-pass" placeholder="Password">
+                    <i class="fas fa-eye toggle-pass" id="signup-eye" onclick="togglePassword('signup-pass', 'signup-eye')"></i>
+                </div>
+                <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="btn-signup">Create Account</button>
+                <!-- Feature 1: Google Sign-up Button -->
+                <button class="btn" style="width:100%; margin-top:10px; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="loginWithGoogle()">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:20px;"> Continue with Google
+                </button>
+                <p style="margin-top:20px; font-size:0.9rem;">Have account? <a href="#" onclick="toggleAuth('login')" style="color:var(--primary-color);">Login</a></p>
+            </div>
+        </div>
+        <div id="profile-setup" class="hidden">
+            <h3 style="margin-bottom:20px; color:var(--text-dark)">Setup Profile</h3>
+            <div style="text-align:center; margin-bottom:20px;">
+                <input type="text" id="setup-emoji" placeholder="😊" maxlength="2" style="width:80px; text-align:center; font-size:2rem; padding:10px;">
+            </div>
+            <input type="url" id="setup-dp-url" placeholder="Photo URL (https://...)">
+            <input type="text" id="setup-name" placeholder="Display Name (max 20)" maxlength="20">
+            <input type="text" id="setup-bio" placeholder="Bio">
+            <input type="text" id="setup-address" placeholder="Address">
+            <input type="text" id="setup-study" placeholder="Study/Work">
+            <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="btn-save-profile">Save Profile</button>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="hidden" style="height:100%; display:flex; flex-direction:column;">
+        
+        <header id="main-header">
+            <div class="header-top">
+                <div style="display:flex; align-items:center;">
+                    <img id="header-avatar" src="" class="avatar" style="width:40px; height:40px; margin-right:10px;" onclick="openMenu()" loading="lazy">
+                    <div style="line-height:1.2;">
+                        <div style="font-size:0.8rem; color:var(--text-grey)">Hello,</div>
+                        <div id="header-name-disp" style="font-weight:700; color:var(--text-dark); display:flex; align-items:center;">User</div>
+                    </div>
+                </div>
+                <div><button class="btn-icon" style="background:var(--bg-card); border-radius:50%; box-shadow:0 2px 5px rgba(0,0,0,0.05);" onclick="openSearchAddFriend()"><i class="fas fa-search"></i></button></div>
+            </div>
+        </header>
+
+        <!-- Feed Tab -->
+        <div id="tab-feed" class="view">
+            <!-- Pull-To-Refresh Indicator -->
+            <div id="ptr-tab-feed" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
+                <i class="fas fa-spinner fa-spin"></i> Refreshing Feed...
+            </div>
+            <div id="feed-list-container" style="padding-top:10px; padding-bottom: 20px;"></div>
+        </div>
+
+        <!-- Chats Tab -->
+        <div id="tab-chats" class="view hidden">
+            <!-- Pull-To-Refresh Indicator -->
+            <div id="ptr-tab-chats" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
+                <i class="fas fa-spinner fa-spin"></i> Refreshing Chats...
+            </div>
+            <div id="contacts-list-container" style="padding-top:10px;"></div>
+        </div>
+
+        <!-- Requests / Notifications Tab -->
+        <div id="tab-requests" class="view hidden">
+            <!-- Pull-To-Refresh Indicator -->
+            <div id="ptr-tab-requests" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
+                <i class="fas fa-spinner fa-spin"></i> Refreshing Updates...
+            </div>
+            <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem;">Notifications</h4>
+            <div id="user-notifications-list"></div>
+
+            <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem; margin-top:10px;">New Followers</h4>
+            <div id="requests-list-container"></div>
+            
+            <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem; margin-top:10px;">Suggested Users</h4>
+            <div id="suggestions-list-container"></div>
+        </div>
+
+        <!-- My Profile Tab -->
+        <div id="tab-profile" class="view hidden" style="background: var(--bg-body);">
+            <!-- Pull-To-Refresh Indicator -->
+            <div id="ptr-tab-profile" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
+                <i class="fas fa-spinner fa-spin"></i> Refreshing Profile...
+            </div>
+            <div style="display: flex; justify-content: flex-end; padding: 15px 20px;">
+                <button class="btn-icon" onclick="openMenu()"><i class="fas fa-bars"></i></button>
+            </div>
+            
+            <div style="text-align: center; padding: 0 20px;">
+                <img id="my-profile-img" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); padding: 3px; box-shadow: 0 5px 15px rgba(0,188,212,0.2);" loading="lazy">
+                <h2 id="my-profile-name" style="margin-top: 10px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; justify-content: center;">Name</h2>
+                <p id="my-profile-loc" style="color: var(--text-grey); font-size: 0.9rem;">N/A</p>
+                <p id="my-profile-bio" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 8px; padding: 0 20px;">Bio</p>
+                
+                <button class="btn btn-primary" style="margin-top: 15px; border-radius: 20px; font-size: 0.85rem; padding: 8px 25px;" onclick="openEditProfile()">Edit Profile</button>
+            </div>
+
+            <!-- Stats -->
+            <div style="display: flex; justify-content: space-evenly; margin-top: 25px; padding: 20px 0; background: var(--bg-card); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                <div style="text-align: center;">
+                    <div id="my-stat-posts" style="color: var(--primary-color); font-weight: 700; font-size: 1.3rem;">0</div>
+                    <div style="color: var(--text-grey); font-size: 0.8rem; font-weight: 500;">Posts</div>
+                </div>
+                <div style="text-align: center; cursor:pointer;" onclick="openFollowList('followers', currentUser.uid)">
+                    <div id="my-stat-followers" style="color: var(--primary-color); font-weight: 700; font-size: 1.3rem;">0</div>
+                    <div style="color: var(--text-grey); font-size: 0.8rem; font-weight: 500;">Followers</div>
+                </div>
+                <div style="text-align: center; cursor:pointer;" onclick="openFollowList('following', currentUser.uid)">
+                    <div id="my-stat-following" style="color: var(--primary-color); font-weight: 700; font-size: 1.3rem;">0</div>
+                    <div style="color: var(--text-grey); font-size: 0.8rem; font-weight: 500;">Following</div>
+                </div>
+            </div>
+
+            <!-- Photos Grid -->
+            <div id="my-profile-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 5px; background: var(--bg-body);"></div>
+            <div style="height: 30px;"></div>
+        </div>
+
+        <!-- Floating Bottom Navigation -->
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-tab="feed"><i class="fas fa-home"></i></div>
+            <div class="nav-item" data-tab="chats"><i class="far fa-comment-dots"></i></div>
+            <div class="nav-center-wrap">
+                <div class="plus-btn" onclick="toggleModal('create-post-modal', true)"><i class="fas fa-plus"></i></div>
+            </div>
+            <div class="nav-item" data-tab="requests">
+                <i class="far fa-bell"></i>
+                <span id="req-dot" class="req-dot"></span>
+            </div>
+            <div class="nav-item" data-tab="profile"><i class="far fa-user"></i></div>
+        </nav>
+
+    </div>
+
+    <!-- Chat Interface -->
+    <div id="chat-interface" class="full-screen hidden">
+        <div class="chat-header">
+            <button class="btn-icon" style="color:white; padding:0;" id="back-chat"><i class="fas fa-arrow-left"></i></button>
+            <div class="chat-user-info" id="chat-header-info">
+                <img src="" id="chat-header-img" loading="lazy">
+                <div>
+                    <div id="chat-header-name" style="font-weight:600; font-size:1rem; display:flex; align-items:center;">User</div>
+                    <div id="chat-header-status" style="font-size:0.75rem; opacity:0.8;">Online</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div id="friend-actions" style="display:flex; gap:10px;">
+                    <div class="action-btn" id="btn-audio-call"><i class="fas fa-phone"></i></div>
+                    <div class="action-btn" id="btn-video-call"><i class="fas fa-video"></i></div>
+                </div>
+                <div id="group-actions" class="hidden" style="position:relative;">
+                    <div class="action-btn" id="btn-group-options"><i class="fas fa-ellipsis-v"></i></div>
+                    <div class="dropdown-menu" id="group-dropdown">
+                        <div class="dropdown-item" id="btn-leave-group" style="color:var(--danger)">Leave Group</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="chat-room">
+            <div id="messages-list"></div>
+            <div id="typing-status" style="color:var(--text-grey); font-size:0.7rem; margin-left:10px; height:15px;"></div>
+        </div>
+        
+        <emoji-picker id="emoji-picker"></emoji-picker>
+
+        <div class="chat-input-wrapper">
+            <div id="image-preview-wrapper">
+                <div class="btn-close-preview" onclick="clearImagePreview()"><i class="fas fa-times" style="font-size:0.7rem;"></i></div>
+                <img id="img-preview-tag" src="">
+            </div>
+            
+            <div class="chat-input-pill">
+                <i class="far fa-smile" id="btn-emoji" style="color:var(--text-grey); font-size:1.2rem; margin-left:5px; cursor:pointer;"></i>
+                <i class="fas fa-image" id="btn-image-url" style="color:var(--text-grey); font-size:1.2rem; margin-left:10px; cursor:pointer;" onclick="openImageUrlPrompt()"></i>
+                <input type="text" id="msg-input" placeholder="Type message..." autocomplete="off">
+                <button class="send-btn" id="send-msg-btn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu (Long Press) -->
+    <div id="context-menu">
+        <div class="reaction-bar">
+            <span class="reaction-emoji" data-r="❤️">❤️</span>
+            <span class="reaction-emoji" data-r="😂">😂</span>
+            <span class="reaction-emoji" data-r="👍">👍</span>
+            <span class="reaction-emoji" data-r="😮">😮</span>
+            <span class="reaction-emoji" data-r="😢">😢</span>
+        </div>
+        <div class="ctx-item" id="ctx-reply"><i class="fas fa-reply"></i> Reply</div>
+        <div class="ctx-item" id="ctx-copy"><i class="far fa-copy"></i> Copy</div>
+        <div class="ctx-item" id="ctx-delete" style="color:var(--danger);"><i class="far fa-trash-alt"></i> Delete</div>
+    </div>
+
+    <!-- Call Screen -->
+    <div id="call-screen" class="full-screen hidden">
+        <div id="call-timer" class="hidden" style="position:absolute; top:80px; left:50%; transform:translateX(-50%); color:white; font-size:1.2rem; font-weight:bold; z-index:30; text-shadow: 0 2px 5px rgba(0,0,0,0.5); padding: 5px 15px; background: rgba(0,0,0,0.3); border-radius: 20px; backdrop-filter: blur(5px);">00:00</div>
+        
+        <video id="remote-video" class="hidden" autoplay playsinline></video>
+        <video id="local-video" class="hidden" autoplay playsinline muted></video>
+        <div id="voice-ui" style="position:absolute; top:30%; left:0; width:100%; text-align:center; z-index:15;">
+            <img id="call-avatar" src="" style="width:120px; height:120px; border-radius:50%; border:4px solid var(--primary-color); box-shadow: 0 0 50px rgba(0,188,212,0.5);" loading="lazy">
+            <h2 id="call-name" style="margin-top:20px; color:white; font-size:1.5rem;">User</h2>
+            <p id="call-status-text" style="color:rgba(255,255,255,0.7)">Calling...</p>
+        </div>
+        <div class="call-controls-panel">
+            <div class="call-btn hidden" id="switch-cam-btn"><i class="fas fa-camera-rotate"></i></div>
+            <div class="call-btn" id="toggle-mute"><i class="fas fa-microphone"></i></div>
+            <div class="call-btn btn-end" id="hangup-btn"><i class="fas fa-phone-slash"></i></div>
+            <div class="call-btn" id="toggle-cam"><i class="fas fa-video"></i></div>
+        </div>
+    </div>
+
+    <!-- Incoming Call -->
+    <div id="incoming-call-modal" class="full-screen hidden" style="background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); display:flex; flex-direction:column; justify-content:center; align-items:center; color:white;">
+        <img id="incoming-avatar" src="" style="width:100px; height:100px; border-radius:50%; margin-bottom:20px;" loading="lazy">
+        <h2 id="incoming-name">User</h2>
+        <p style="opacity:0.8; margin-bottom:50px;">Incoming Call...</p>
+        <div style="display:flex; gap:40px;">
+            <div class="call-btn btn-end" id="reject-call"><i class="fas fa-times"></i></div>
+            <div class="call-btn" style="background:var(--success)" id="accept-call"><i class="fas fa-phone"></i></div>
+        </div>
+    </div>
+
+    <!-- Menu & Modals -->
+    <div class="menu-overlay" id="menu-overlay"></div>
+    <div id="side-menu">
+        <div class="menu-header">
+            <img id="menu-dp" src="" loading="lazy">
+            <div>
+                <h3 id="menu-name" style="display:flex; align-items:center;">Name</h3>
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span id="menu-id" style="font-size:0.7rem; opacity:0.6;">ID: ...</span>
+                    <i class="far fa-copy copy-icon" style="cursor:pointer; font-size:0.9rem;" onclick="copyUserId()"></i>
+                </div>
+            </div>
+        </div>
+        <ul class="menu-list">
+            <li onclick="document.querySelector('.nav-item[data-tab=\'profile\']').click(); closeMenu();"><i class="far fa-user"></i> View profile</li>
+            <li onclick="openCallHistory()"><i class="fas fa-history"></i> Call History</li>
+            <li onclick="openPhotoHosting()"><i class="fas fa-image"></i> Photo Hosting</li>
+            <li onclick="openNewGroup()"><i class="fas fa-user-group"></i> New group</li>
+            <li onclick="openSearchAddFriend()"><i class="fas fa-search"></i> Search Users</li>
+            <li onclick="openDevNotifs()"><i class="fas fa-bell"></i> Dev Notifications <span id="dev-notif-dot" class="hidden" style="width:8px; height:8px; background:var(--danger); border-radius:50%; margin-left:10px;"></span></li>
+            <li onclick="openVerifyRequest()"><i class="fas fa-certificate"></i> Get Verified</li>
+            <li onclick="openBlockList()"><i class="fas fa-ban"></i> Blocked IDs</li>
+            <li onclick="openSettings()"><i class="fas fa-cog"></i> Settings</li>
+        </ul>
+        <div class="logout-link" id="btn-logout" style="margin-top:auto; cursor:pointer;"><i class="fas fa-sign-out-alt"></i> Logout</div>
+    </div>
+
+    <!-- Modals -->
+    <div id="call-history-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
+        <div class="modal-header"><h3>Call History</h3><button class="btn-icon" onclick="toggleModal('call-history-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" id="call-logs-container" style="padding:0; overflow-x: hidden;"></div>
+    </div>
+
+    <div id="create-post-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
+        <div class="modal-header"><h3>Create Post</h3><button class="btn-icon" onclick="toggleModal('create-post-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <textarea id="post-caption" placeholder="What's on your mind?"></textarea>
+            <textarea id="post-img-url" placeholder="Photo URLs (comma separated, optional)" oninput="updatePostPreview()" style="height: 60px;"></textarea>
+            <img id="post-preview-img" class="hidden" style="width:100%; border-radius:15px; margin-top:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <div style="display:flex; align-items:center; gap:10px; margin-top:15px; margin-bottom: 20px;">
+                <label style="font-size:0.9rem; font-weight:500;">Privacy:</label>
+                <select id="post-privacy" style="padding:8px 12px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-body); outline:none;">
+                    <option value="public">Public</option>
+                    <option value="private">Private (Only me)</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" id="btn-submit-post" style="width:100%;" onclick="submitPost()">Post</button>
+        </div>
+    </div>
+
+    <div id="edit-post-modal" class="full-screen hidden" style="z-index:140; background:var(--bg-card);">
+        <div class="modal-header"><h3>Edit Caption</h3><button class="btn-icon" onclick="toggleModal('edit-post-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <textarea id="edit-post-caption" style="height: 120px;" placeholder="Update your caption..."></textarea>
+            <input type="hidden" id="edit-post-id">
+            <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="saveEditPost()">Save Changes</button>
+        </div>
+    </div>
+
+    <div id="comments-modal" class="full-screen hidden" style="z-index:130; background:var(--bg-card); display:flex; flex-direction:column;">
+        <div class="modal-header"><h3>Comments</h3><button class="btn-icon" onclick="toggleModal('comments-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div id="comments-list-container" style="flex:1; overflow-y:auto; padding:20px;"></div>
+        
+        <!-- Reply Indicator -->
+        <div id="replying-to-indicator" class="hidden" style="padding:8px 15px; font-size:0.8rem; background:var(--border-color); display:flex; justify-content:space-between; align-items:center;">
+            <span id="replying-to-name" style="font-weight: 500; color: var(--text-dark);">Replying to User</span>
+            <i class="fas fa-times" style="cursor:pointer; color: var(--text-grey);" onclick="cancelCommentReply()"></i>
+        </div>
+
+        <div style="padding:15px; background:var(--bg-card); border-top:1px solid var(--border-color); display:flex; gap:10px;">
+            <input type="text" id="comment-input" placeholder="Write a comment..." style="margin:0; flex:1;">
+            <button class="send-btn" id="send-comment-btn"><i class="fas fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <div id="share-post-modal" class="full-screen hidden" style="z-index:130; background:var(--bg-card);">
+        <div class="modal-header"><h3>Share with Friends</h3><button class="btn-icon" onclick="toggleModal('share-post-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" id="share-friends-list"></div>
+    </div>
+
+    <div id="follow-list-modal" class="full-screen hidden" style="z-index:150; background:var(--bg-card); display:flex; flex-direction:column;">
+        <div class="modal-header"><h3 id="follow-list-title">List</h3><button class="btn-icon" onclick="toggleModal('follow-list-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" id="follow-list-container" style="flex:1; overflow-y:auto; padding:0;"></div>
+    </div>
+
+    <div id="verify-request-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card); display:flex; flex-direction:column;">
+        <div class="modal-header"><h3>Verification Badge</h3><button class="btn-icon" onclick="toggleModal('verify-request-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" style="background: var(--bg-body); flex:1; overflow-y:auto; padding: 20px;">
+            <div id="verify-dynamic-content"></div>
+        </div>
+    </div>
+
+    <div id="photo-host-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
+        <div class="modal-header"><h3>Photo Hosting</h3><button class="btn-icon" onclick="toggleModal('photo-host-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" style="text-align:center;">
+            <p style="color:var(--text-grey); margin-bottom:20px; font-size:0.9rem;">Upload an image from your device to get a direct URL.</p>
+            <input type="file" id="imgbb-file" accept="image/*" style="margin-bottom:15px; background:transparent; padding:0;">
+            <button class="btn btn-primary" id="imgbb-upload-btn" style="width:100%;" onclick="uploadToImgBB()">Upload Image</button>
+            <div id="imgbb-result-container" class="hidden" style="margin-top:20px; text-align:left;">
+                <label style="font-size:0.8rem; color:var(--text-grey); font-weight:600;">Image URL:</label>
+                <div style="display:flex; gap:10px; margin-top:5px;">
+                    <input type="text" id="imgbb-url-result" readonly style="margin-bottom:0;">
+                    <button class="btn btn-primary" style="padding:10px 15px;" onclick="copyHostUrl()"><i class="far fa-copy"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dev-notif-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
+        <div class="modal-header"><h3>Notifications</h3><button class="btn-icon" onclick="toggleModal('dev-notif-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" id="dev-notif-container"></div>
+    </div>
+
+    <div id="contact-us-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
+        <div class="modal-header"><h3>Contact Us</h3><button class="btn-icon" onclick="toggleModal('contact-us-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <p style="color:var(--text-grey); margin-bottom:20px;">Send us your feedback, bug reports, or feature requests.</p>
+            <input type="text" id="contact-subject" placeholder="Subject">
+            <textarea id="contact-message" placeholder="Your message..."></textarea>
+            <button class="btn btn-primary" id="btn-send-contact" style="width:100%; margin-top:10px;" onclick="sendContactMessage()">Send Message</button>
+        </div>
+    </div>
+
+    <div id="change-pass-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
+        <div class="modal-header"><h3>Change Password</h3><button class="btn-icon" onclick="toggleModal('change-pass-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <div class="pass-wrapper">
+                <input type="password" id="new-pass" placeholder="New Password">
+                <i class="fas fa-eye toggle-pass" id="new-eye" onclick="togglePassword('new-pass', 'new-eye')"></i>
+            </div>
+            <div class="pass-wrapper">
+                <input type="password" id="confirm-pass" placeholder="Confirm Password">
+                <i class="fas fa-eye toggle-pass" id="confirm-eye" onclick="togglePassword('confirm-pass', 'confirm-eye')"></i>
+            </div>
+            <button class="btn btn-primary" id="btn-update-pass" style="width:100%; margin-top:10px;" onclick="updateUserPassword()">Update Password</button>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
+        <div class="modal-header"><h3>Settings</h3><button class="btn-icon" onclick="toggleModal('settings-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <div class="list-item" style="cursor:default;">
+                <div class="item-info">Dark Mode</div>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="dark-mode-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="list-item" onclick="openChangePassword()"><div class="item-info">Change Password</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
+            <div class="list-item" onclick="openContactUs()"><div class="item-info">Contact Us</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
+            <div class="list-item" onclick="openAbout()"><div class="item-info">About</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
+            <div class="list-item" onclick="openTerms()"><div class="item-info">Terms & Conditions</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
+        </div>
+    </div>
+
+    <div id="about-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
+        <div class="modal-header"><h3>About</h3><button class="btn-icon" onclick="toggleModal('about-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="info-page">
+            <div class="info-logo"><i class="fas fa-code"></i></div>
+            <h2 style="color:var(--primary-color);">TalkMate</h2>
+            <p style="color:var(--text-grey); margin-bottom:20px;">Version 2.0.0 Pro</p>
+            <p>The ultimate communication tool for modern connections.</p>
+            <div class="dev-badge">Developed by Shihab Mahmud</div>
+        </div>
+    </div>
+
+    <div id="terms-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
+        <div class="modal-header"><h3>Terms</h3><button class="btn-icon" onclick="toggleModal('terms-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="info-page" style="text-align:left;">
+            <h4 style="color:var(--text-dark); margin-bottom:10px;">1. Usage Policy</h4>
+            <p style="color:var(--text-grey); font-size:0.9rem; margin-bottom:20px;">By using TalkMate, you agree to communicate respectfully. Harassment is strictly prohibited.</p>
+            <h4 style="color:var(--text-dark); margin-bottom:10px;">2. Privacy</h4>
+            <p style="color:var(--text-grey); font-size:0.9rem; margin-bottom:20px;">We value your privacy. Your data is secure and will not be shared without consent.</p>
+        </div>
+    </div>
+
+    <div id="edit-profile-modal" class="full-screen hidden" style="background:var(--bg-card); z-index:160;">
+        <div class="modal-header"><h3>Edit Profile</h3><button class="btn-icon" onclick="toggleModal('edit-profile-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" style="text-align:center;">
+             <div style="margin-bottom:20px;">
+                 <input type="text" id="edit-emoji" placeholder="😊" maxlength="2" style="width:80px; text-align:center; font-size:2rem; padding:10px;">
+             </div>
+            <input type="url" id="edit-dp-url" placeholder="Photo URL (https://...)">
+            <input type="text" id="edit-name" placeholder="Display Name">
+            <input type="text" id="edit-bio" placeholder="Bio">
+            <input type="text" id="edit-address" placeholder="Address">
+            <input type="text" id="edit-study" placeholder="Study/Work">
+            <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="btn-update-profile">Update</button>
+        </div>
+    </div>
+
+    <!-- PUBLIC PROFILE VIEW -->
+    <div id="friend-profile-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card); display:flex; flex-direction:column;">
+        <div class="modal-header">
+            <h3>Profile</h3>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div style="position:relative;">
+                    <button class="btn-icon" onclick="toggleProfileMenu()"><i class="fas fa-ellipsis-v"></i></button>
+                    <div class="dropdown-menu" id="profile-dropdown-menu" style="right:0; top:40px; width:150px; z-index:1000;">
+                        <div class="dropdown-item" onclick="handleProfileBlock()" style="color:var(--danger)"><i class="fas fa-ban" style="margin-right:8px;"></i>Block User</div>
+                        <div class="dropdown-item" onclick="handleProfileReport()" style="color:var(--danger)"><i class="fas fa-flag" style="margin-right:8px;"></i>Report User</div>
+                    </div>
+                </div>
+                <button class="btn-icon" onclick="toggleModal('friend-profile-modal', false)"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div class="modal-body" style="padding:0; overflow-y:auto; flex:1;">
+            
+            <div style="text-align: center; padding: 20px;">
+                <img id="fp-img" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); padding: 3px; box-shadow: 0 5px 15px rgba(0,188,212,0.2);" loading="lazy">
+                <h2 id="fp-name" style="margin-top: 10px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; justify-content: center;">Name</h2>
+                <p id="fp-address" style="color: var(--text-grey); font-size: 0.9rem;">N/A</p>
+                <p id="fp-bio" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 8px; padding: 0 20px;">Bio...</p>
+                <p id="fp-study" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 5px;">Study</p>
+                <p style="margin-top:10px; color:var(--primary-color); font-weight:600; display:flex; justify-content:center; align-items:center; gap:8px;">
+                    <span id="fp-id"></span>
+                    <i class="far fa-copy copy-icon" style="cursor:pointer; font-size:1.1rem;" onclick="copyFriendId()"></i>
+                </p>
+
+                <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; padding: 0 20px;">
+                    <button class="btn follow-btn" id="btn-follow-profile" data-uid="" data-type="profile" onclick="toggleFollow(this.dataset.uid)" style="flex:1; border-radius: 20px; font-size: 0.85rem; padding: 8px 15px; border:none;"></button>
+                    <button class="btn btn-primary" id="btn-message-profile" style="flex:1; border-radius: 20px; font-size: 0.85rem; padding: 8px 15px; background: #fff; color: var(--primary-color); border: 1px solid var(--primary-color);">Message</button>
+                </div>
+                
+                <div id="report-section" class="hidden" style="margin-top:15px; text-align:left;">
+                    <textarea id="report-reason" placeholder="Type reason for reporting..." style="height:80px; width:100%; margin-bottom:10px;"></textarea>
+                    <button class="btn btn-danger" id="btn-submit-report" style="width:100%;">Submit Report</button>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-evenly; padding: 20px 0; background: var(--bg-card); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
+                <div style="text-align: center;">
+                    <div id="fp-stat-posts" style="color: var(--primary-color); font-weight: 700; font-size: 1.3rem;">0</div>
+                    <div style="color: var(--text-grey); font-size: 0.8rem; font-weight: 500;">Posts</div>
+                </div>
+                <div style="text-align: center; cursor:pointer;" onclick="openFollowList('followers', currentProfileUid)">
+                    <div id="fp-stat-followers" style="color: var(--primary-color); font-weight: 700; font-size: 1.3rem;">0</div>
+                    <div style="color: var(--text-grey); font-size: 0.8rem; font-weight: 500;">Followers</div>
+                </div>
+                <div style="text-align: center; cursor:pointer;" onclick="openFollowList('following', currentProfileUid)">
+                    <div id="fp-stat-following" style="color: var(--primary-color); font-weight: 700; font-size: 1.3rem;">0</div>
+                    <div style="color: var(--text-grey); font-size: 0.8rem; font-weight: 500;">Following</div>
+                </div>
+            </div>
+
+            <div id="fp-profile-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 5px; background: var(--bg-body);"></div>
+            <div style="height: 30px;"></div>
+        </div>
+    </div>
+
+    <!-- Single Post Modal -->
+    <div id="single-post-modal" class="full-screen hidden" style="z-index: 120; background: var(--bg-card); display:flex; flex-direction:column;">
+        <div class="modal-header" style="position: sticky; top: 0; z-index: 10;">
+            <h3>Post</h3>
+            <button class="btn-icon" onclick="toggleModal('single-post-modal', false)"><i class="fas fa-arrow-left"></i></button>
+        </div>
+        <div class="modal-body" id="single-post-container" style="flex:1; overflow-y:auto; padding:0; background: var(--bg-body);">
+        </div>
+    </div>
+
+    <div id="block-list-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
+        <div class="modal-header"><h3>Blocked Users</h3><button class="btn-icon" onclick="toggleModal('block-list-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" id="block-list-container"></div>
+    </div>
+
+    <div id="new-group-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
+        <div class="modal-header"><h3>New Group</h3><button class="btn-icon" onclick="toggleModal('new-group-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <input type="text" id="group-name-input" placeholder="Group Name">
+            <h4 style="margin:20px 0 10px 0;">Select Members</h4>
+            <div id="group-friend-list" style="max-height:400px; overflow-y:auto;"></div>
+            <button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="createGroup()">Create Group</button>
+        </div>
+    </div>
+
+    <div id="add-friend-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
+        <div class="modal-header"><h3>Search Users</h3><button class="btn-icon" onclick="toggleModal('add-friend-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <div style="background:var(--border-color); padding:15px; border-radius:15px; margin-bottom:20px;">
+                <h4 style="margin-top:0; margin-bottom:10px; color:var(--text-dark); font-size:0.95rem;">Find by Global ID</h4>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" id="search-id-input" placeholder="Search ID..." style="margin-bottom:0; flex:1;">
+                    <button class="btn btn-primary" id="search-user-btn" style="padding:12px 15px;"><i class="fas fa-search"></i></button>
+                </div>
+                <div id="search-result" style="margin-top:15px;"></div>
+            </div>
+
+            <h4 style="margin-bottom:10px; color:var(--text-dark); font-size:0.95rem;">Search Your Connections</h4>
+            <input type="text" id="local-search-input" placeholder="Type connection's name..." onkeyup="filterFriends()">
+            <div id="local-search-results" style="margin-top:10px;"></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- FIREBASE & LOGIC -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
+    // Feature 1: Added Google Auth imports
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
+    import { getDatabase, ref, set, get, onValue, push, child, update, serverTimestamp, onChildAdded, onChildChanged, onChildRemoved, onDisconnect, remove, off, query, limitToLast } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCjZV3yPpdVQ151o7tWcZFNARDnZQsKSVA",
+      authDomain: "sm-chats-2026.firebaseapp.com",
+      databaseURL: "https://sm-chats-2026-default-rtdb.firebaseio.com",
+      projectId: "sm-chats-2026",
+      storageBucket: "sm-chats-2026.firebasestorage.app",
+      messagingSenderId: "720348747831",
+      appId: "1:720348747831:web:a2afa8352744bfb43e47b2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // Feature 1: Google Auth Logic
+    const googleProvider = new GoogleAuthProvider();
+    window.loginWithGoogle = async () => {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const user = result.user;
+            const snap = await get(ref(db, `users/${user.uid}`));
+            if (!snap.exists()) {
+                await set(ref(db, `users/${user.uid}`), {
+                    name: user.displayName || 'Google User',
+                    email: user.email,
+                    dpUrl: user.photoURL || emojiToSVG(user.displayName ? user.displayName.charAt(0) : 'U'),
+                    userId: generateUniqueId(),
+                    bio: '', address: '', study: ''
+                });
+            }
+        } catch(e) {
+            alert(e.message);
+        }
+    };
+
+    let currentUser = null;
+    let myCustomId = null; 
+    window.currentProfileUid = null;
+
+    let currentChatId = null;
+    let currentChatUser = null; 
+    let isGroupChat = false;
+    let isRequestsTabActive = false;
+    let unsubMessages = null; 
+    
+    let peerConnection = null;
+    let localStream = null;
+    let currentCallId = null;
+    window.currentCallType = null;
+    let incomingCallData = null;
+    let toneLoop = null;
+    let toneSynth = null; 
+    let iceCandidateQueue =[]; 
+    let isCallEnding = false; 
+    let isInCall = false; 
+    let callTimeoutTimer = null; 
+    let callStartTime = null;
+    let callTimerInterval = null;
+    window.facingMode = 'user';
+    
+    let myFriends =[];
+    let myFollowing = {};
+    let myFollowers = {};
+    let blockedUsers =[];
+    let selectedMsgId = null;
+    let pendingImageUrl = null;
+
+    let activeCommentPostId = null;
+    let replyingToCommentId = null;
+// কমেন্টে লং-প্রেস করার জন্য টাইমার ভেরিয়েবল
+    let commentLongPressTimer;
+    let isCommentScrolling = false;
+
+    window.startCommentLongPress = (postId, commentId, isMyComment) => {
+        if (!isMyComment) return; // শুধুমাত্র নিজের কমেন্টেই কাজ করবে
+        isCommentScrolling = false;
+        commentLongPressTimer = setTimeout(() => {
+            if (!isCommentScrolling) {
+                window.deleteComment(postId, commentId);
+            }
+        }, 700); // ৭০০ মিলি-সেকেন্ড চেপে ধরলে ডিলিট অপশন আসবে
+    };
+
+    window.endCommentLongPress = () => {
+        clearTimeout(commentLongPressTimer);
+    };
+
+    window.cancelCommentLongPress = () => {
+        isCommentScrolling = true; // স্ক্রল করলে টাইমার ক্যানসেল হয়ে যাবে
+        clearTimeout(commentLongPressTimer);
+    };
+    const servers = { iceServers:[ { urls:['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] } ] };
+
+    const getEl = (id) => document.getElementById(id);
+    const toggleClass = (id, cls, force) => getEl(id).classList.toggle(cls, force);
+    window.toggleAuth = (m) => { toggleClass('login-form', 'hidden', m!=='login'); toggleClass('signup-form', 'hidden', m==='login'); };
+    window.toggleModal = (id, show) => toggleClass(id, 'hidden', !show);
+    window.openMenu = () => { getEl('side-menu').classList.add('open'); getEl('menu-overlay').classList.add('open'); };
+    const closeMenu = () => { getEl('side-menu').classList.remove('open'); getEl('menu-overlay').classList.remove('open'); };
+    getEl('menu-overlay').onclick = closeMenu;
+    getEl('back-chat').onclick = () => toggleModal('chat-interface', false);
+
+    window.showToast = (msg) => {
+        const t = getEl('toast'); t.innerText = msg; t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 3000);
+    };
+
+    window.togglePassword = (inputId, iconId) => {
+        const inp = getEl(inputId); const icn = getEl(iconId);
+        if (inp.type === "password") { inp.type = "text"; icn.classList.remove('fa-eye'); icn.classList.add('fa-eye-slash'); } 
+        else { inp.type = "password"; icn.classList.remove('fa-eye-slash'); icn.classList.add('fa-eye'); }
+    };
+
+    const copyToClipboard = async (text) => {
+        if (!text) return;
+        if (navigator.clipboard && window.isSecureContext) { await navigator.clipboard.writeText(text); } 
+        else {
+            const textArea = document.createElement("textarea"); textArea.value = text; textArea.style.position = "absolute"; textArea.style.left = "-999999px";
+            document.body.prepend(textArea); textArea.select();
+            try { document.execCommand('copy'); } catch (error) {} finally { textArea.remove(); }
+        }
+        showToast("Copied!");
+    };
+
+    function formatNumber(num) {
+        if (!num) return 0;
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toLocaleString();
+    }
+
+    window.loadProfileById = async (uid) => {
+        if(uid === currentUser.uid) {
+            document.querySelector('.nav-item[data-tab="profile"]').click();
+            toggleModal('comments-modal', false);
+            toggleModal('single-post-modal', false);
+            toggleModal('friend-profile-modal', false);
+            return;
+        }
+        const snap = await get(ref(db, `users/${uid}`));
+        if(snap.exists()) {
+            const u = snap.val();
+            openSearchProfile(uid, u.name, u.dpUrl, u.bio, u.address, u.study, u.userId, u.isVerified);
+        } else {
+            showToast("User not found");
+        }
+    };
+
+    window.copyUserId = () => { copyToClipboard(getEl('menu-id').innerText.replace('ID: ', '').trim()); };
+    window.copyFriendId = () => { copyToClipboard(getEl('fp-id').innerText.replace('ID: ', '').trim()); };
+    window.copyHostUrl = () => { copyToClipboard(getEl('imgbb-url-result').value); };
+
+    window.openPhotoHosting = () => { closeMenu(); toggleModal('photo-host-modal', true); };
+    window.uploadToImgBB = async () => {
+        const fileInput = getEl('imgbb-file');
+        if(!fileInput.files[0]) return alert("Please select an image");
+        const btn = getEl('imgbb-upload-btn'); btn.innerHTML = "Uploading..."; btn.disabled = true;
+        
+        let apiKey = '#';
+        try {
+            const apiSnap = await get(ref(db, 'settings/api'));
+            if(apiSnap.exists() && apiSnap.val().imgbbKey) {
+                apiKey = apiSnap.val().imgbbKey;
+            }
+        } catch(e) { console.error("Error fetching API key", e); }
+
+        const formData = new FormData(); formData.append('image', fileInput.files[0]);
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if(data.success) { getEl('imgbb-url-result').value = data.data.url; getEl('imgbb-result-container').classList.remove('hidden'); } 
+            else { alert("Upload failed."); }
+        } catch(e) { alert("Error: " + e.message); } finally { btn.innerHTML = "Upload Image"; btn.disabled = false; }
+    };
+
+    window.openDevNotifs = () => {
+        closeMenu(); 
+        const dot = getEl('dev-notif-dot'); 
+        if (dot) dot.classList.add('hidden'); 
+        localStorage.setItem('lastSeenNotif', Date.now()); 
+        
+        toggleModal('dev-notif-modal', true); 
+        const container = getEl('dev-notif-container');
+        container.innerHTML = '<p style="text-align:center; color:var(--text-grey);">Loading updates...</p>';
+        
+        onValue(ref(db, 'admin/notifications'), (snap) => {
+            container.innerHTML = '';
+            if(!snap.exists()) { 
+                container.innerHTML = '<p style="text-align:center; color:var(--text-grey);">No notifications yet.</p>'; 
+                return; 
+            }
+            
+            const notifs =[]; 
+            snap.forEach(c => { notifs.push(c.val()); });
+            let count = 0;
+            
+            notifs.reverse().forEach(n => {
+                if (!n.target || n.target === 'all' || n.target === currentUser.uid || n.target === myCustomId) {
+                    count++; 
+                    let dateStr = 'Just now';
+                    if (n.timestamp) { 
+                        const dt = new Date(n.timestamp); 
+                        if (!isNaN(dt.getTime())) dateStr = dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString(); 
+                    }
+                    
+                    // এখানে linkify(n.message) ব্যবহার করা হয়েছে
+                    container.innerHTML += `<div class="notif-card"><div class="notif-time">${dateStr}</div><div class="notif-msg" style="word-break: break-word;">${linkify(n.message)}</div></div>`;
+                }
+            });
+            
+            if (count === 0) container.innerHTML = '<p style="text-align:center; color:var(--text-grey);">No notifications yet.</p>';
+        });
+    };
+
+    window.openVerifyRequest = async () => {
+        closeMenu(); toggleModal('verify-request-modal', true);
+        const container = getEl('verify-dynamic-content');
+        container.innerHTML = '<div style="text-align:center; margin-top:50px;"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary-color);"></i></div>';
+
+        const [uSnap, rSnap, pSnap] = await Promise.all([
+            get(ref(db, `users/${currentUser.uid}`)),
+            get(ref(db, `verification_requests/${currentUser.uid}`)),
+            get(ref(db, `settings/payment`))
+        ]);
+
+        const user = uSnap.val() || {};
+        const req = rSnap.val();
+        const paySettings = pSnap.val() || { fee: 500, bkashNum: '01XXXXXXXXX', nagadNum: '01XXXXXXXXX', rocketNum: '01XXXXXXXXX' }; 
+
+        if(user.isVerified) {
+            container.innerHTML = `
+                <div style="text-align:center; padding: 40px 20px;">
+                    <i class="fas fa-check-circle verified-badge" style="font-size:5rem; margin-bottom:20px; display:inline-block; margin-left:0;"></i>
+                    <h2 style="color:var(--text-dark);">Verified</h2>
+                    <p style="color:var(--text-grey); margin-top:10px;">Your account has the premium blue tick.</p>
+                </div>`;
+            return;
+        }
+
+        if(req && req.status === 'pending') {
+            container.innerHTML = `
+                <div style="text-align:center; padding: 40px 20px;">
+                    <i class="fas fa-clock" style="font-size:5rem; color:#f1c40f; margin-bottom:20px;"></i>
+                    <h2 style="color:var(--text-dark);">Under Review</h2>
+                    <p style="color:var(--text-grey); margin-top:10px;">Your verification request is being processed.</p>
+                </div>`;
+            return;
+        }
+
+        window.selectedPaymentMethod = 'bkash';
+        window.paySettingsData = paySettings;
+
+        container.innerHTML = `
+            <div class="glass-panel" id="vr-step-1" style="padding: 20px; margin-bottom:20px;">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <i class="fas fa-certificate verified-badge" style="font-size:3rem; margin-left:0;"></i>
+                    <h3 style="margin-top:10px; color:var(--text-dark);">Get Verified</h3>
+                    <p style="font-size:0.85rem; color:var(--text-grey);">Step 1: Basic Information</p>
+                </div>
+                
+                <input type="text" id="vr-name" placeholder="Full Name" value="${user.name || ''}">
+                <input type="email" id="vr-email" placeholder="Email Address" value="${user.email || currentUser.email || ''}">
+                <input type="tel" id="vr-phone" placeholder="Phone Number">
+
+                <button class="btn btn-primary" style="width:100%; margin-top:10px;" onclick="goToPaymentStep()">Next to Payment</button>
+            </div>
+
+            <div class="glass-panel hidden" id="vr-step-2" style="padding: 20px; margin-bottom:20px;">
+                <div style="text-align:center; margin-bottom:15px;">
+                    <p style="font-size:0.85rem; color:var(--text-grey);">Verification Fee</p>
+                    <h2 style="color:var(--primary-color);">BDT ${paySettings.fee || 500}</h2>
+                </div>
+
+                <h4 style="margin:10px 0; font-size:0.95rem; color:var(--text-dark); text-align:center;">Select Payment Method</h4>
+                <div style="display:flex; gap:10px; margin-bottom:20px;">
+                    <button class="btn pay-tab active" data-method="bkash" style="flex:1; padding:8px; border-radius:10px; background:var(--primary-color); color:white;">bKash</button>
+                    <button class="btn pay-tab" data-method="nagad" style="flex:1; padding:8px; border-radius:10px; background:var(--border-color); color:var(--text-dark);">Nagad</button>
+                    <button class="btn pay-tab" data-method="rocket" style="flex:1; padding:8px; border-radius:10px; background:var(--border-color); color:var(--text-dark);">Rocket</button>
+                </div>
+
+                <div style="background:var(--border-color); padding:15px; border-radius:15px; text-align:center; margin-bottom:20px;">
+                    <img id="vr-qr-code" src="${paySettings.bkashQr || ''}" style="width:150px; height:150px; border-radius:10px; margin-bottom:10px; object-fit:cover; display:${paySettings.bkashQr ? 'inline-block' : 'none'};">
+                    <p style="font-size:0.85rem; color:var(--text-grey); margin-bottom:5px;">Send Money To</p>
+                    <h3 id="vr-pay-number" style="letter-spacing:1px; color:var(--text-dark);">${paySettings.bkashNum || 'N/A'}</h3>
+                </div>
+
+                <input type="text" id="vr-sender" placeholder="Your Sender Number">
+                <input type="text" id="vr-trx" placeholder="Transaction ID (TrxID)">
+
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button class="btn btn-danger" style="flex:1;" onclick="goToStep1()">Back</button>
+                    <button class="btn btn-primary" id="btn-submit-verify" style="flex:2;" onclick="submitPaidVerifyRequest()">Submit Request</button>
+                </div>
+            </div>
+        `;
+
+        document.querySelectorAll('.pay-tab').forEach(tab => {
+            tab.onclick = (e) => {
+                document.querySelectorAll('.pay-tab').forEach(t => { t.style.background='var(--border-color)'; t.style.color='var(--text-dark)'; t.classList.remove('active'); });
+                e.target.style.background='var(--primary-color)'; e.target.style.color='white'; e.target.classList.add('active');
+                
+                window.selectedPaymentMethod = e.target.dataset.method;
+                const numberKey = window.selectedPaymentMethod + 'Num';
+                const qrKey = window.selectedPaymentMethod + 'Qr';
+                
+                getEl('vr-pay-number').innerText = paySettings[numberKey] || 'N/A';
+                
+                const qrImg = getEl('vr-qr-code');
+                if(paySettings[qrKey]) {
+                    qrImg.src = paySettings[qrKey];
+                    qrImg.style.display = 'inline-block';
+                } else {
+                    qrImg.style.display = 'none';
+                    qrImg.src = '';
+                }
+            }
+        });
+    };
+
+    window.goToPaymentStep = () => {
+        const name = getEl('vr-name').value.trim();
+        const email = getEl('vr-email').value.trim();
+        const phone = getEl('vr-phone').value.trim();
+        if(!name || !email || !phone) return showToast("Please fill all fields to proceed.");
+        getEl('vr-step-1').classList.add('hidden');
+        getEl('vr-step-2').classList.remove('hidden');
+    };
+
+    window.goToStep1 = () => {
+        getEl('vr-step-2').classList.add('hidden');
+        getEl('vr-step-1').classList.remove('hidden');
+    };
+
+    window.submitPaidVerifyRequest = async () => {
+        const name = getEl('vr-name').value.trim();
+        const email = getEl('vr-email').value.trim();
+        const phone = getEl('vr-phone').value.trim();
+        const sender = getEl('vr-sender').value.trim();
+        const trx = getEl('vr-trx').value.trim();
+
+        if(!sender || !trx) return showToast("Sender Number and TrxID are required!");
+
+        const btn = getEl('btn-submit-verify');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        btn.disabled = true;
+
+        try {
+            await set(ref(db, `verification_requests/${currentUser.uid}`), {
+                uid: currentUser.uid, 
+                name, 
+                email, 
+                phone,
+                paymentMethod: window.selectedPaymentMethod, 
+                senderNumber: sender,
+                trxId: trx, 
+                amount: window.paySettingsData.fee || 0,
+                status: 'pending', 
+                timestamp: serverTimestamp()
+            });
+            showToast("Verification Request Sent Successfully!");
+            openVerifyRequest(); 
+        } catch(e) {
+            alert("Error submitting request.");
+            btn.innerHTML = 'Submit Request'; btn.disabled = false;
+        }
+    };
+
+    window.openChangePassword = () => { toggleModal('settings-modal', false); toggleModal('change-pass-modal', true); };
+    window.updateUserPassword = async () => {
+        const n = getEl('new-pass').value; const c = getEl('confirm-pass').value;
+        if (!n || n.length < 6) return alert("Password must be at least 6 characters."); if (n !== c) return alert("Passwords do not match.");
+        try {
+            const btn = getEl('btn-update-pass'); btn.innerText = "Updating..."; btn.disabled = true;
+            await updatePassword(auth.currentUser, n); showToast("Password updated successfully!"); toggleModal('change-pass-modal', false);
+            getEl('new-pass').value = ''; getEl('confirm-pass').value = '';
+        } catch(e) { if(e.code === 'auth/requires-recent-login') alert("Please logout and login again to change your password."); else alert("Error: " + e.message); } 
+        finally { getEl('btn-update-pass').innerText = "Update Password"; getEl('btn-update-pass').disabled = false; }
+    };
+
+    window.openContactUs = () => { toggleModal('settings-modal', false); toggleModal('contact-us-modal', true); };
+    window.sendContactMessage = async () => {
+        const sub = getEl('contact-subject').value.trim(); const msg = getEl('contact-message').value.trim();
+        if(!sub || !msg) return alert("Please fill all fields");
+        const btn = getEl('btn-send-contact'); if(btn) { btn.innerHTML = "Sending..."; btn.disabled = true; }
+        try {
+            const uSnap = await get(ref(db, `users/${currentUser.uid}`)); const uData = uSnap.val() || {};
+            await push(ref(db, 'contacts/messages'), { uid: currentUser.uid, name: uData.name || 'User', email: currentUser.email, subject: sub, message: msg, timestamp: serverTimestamp() });
+            alert("Message sent!"); getEl('contact-subject').value = ''; getEl('contact-message').value = ''; toggleModal('contact-us-modal', false);
+        } catch(e) { alert("Error sending message."); } finally { if(btn) { btn.innerHTML = "Send Message"; btn.disabled = false; } }
+    };
+
+    function emojiToSVG(content) { return `data:image/svg+xml;base64,${btoa(`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="#f0f0f5"/><text x="50" y="65" font-family="Arial" font-size="55" text-anchor="middle">${content.substring(0,2)}</text></svg>`)}`; }
+    const generateUniqueId = () => 'sm-' + Math.floor(1000 + Math.random() * 9000);
+    
+    const parseTs = (ts) => {
+        if (!ts) return Date.now();
+        if (typeof ts === 'object') return Date.now();
+        return ts;
+    };
+
+    const formatTime = (ts) => new Date(parseTs(ts)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const getFriendlyDate = (ts) => {
+        const date = new Date(parseTs(ts)); 
+        const now = new Date(); 
+        const diff = now - date; 
+        const oneDay = 86400000;
+        if(diff < oneDay && now.getDate() === date.getDate()) return "Today";
+        if(diff < oneDay * 2) return "Yesterday";
+        return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+    }
+    
+    const linkify = (text) => {
+        if(!text) return '';
+        return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();">${url}</a>`);
+    };
+
+    const darkModeToggle = getEl('dark-mode-toggle');
+    if(localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-mode'); darkModeToggle.checked = true; }
+    darkModeToggle.onchange = () => {
+        if(darkModeToggle.checked) { document.body.classList.add('dark-mode'); localStorage.setItem('theme', 'dark'); } 
+        else { document.body.classList.remove('dark-mode'); localStorage.setItem('theme', 'light'); }
+    }
+
+    getEl('btn-signup').onclick = async () => { try { await createUserWithEmailAndPassword(auth, getEl('signup-email').value, getEl('signup-pass').value); } catch(e) { alert(e.message); } };
+    getEl('btn-login').onclick = async () => { try { await signInWithEmailAndPassword(auth, getEl('login-email').value, getEl('login-pass').value); } catch(e) { alert(e.message); } };
+    getEl('btn-logout').onclick = () => { if(currentUser) set(ref(db, `status/${currentUser.uid}`), { state: 'offline', lastSeen: serverTimestamp() }); signOut(auth); location.reload(); };
+
+    getEl('btn-save-profile').onclick = async () => saveProfile('setup');
+    getEl('btn-update-profile').onclick = async () => saveProfile('edit');
+
+    async function saveProfile(mode) {
+        const prefix = mode === 'setup' ? 'setup' : 'edit';
+        const name = getEl(`${prefix}-name`).value; const bio = getEl(`${prefix}-bio`).value; const address = getEl(`${prefix}-address`).value; 
+        const study = getEl(`${prefix}-study`).value; const emoji = getEl(`${prefix}-emoji`).value; const photoUrl = getEl(`${prefix}-dp-url`).value.trim();
+
+        if(!name) return alert("Name required");
+        const snap = await get(ref(db, `users/${currentUser.uid}`)); const existing = snap.val() || {};
+        let dpUrl = existing.dpUrl;
+
+        if (photoUrl) dpUrl = photoUrl; else if (emoji) dpUrl = emojiToSVG(emoji); else if (!dpUrl || mode === 'setup') dpUrl = emojiToSVG(name.charAt(0)); 
+
+        const userId = existing.userId || generateUniqueId();
+        await update(ref(db, `users/${currentUser.uid}`), { name, bio, address, study, userId, dpUrl, email: currentUser.email });
+        
+        if(mode === 'setup') { setupPresence(currentUser.uid); toggleClass('profile-setup', 'hidden', true); toggleClass('auth-screen', 'hidden', true); toggleClass('main-app', 'hidden', false); initApp(); } 
+        else { showToast("Profile Updated!"); toggleModal('edit-profile-modal', false); loadProfileUI(); if(document.querySelector('.nav-item[data-tab="profile"]').classList.contains('active')) loadMyProfileTab(); }
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+    getEl('splash-screen').classList.add('hidden'); 
+    if (user) {
+        currentUser = user; 
+        window.currentUser = user; 
+        toggleClass('auth-screen', 'hidden', true);
+            const s = await get(ref(db, `users/${user.uid}`));
+            if (s.exists()) { 
+                if (s.val().status === 'blocked') { alert("Your account blocked"); signOut(auth); return; }
+                setupPresence(user.uid); toggleClass('main-app', 'hidden', false); initApp(); 
+            } else { toggleClass('auth-screen', 'hidden', false); toggleClass('auth-forms', 'hidden', true); toggleClass('profile-setup', 'hidden', false); }
+        } else { toggleClass('auth-screen', 'hidden', false); toggleClass('main-app', 'hidden', true); }
+    });
+
+    function setupPresence(uid) {
+        const connRef = ref(db, '.info/connected'); const statRef = ref(db, `status/${uid}`);
+        onValue(connRef, (s) => { if(s.val()) onDisconnect(statRef).set({state:'offline', lastSeen: serverTimestamp()}).then(()=>set(statRef, {state:'online'})); });
+    }
+
+    function initApp() {
+        onValue(ref(db, `users/${currentUser.uid}`), (snap) => { 
+            const d = snap.val();
+            if (d) { 
+                if (d.status === 'blocked') { alert("Your account blocked"); signOut(auth); location.reload(); }
+                
+                myCustomId = d.userId; 
+                getEl('header-avatar').src = d.dpUrl; 
+                const verifiedBadgeHtml = d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:0.75rem;"></i>' : '';
+                const verifiedBadgeHtmlMenu = d.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+                getEl('header-name-disp').innerHTML = `${d.name.split(' ')[0]} ${verifiedBadgeHtml}`;
+                getEl('menu-dp').src = d.dpUrl; 
+                getEl('menu-name').innerHTML = `${d.name} ${verifiedBadgeHtmlMenu}`; 
+                getEl('menu-id').innerText = "ID: " + d.userId;
+
+                const myProfileNameEl = getEl('my-profile-name');
+                if(myProfileNameEl) {
+                    myProfileNameEl.innerHTML = `${d.name} ${d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:1rem"></i>' : ''}`;
+                }
+            } 
+        });
+
+        onValue(ref(db, `follows/${currentUser.uid}`), snap => {
+            myFollowing = snap.val() || {};
+            const el = getEl('my-stat-following');
+            if(el) el.innerText = Object.keys(myFollowing).length;
+            window.updateAllFollowButtons();
+        });
+
+        onValue(ref(db, `followers/${currentUser.uid}`), snap => {
+            myFollowers = snap.val() || {};
+            const el = getEl('my-stat-followers');
+            if(el) el.innerText = Object.keys(myFollowers).length;
+            window.updateAllFollowButtons();
+        });
+
+        let initialNotifsLoaded = false; const notifRef = ref(db, 'admin/notifications');
+        get(notifRef).then((snap) => { 
+            initialNotifsLoaded = true; let lastSeen = localStorage.getItem('lastSeenNotif') || 0; let hasUnread = false;
+            snap.forEach(c => { const n = c.val(); if((!n.target || n.target === 'all' || n.target === currentUser.uid || n.target === myCustomId) && n.timestamp > lastSeen) hasUnread = true; });
+            if(hasUnread) getEl('dev-notif-dot').classList.remove('hidden');
+        }); 
+
+        onChildAdded(notifRef, (snap) => {
+            if(!initialNotifsLoaded) return; const n = snap.val();
+            if(!n.target || n.target === 'all' || n.target === currentUser.uid || n.target === myCustomId) { showToast("New Developer Notification!"); getEl('dev-notif-dot').classList.remove('hidden'); }
+        });
+        
+        onChildAdded(ref(db, `user_notifications/${currentUser.uid}`), snap => {
+            if(!isRequestsTabActive) getEl('req-dot').classList.add('show');
+        });
+
+        loadProfileUI(); loadContacts(); loadRequests(); loadUserNotifications(); loadCalls(); loadBlockedUsers(); loadFeed();
+        
+        document.querySelectorAll('.nav-item[data-tab]').forEach(t => {
+            t.onclick = () => {
+                if (t.dataset.tab === 'feed' && t.classList.contains('active')) {
+                    const ptr = getEl('ptr-tab-feed');
+                    if (ptr) ptr.style.display = 'block';
+                    setTimeout(() => { loadFeed(); if(ptr) ptr.style.display = 'none'; showToast("Feed refreshed!"); }, 800);
+                    return;
+                }
+
+                document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active')); 
+                document.querySelectorAll('.view').forEach(x => x.classList.add('hidden'));
+                t.classList.add('active'); getEl(`tab-${t.dataset.tab}`).classList.remove('hidden');
+                
+                if(t.dataset.tab === 'profile') { getEl('main-header').classList.add('hidden'); loadMyProfileTab(); } 
+                else { getEl('main-header').classList.remove('hidden'); }
+
+                if(t.dataset.tab === 'requests') { isRequestsTabActive = true; getEl('req-dot').classList.remove('show'); } 
+                else { isRequestsTabActive = false; }
+            };
+        });
+        
+        setTimeout(() => { const defaultTab = document.querySelector('.nav-item[data-tab="feed"]'); if(defaultTab) defaultTab.click(); }, 500);
+        
+        onValue(ref(db, `users/${currentUser.uid}/incomingCall`), async s => {
+            const d = s.val();
+            if(d) {
+                if(isInCall) { set(ref(db, `calls/${d.callId}/busy`), true); return; }
+                if(!getEl('incoming-call-modal').classList.contains('hidden') && incomingCallData?.callId === d.callId) return;
+                incomingCallData = d;
+                window.currentCallType = d.type;
+                const cSnap = await get(ref(db, `users/${d.caller}`));
+                if(cSnap.exists()) {
+                    const caller = cSnap.val();
+                    currentChatUser = caller;
+                    getEl('incoming-avatar').src = caller.dpUrl; getEl('incoming-name').innerText = caller.name;
+                    toggleModal('incoming-call-modal', true); playTone();
+                }
+            } else { toggleModal('incoming-call-modal', false); stopTone(); incomingCallData = null; }
+        });
+    }
+
+    window.updateAllFollowButtons = () => {
+        document.querySelectorAll('.follow-btn').forEach(btn => {
+            const uid = btn.dataset.uid;
+            if(uid === currentUser?.uid) { btn.style.display = 'none'; } 
+            else {
+                btn.style.display = 'inline-block';
+                const isFollowing = myFollowing[uid];
+                if(btn.dataset.type === 'feed') {
+                    btn.innerHTML = isFollowing ? '• Following' : '• Follow';
+                    btn.style.color = isFollowing ? 'var(--text-grey)' : 'var(--primary-color)';
+                } else if(btn.dataset.type === 'profile') {
+                    btn.innerHTML = isFollowing ? 'Following' : 'Follow';
+                    btn.style.background = isFollowing ? 'var(--border-color)' : 'var(--primary-color)';
+                    btn.style.color = isFollowing ? 'var(--text-dark)' : '#fff';
+                    btn.style.border = 'none';
+                } else if(btn.dataset.type === 'list') {
+                    btn.innerHTML = isFollowing ? 'Following' : 'Follow';
+                    btn.style.background = isFollowing ? 'var(--border-color)' : 'var(--primary-color)';
+                    btn.style.color = isFollowing ? 'var(--text-dark)' : '#fff';
+                }
+            }
+        });
+    };
+
+    window.toggleFollow = async (targetUid) => {
+        const isFollowing = myFollowing[targetUid];
+        if(isFollowing) {
+            await remove(ref(db, `follows/${currentUser.uid}/${targetUid}`));
+            await remove(ref(db, `followers/${targetUid}/${currentUser.uid}`));
+            await remove(ref(db, `contacts/${currentUser.uid}/${targetUid}`));
+            await remove(ref(db, `contacts/${targetUid}/${currentUser.uid}`));
+        } else {
+            await set(ref(db, `follows/${currentUser.uid}/${targetUid}`), true);
+            await set(ref(db, `followers/${targetUid}/${currentUser.uid}`), true);
+            
+            push(ref(db, `user_notifications/${targetUid}`), {
+                type: 'follow',
+                fromUid: currentUser.uid,
+                ts: serverTimestamp()
+            });
+
+            const snap = await get(ref(db, `follows/${targetUid}/${currentUser.uid}`));
+            if(snap.exists()) {
+                const tsNow = Date.now();
+                await update(ref(db), {[`contacts/${currentUser.uid}/${targetUid}/lastTs`]: tsNow,[`contacts/${targetUid}/${currentUser.uid}/lastTs`]: tsNow
+                });
+            }
+        }
+    };
+
+    window.openFollowList = async (type, targetUid) => {
+        const title = type === 'followers' ? 'Followers' : 'Following';
+        getEl('follow-list-title').innerText = title;
+        const container = getEl('follow-list-container');
+        container.innerHTML = '<p style="text-align:center; padding: 20px; color:var(--text-grey);">Loading...</p>';
+        toggleModal('follow-list-modal', true);
+
+        const path = type === 'followers' ? `followers/${targetUid}` : `follows/${targetUid}`;
+        const snap = await get(ref(db, path));
+        container.innerHTML = '';
+        
+        if(!snap.exists() || Object.keys(snap.val()).length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding: 20px; color:var(--text-grey);">No users found.</p>';
+            return;
+        }
+
+        const userIds = Object.keys(snap.val());
+        for(let id of userIds) {
+            const uSnap = await get(ref(db, `users/${id}`));
+            const user = uSnap.val();
+            if(user) {
+                const verifiedHtml = user.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+                container.innerHTML += `
+                <div class="list-item" style="cursor:pointer;" onclick="toggleModal('follow-list-modal', false); loadProfileById('${id}')">
+                    <img src="${user.dpUrl}" class="avatar" loading="lazy">
+                    <div class="item-info"><div class="item-name">${user.name} ${verifiedHtml}</div></div>
+                    ${id !== currentUser.uid ? `<button class="follow-btn" data-uid="${id}" data-type="list" onclick="event.stopPropagation(); toggleFollow('${id}')" style="border:none; cursor:pointer; font-weight:600; padding:6px 15px; border-radius:20px; transition:0.2s;"></button>` : ''}
+                </div>
+                `;
+            }
+        }
+        window.updateAllFollowButtons();
+    };
+
+    window.loadMyProfileTab = async () => {
+        const s = await get(ref(db, `users/${currentUser.uid}`)); 
+        const d = s.val();
+        if(d) {
+            getEl('my-profile-img').src = d.dpUrl;
+            getEl('my-profile-name').innerHTML = `${d.name} ${d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:1rem"></i>' : ''}`;
+            getEl('my-profile-loc').innerText = d.address || 'Location not set';
+            getEl('my-profile-bio').innerText = d.bio || '';
+        }
+        
+        get(ref(db, `followers/${currentUser.uid}`)).then(snap => {
+            myFollowers = snap.val() || {};
+            const el = getEl('my-stat-followers');
+            if(el) el.innerText = Object.keys(myFollowers).length;
+        });
+
+        get(ref(db, `follows/${currentUser.uid}`)).then(snap => {
+            myFollowing = snap.val() || {};
+            const el = getEl('my-stat-following');
+            if(el) el.innerText = Object.keys(myFollowing).length;
+        });
+        
+        const snap = await get(ref(db, 'posts'));
+        const grid = getEl('my-profile-grid');
+        grid.innerHTML = '';
+        let postCount = 0;
+        const posts =[];
+        snap.forEach(c => { if(c.val().uid === currentUser.uid && c.val().img) posts.push({id: c.key, ...c.val()}); });
+        
+        posts.sort((a,b) => b.ts - a.ts);
+        posts.forEach((post, index) => {
+            postCount++;
+            const img = document.createElement('img');
+            let firstImg = post.img.split(',')[0];
+            img.src = firstImg; img.style.width = "100%"; img.style.aspectRatio = "1"; img.style.objectFit = "cover"; img.style.borderRadius = "10px";
+            img.style.cursor = "pointer";
+            img.loading = "lazy";
+            img.onclick = () => openSinglePost(post.id);
+            if (index === 0 && posts.length > 2) { img.style.gridColumn = "span 2"; img.style.gridRow = "span 2"; }
+            grid.appendChild(img);
+        });
+        getEl('my-stat-posts').innerText = postCount;
+    };
+
+    async function loadProfileUI() {
+        const s = await get(ref(db, `users/${currentUser.uid}`)); const d = s.val();
+        if(d) {
+            myCustomId = d.userId; getEl('header-avatar').src = d.dpUrl; 
+            const verifiedBadgeHtml = d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:0.75rem;"></i>' : '';
+            const verifiedBadgeHtmlMenu = d.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+            getEl('header-name-disp').innerHTML = `${d.name.split(' ')[0]} ${verifiedBadgeHtml}`;
+            getEl('menu-dp').src = d.dpUrl; getEl('menu-name').innerHTML = `${d.name} ${verifiedBadgeHtmlMenu}`; getEl('menu-id').innerText = "ID: " + d.userId;
+        }
+    }
+
+    window.openEditProfile = async () => {
+        closeMenu(); const s = await get(ref(db, `users/${currentUser.uid}`)); const d = s.val();
+        getEl('edit-name').value = d.name; getEl('edit-bio').value = d.bio || ''; getEl('edit-address').value = d.address || ''; getEl('edit-study').value = d.study || ''; 
+        getEl('edit-emoji').value = ''; getEl('edit-dp-url').value = (d.dpUrl && d.dpUrl.startsWith('http')) ? d.dpUrl : '';
+        toggleModal('edit-profile-modal', true);
+    };
+
+    window.openSettings = () => { closeMenu(); toggleModal('settings-modal', true); };
+    window.openAbout = () => { toggleModal('settings-modal', false); toggleModal('about-modal', true); };
+    window.openTerms = () => { toggleModal('settings-modal', false); toggleModal('terms-modal', true); };
+    window.openSearchAddFriend = () => { closeMenu(); toggleModal('add-friend-modal', true); renderLocalSearch(myFriends); };
+    window.openCallHistory = () => { closeMenu(); toggleModal('call-history-modal', true); };
+
+    function loadBlockedUsers() {
+        onValue(ref(db, `blocked/${currentUser.uid}`), snap => {
+            blockedUsers =[]; const div = getEl('block-list-container'); div.innerHTML = '';
+            snap.forEach(c => {
+                blockedUsers.push(c.key);
+                get(ref(db, `users/${c.key}`)).then(u => { const user = u.val(); div.innerHTML += `<div class="list-item"><img src="${user.dpUrl}" class="avatar" loading="lazy"><div class="item-info">${user.name}</div><button class="btn btn-primary" style="padding:5px 15px; font-size:0.8rem;" onclick="unblockUser('${c.key}')">Unblock</button></div>`; });
+            });
+            if(snap.size === 0) div.innerHTML = '<p style="text-align:center; color:#999;">No blocked users</p>';
+        });
+    }
+
+    window.openBlockList = () => { closeMenu(); toggleModal('block-list-modal', true); };
+    window.blockUser = async (uid) => { if(confirm("Block this user?")) { await set(ref(db, `blocked/${currentUser.uid}/${uid}`), true); showToast("User Blocked"); toggleModal('friend-profile-modal', false); toggleModal('chat-interface', false); } };
+    window.unblockUser = async (uid) => { await remove(ref(db, `blocked/${currentUser.uid}/${uid}`)); showToast("User Unblocked"); };
+
+    window.toggleProfileMenu = () => {
+        const menu = getEl('profile-dropdown-menu');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    };
+    window.handleProfileBlock = () => {
+        toggleProfileMenu();
+        if(window.currentProfileUid) blockUser(window.currentProfileUid);
+    };
+    window.handleProfileReport = () => {
+        toggleProfileMenu();
+        toggleClass('report-section', 'hidden');
+    };
+
+    getEl('btn-submit-report').onclick = async () => {
+        const reason = getEl('report-reason').value.trim();
+        if(!reason) return alert("Please specify a reason.");
+        const targetId = window.currentProfileUid || (currentChatUser && currentChatUser.uid);
+        if(targetId) {
+            const btn = getEl('btn-submit-report'); btn.innerHTML = "Submitting..."; btn.disabled = true;
+            try {
+                await push(ref(db, 'admin/reports'), { reporterUid: currentUser.uid, reportedUid: targetId, reason: reason, timestamp: serverTimestamp() });
+                showToast("Report submitted successfully."); getEl('report-reason').value = ''; toggleClass('report-section', 'hidden', true); toggleModal('friend-profile-modal', false);
+            } catch(e) { alert("Error submitting report."); } finally { btn.innerHTML = "Submit Report"; btn.disabled = false; }
+        }
+    };
+
+    window.openNewGroup = () => {
+        closeMenu(); toggleModal('new-group-modal', true); const div = getEl('group-friend-list'); div.innerHTML = '';
+        myFriends.forEach(f => { div.innerHTML += `<div class="list-item"><input type="checkbox" class="friend-checkbox" value="${f.uid}"><img src="${f.dpUrl}" class="avatar" style="width:40px; height:40px;" loading="lazy"><div class="item-name">${f.name}</div></div>`; });
+    };
+
+    window.createGroup = async () => {
+        const name = getEl('group-name-input').value; const checks = document.querySelectorAll('.friend-checkbox:checked');
+        if(!name || checks.length < 1) return alert("Name and 1 friend required");
+        const groupId = push(ref(db, 'groups')).key; const members = { [currentUser.uid]: true }; checks.forEach(c => members[c.value] = true);
+        const groupData = { name, members, dpUrl: emojiToSVG(name.charAt(0)), type: 'group', createdBy: currentUser.uid };
+        await set(ref(db, `groups/${groupId}`), groupData);
+        const updates = {}; Object.keys(members).forEach(uid => updates[`contacts/${uid}/${groupId}`] = { type: 'group' });
+        await update(ref(db), updates); showToast("Group Created!"); toggleModal('new-group-modal', false);
+    };
+
+    function loadContacts() {
+        onValue(ref(db, `contacts/${currentUser.uid}`), async snap => {
+            const promises =[];
+            snap.forEach(c => {
+                const id = c.key; const isGrp = c.val() && c.val().type === 'group';
+                const lastTs = c.val()?.lastTs || 0; 
+                const p = new Promise(async (resolve) => {
+                    let user, online = false;
+                    if(isGrp) { const gSnap = await get(ref(db, `groups/${id}`)); user = gSnap.val(); if(user) { user.uid = id; user.isGroup = true; } } 
+                    else { const[u, s] = await Promise.all([ get(ref(db, `users/${id}`)), get(ref(db, `status/${id}`)) ]); user = u.val(); if(user) { user.uid = id; online = s.val()?.state === 'online'; } }
+                    resolve(user ? { user, online, isGrp, id, lastTs } : null);
+                });
+                promises.push(p);
+            });
+            const results = await Promise.all(promises);
+            const div = getEl('contacts-list-container'); div.innerHTML = ''; myFriends =[];
+
+            const validResults = results.filter(item => item !== null);
+            validResults.sort((a, b) => b.lastTs - a.lastTs);
+
+            validResults.forEach(item => {
+                const { user, online, isGrp, id } = item; if(!isGrp) myFriends.push(user);
+                const verifiedHtml = (!isGrp && user.isVerified) ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+                const el = document.createElement('div'); el.className = 'list-item'; el.onclick = () => openChat(id, user);
+                el.innerHTML = `<img src="${user.dpUrl}" class="avatar ${online?'online':''}" loading="lazy"><div class="item-info"><div class="item-name">${user.name} ${verifiedHtml} ${isGrp ? '<span class="group-tag">Group</span>' : ''}</div><div class="item-sub">${online ? 'Active now' : (isGrp?'Tap to chat':'Offline')}</div></div>`;
+                div.appendChild(el);
+            });
+            loadSuggestions(); 
+        });
+    }
+
+    window.openChat = async (id, user) => {
+        currentChatUser = user; isGroupChat = !!user.isGroup;
+        currentChatId = isGroupChat ? id : (currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`);
+        const verifiedHtml = (!isGroupChat && user.isVerified) ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+
+        getEl('chat-header-img').src = user.dpUrl; getEl('chat-header-name').innerHTML = `${user.name} ${verifiedHtml}`;
+        getEl('chat-header-status').innerText = isGroupChat ? 'Group Chat' : 'checking...';
+        
+        if(!isGroupChat) {
+             onValue(ref(db, `status/${id}`), s => {
+                 const st = s.val();
+                 if(st?.state === 'online') getEl('chat-header-status').innerText = 'Online';
+                 else if(st?.lastSeen) getEl('chat-header-status').innerText = 'Last seen ' + getFriendlyDate(st.lastSeen) + ' at ' + formatTime(st.lastSeen);
+                 else getEl('chat-header-status').innerText = 'Offline';
+             });
+             toggleClass('friend-actions', 'hidden', false); toggleClass('group-actions', 'hidden', true);
+        } else { toggleClass('friend-actions', 'hidden', true); toggleClass('group-actions', 'hidden', false); }
+
+        const msgList = getEl('messages-list'); 
+        if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+
+        let lastDate = '';
+        unsubMessages = onValue(ref(db, `messages/${currentChatId}`), snapshot => {
+            msgList.innerHTML = ''; lastDate = '';
+            snapshot.forEach(s => {
+                const m = s.val(); const msgId = s.key;
+                if(m.from !== currentUser.uid && !m.seen) update(ref(db, `messages/${currentChatId}/${msgId}`), { seen: true });
+                const msgDate = getFriendlyDate(m.ts);
+                if(msgDate !== lastDate) { msgList.innerHTML += `<div class="date-divider"><span class="date-pill">${msgDate}</span></div>`; lastDate = msgDate; }
+                const isMe = m.from === currentUser.uid; const d = document.createElement('div'); d.className = `message-bubble ${isMe ? 'msg-me' : 'msg-other'}`;
+                let tickIcon = isMe ? (m.seen ? '<i class="fas fa-check-double msg-tick read"></i>' : '<i class="fas fa-check msg-tick"></i>') : '';
+                
+                let imgHtml = m.img ? `<img src="${m.img}" class="chat-msg-img" loading="lazy" onmousedown="event.stopPropagation();" onclick="window.open('${m.img}','_blank');">` : '';
+                
+                // Feature 4: Interactive Shared Post preview
+                let postShareHtml = '';
+                if(m.postId) {
+                    postShareHtml = `
+                    <div class="shared-post-card" onclick="openSinglePost('${m.postId}')" style="background:var(--bg-body); border-radius:10px; padding:10px; margin-top:5px; border:1px solid var(--border-color); cursor:pointer; color: var(--text-dark); display: flex; flex-direction: column; gap: 5px;">
+                        <div style="font-size:0.8rem; font-weight:bold; color:var(--primary-color);"><i class="fas fa-share"></i> Shared Post</div>
+                        ${m.postPreviewText ? `<div style="font-size:0.85rem; color:var(--text-dark); opacity: 0.9; margin-bottom: 5px;">${m.postPreviewText}</div>` : ''}
+                        ${m.img ? `<img src="${m.img.split(',')[0]}" style="width:100%; border-radius:8px; max-height:150px; object-fit:cover;" loading="lazy">` : ''}
+                    </div>`;
+                }
+
+                d.innerHTML = `<div class="msg-text">${linkify(m.txt)}</div>${imgHtml}${postShareHtml}<div class="msg-meta"><span>${formatTime(m.ts)}</span>${tickIcon}</div>`;
+                
+                addLongPressListener(d, msgId, m.txt, isMe);
+                if(m.reactions) { const rKey = Object.keys(m.reactions)[0]; d.innerHTML += `<div class="msg-reaction-badge"><span style="background:var(--bg-card); padding:2px 5px; border-radius:10px; font-size:0.8rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:absolute; bottom:-10px; right:0;">${m.reactions[rKey]}</span></div>`; }
+                msgList.appendChild(d);
+            });
+            const chatRoom = getEl('chat-room'); chatRoom.scrollTo({ top: chatRoom.scrollHeight, behavior: 'smooth' });
+        });
+
+        getEl('msg-input').onkeyup = () => { if(!isGroupChat) { const typingRef = ref(db, `typing/${currentChatId}/${currentUser.uid}`); set(typingRef, true); onDisconnect(typingRef).remove(); setTimeout(() => set(typingRef, null), 2000); } };
+        if(!isGroupChat) onValue(ref(db, `typing/${currentChatId}/${id}`), s => getEl('typing-status').innerText = s.val() ? 'Typing...' : '');
+        toggleModal('chat-interface', true);
+    }
+
+    function addLongPressListener(el, msgId, txt, isMe) {
+        let timer;
+        const start = (e) => { if(e.type === 'touchstart') e.preventDefault(); timer = setTimeout(() => showContextMenu(e, msgId, txt, isMe), 500); };
+        const end = () => clearTimeout(timer);
+        el.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
+        el.addEventListener('mousedown', start); el.addEventListener('touchstart', start); 
+        el.addEventListener('mouseup', end); el.addEventListener('touchend', end);
+    }
+
+    function showContextMenu(e, msgId, txt, isMe) {
+        selectedMsgId = msgId; const menu = getEl('context-menu'); menu.style.display = 'flex';
+        let x = e.clientX || e.touches[0].clientX; let y = e.clientY || e.touches[0].clientY;
+        if(x + 150 > window.innerWidth) x = window.innerWidth - 160; if(y + 200 > window.innerHeight) y = window.innerHeight - 210;
+        menu.style.left = x + 'px'; menu.style.top = y + 'px';
+        getEl('ctx-delete').onclick = () => { if(isMe) remove(ref(db, `messages/${currentChatId}/${msgId}`)); menu.style.display = 'none'; };
+        getEl('ctx-copy').onclick = () => { copyToClipboard(txt); menu.style.display = 'none'; };
+        getEl('ctx-reply').onclick = () => { getEl('msg-input').value = `Replying to: "${txt.substring(0,10)}..." `; menu.style.display = 'none'; };
+        document.querySelectorAll('.reaction-emoji').forEach(elem => { elem.onclick = () => { update(ref(db, `messages/${currentChatId}/${msgId}/reactions`), {[currentUser.uid]: elem.dataset.r }); menu.style.display = 'none'; } });
+        const close = (ev) => { if(!menu.contains(ev.target)) { menu.style.display='none'; document.removeEventListener('click', close); } };
+        setTimeout(() => document.addEventListener('click', close), 100);
+    }
+
+    const picker = getEl('emoji-picker'); const input = getEl('msg-input');
+    getEl('btn-emoji').onclick = (e) => { e.stopPropagation(); toggleClass('emoji-picker', 'show'); };
+    picker.addEventListener('emoji-click', event => { input.value += event.detail.unicode; toggleClass('emoji-picker', 'show', false); input.focus(); });
+    document.addEventListener('click', (e) => { if (!picker.contains(e.target) && e.target.id !== 'btn-emoji') picker.classList.remove('show'); });
+
+    window.openImageUrlPrompt = () => {
+        const url = prompt("Enter Image URL to send:");
+        if(url && url.startsWith('http')) { pendingImageUrl = url; getEl('img-preview-tag').src = url; getEl('image-preview-wrapper').style.display = 'block'; } 
+        else if (url) { alert("Invalid URL. Must start with http or https"); }
+    };
+    
+    window.clearImagePreview = () => { pendingImageUrl = null; getEl('image-preview-wrapper').style.display = 'none'; getEl('img-preview-tag').src = ''; };
+
+    function isBlocked(uid) { return blockedUsers.includes(uid); }
+    getEl('send-msg-btn').onclick = async () => {
+        if(!isGroupChat && isBlocked(currentChatUser.uid)) return alert("You blocked this user.");
+        const inp = getEl('msg-input'); const txt = inp.value.trim();
+        if(txt || pendingImageUrl) { 
+            const tsNow = Date.now();
+            await push(ref(db, `messages/${currentChatId}`), { from: currentUser.uid, txt: txt, img: pendingImageUrl || null, ts: serverTimestamp(), seen: false }); 
+            const updates = {};
+            if(!isGroupChat) { updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; }
+            if(Object.keys(updates).length > 0) update(ref(db), updates);
+            inp.value = ''; clearImagePreview(); 
+        }
+    };
+
+    getEl('btn-group-options').onclick = () => { const menu = getEl('group-dropdown'); menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; };
+    getEl('btn-leave-group').onclick = async () => { if(confirm("Leave this group?")) { await remove(ref(db, `contacts/${currentUser.uid}/${currentChatUser.uid}`)); showToast("Left group"); toggleModal('chat-interface', false); } };
+    
+    getEl('chat-header-info').onclick = () => {
+        if(isGroupChat) return; 
+        loadProfileById(currentChatUser.uid);
+    };
+
+    getEl('search-user-btn').onclick = async () => {
+        const q = getEl('search-id-input').value.trim(); const snap = await get(ref(db, 'users'));
+        let found = null; snap.forEach(c => { if(c.val().userId===q && c.key!==currentUser.uid) found={id:c.key, ...c.val()}; });
+        const res = getEl('search-result');
+        if(found) { 
+            const verifiedHtml = found.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+            res.innerHTML = `
+            <div class="list-item" style="background:var(--bg-body); cursor:pointer; border-radius:15px; border-bottom:none;" onclick="loadProfileById('${found.id}')">
+                <img src="${found.dpUrl}" class="avatar" loading="lazy">
+                <div style="flex:1; margin-left:10px;">
+                    <div style="font-weight:600; color:var(--text-dark); display:flex; align-items:center;">${found.name} ${verifiedHtml}</div>
+                    <div style="font-size:0.8rem; color:var(--text-grey)">ID: ${found.userId}</div>
+                </div>
+                <button class="follow-btn" data-uid="${found.id}" data-type="list" onclick="event.stopPropagation(); toggleFollow('${found.id}')" style="border:none; cursor:pointer; font-weight:600; padding:6px 15px; border-radius:20px; transition:0.2s;"></button>
+            </div>`; 
+            window.updateAllFollowButtons();
+        } else res.innerHTML = `<p style="text-align:center; color:#999">Not found</p>`;
+    };
+
+    window.openSearchProfile = async (uid, name, dpUrl, bio, address, study, userId, isVerified) => {
+        window.currentProfileUid = uid; 
+        getEl('fp-img').src = dpUrl;
+        const verifiedHtml = isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+        getEl('fp-name').innerHTML = `${name} ${verifiedHtml}`;
+        getEl('fp-bio').innerText = (bio && bio !== 'undefined') ? bio : 'No Bio'; 
+        getEl('fp-address').innerText = (address && address !== 'undefined') ? address : 'N/A';
+        getEl('fp-study').innerText = (study && study !== 'undefined') ? study : 'N/A'; 
+        getEl('fp-id').innerText = "ID: " + userId;
+
+        getEl('btn-follow-profile').dataset.uid = uid;
+        
+        getEl('btn-message-profile').onclick = () => {
+            toggleModal('friend-profile-modal', false);
+            const f = { uid, name, dpUrl, bio, address, study, userId, isVerified, isGroup: false };
+            openChat(uid, f);
+        };
+
+        getEl('report-reason').value = ''; 
+        toggleClass('report-section', 'hidden', true); 
+
+        onValue(ref(db, `followers/${uid}`), snap => {
+            if(window.currentProfileUid === uid) getEl('fp-stat-followers').innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
+        });
+        onValue(ref(db, `follows/${uid}`), snap => {
+            if(window.currentProfileUid === uid) getEl('fp-stat-following').innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
+        });
+
+        const snap = await get(ref(db, 'posts'));
+        const grid = getEl('fp-profile-grid');
+        grid.innerHTML = '';
+        let postCount = 0;
+        const posts =[];
+        snap.forEach(c => { 
+            if(c.val().uid === uid && c.val().img && (c.val().visibility === 'public' || myFollowing[uid] || uid === currentUser.uid)) {
+                posts.push({id: c.key, ...c.val()});
+            }
+        });
+        posts.sort((a,b) => b.ts - a.ts);
+        posts.forEach((post, index) => {
+            postCount++;
+            const img = document.createElement('img');
+            let firstImg = post.img.split(',')[0];
+            img.src = firstImg; img.style.width = "100%"; img.style.aspectRatio = "1"; img.style.objectFit = "cover"; img.style.borderRadius = "10px";
+            img.style.cursor = "pointer";
+            img.loading = "lazy";
+            img.onclick = () => openSinglePost(post.id);
+            if (index === 0 && posts.length > 2) { img.style.gridColumn = "span 2"; img.style.gridRow = "span 2"; }
+            grid.appendChild(img);
+        });
+        getEl('fp-stat-posts').innerText = postCount;
+
+        window.updateAllFollowButtons();
+        toggleModal('friend-profile-modal', true);
+    };
+
+    // Feature 3: Follower notification swipe-to-dismiss setup
+    function setupFollowerSwipes() {
+        const list = getEl('requests-list-container');
+        if(list.dataset.swipeBound) return;
+        list.dataset.swipeBound = "true";
+        
+        let sX = 0, cX = 0, activeEl = null, logId = null;
+        list.addEventListener('pointerdown', (e) => { const target = e.target.closest('.swipe-content'); if (!target) return; activeEl = target; logId = target.dataset.logid; sX = e.clientX; activeEl.style.transition = 'none'; activeEl.setPointerCapture(e.pointerId); });
+        list.addEventListener('pointermove', (e) => { if (!activeEl) return; cX = e.clientX - sX; if (cX < 0 && cX > -window.innerWidth) activeEl.style.transform = `translateX(${cX}px)`; });
+        list.addEventListener('pointerup', (e) => { if (!activeEl) return; activeEl.style.transition = 'transform 0.3s ease-out'; if (cX < -80) { activeEl.style.transform = `translateX(-100vw)`; const lid = logId; setTimeout(() => { dismissFollower(lid); }, 300); } else activeEl.style.transform = `translateX(0)`; activeEl.releasePointerCapture(e.pointerId); activeEl = null; logId = null; cX = 0; });
+        list.addEventListener('pointercancel', (e) => { if (!activeEl) return; activeEl.style.transition = 'transform 0.3s ease-out'; activeEl.style.transform = `translateX(0)`; activeEl.releasePointerCapture(e.pointerId); activeEl = null; logId = null; cX = 0; });
+    }
+
+    // Feature 3: Dismiss Logic
+    window.dismissFollower = async (followerId) => {
+        await set(ref(db, `dismissed_requests/${currentUser.uid}/${followerId}`), true);
+        loadRequests(); 
+    };
+
+    function loadRequests() {
+        onValue(ref(db, `followers/${currentUser.uid}`), async snap => {
+            const div = getEl('requests-list-container'); div.innerHTML = '';
+            
+            // Feature 3: Check dismissed requests
+            const dSnap = await get(ref(db, `dismissed_requests/${currentUser.uid}`));
+            const dismissed = dSnap.val() || {};
+
+            if(snap.exists()) {
+                const followerIds = Object.keys(snap.val());
+                let count = 0;
+                for(let key of followerIds) {
+                    if(!myFollowing[key] && !dismissed[key]) {
+                        const uSnap = await get(ref(db, `users/${key}`));
+                        const u = uSnap.val();
+                        if(!u) continue;
+                        const verifiedHtml = u.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+                        
+                        // Added swipe wrapper for Feature 3
+                        div.innerHTML += `
+                        <div class="list-item swipe-container" style="padding:0; border-bottom:1px solid var(--border-color);">
+                            <div class="swipe-delete-bg" onclick="dismissFollower('${key}')"><i class="fas fa-trash-alt"></i></div>
+                            <div class="swipe-content" style="padding: 15px 25px;" data-logid="${key}">
+                                <div style="display:flex; flex:1; align-items:center; cursor:pointer;" onclick="loadProfileById('${key}')">
+                                    <img src="${u.dpUrl}" class="avatar" loading="lazy">
+                                    <div class="item-info"><div class="item-name">${u.name} ${verifiedHtml}</div><div class="item-sub">Started following you</div></div>
+                                </div>
+                                <div style="display:flex; gap:5px;">
+                                    <button class="follow-btn" data-uid="${key}" data-type="list" onclick="event.stopPropagation(); toggleFollow('${key}')" style="border:none; cursor:pointer; font-weight:600; padding:6px 15px; border-radius:20px; transition:0.2s;"></button>
+                                </div>
+                            </div>
+                        </div>`;
+                        count++;
+                    }
+                }
+                if(count === 0) div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new followers.</p>';
+                else setupFollowerSwipes(); // Initialize swipe gesture
+            } else { div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new followers.</p>'; }
+            window.updateAllFollowButtons();
+        });
+    }
+
+    function loadUserNotifications() {
+        const div = getEl('user-notifications-list'); 
+        div.innerHTML = '<p id="no-notifs-msg" style="text-align:center; color:var(--text-grey); padding:15px;">Loading...</p>';
+        
+        const notifRef = ref(db, `user_notifications/${currentUser.uid}`);
+        off(notifRef);
+
+        let notifCount = 0;
+
+        get(notifRef).then(snap => {
+            if(!snap.exists()) {
+                div.innerHTML = '<p id="no-notifs-msg" style="text-align:center; color:var(--text-grey); padding:15px;">No notifications.</p>';
+            } else {
+                const msg = getEl('no-notifs-msg');
+                if(msg) msg.remove();
+            }
+        });
+
+        onChildAdded(notifRef, async snap => {
+            const msg = getEl('no-notifs-msg');
+            if(msg) msg.remove();
+            
+            const n = { id: snap.key, ...snap.val() };
+            const now = Date.now();
+            if (now - n.ts > 14 * 24 * 60 * 60 * 1000) {
+                remove(ref(db, `user_notifications/${currentUser.uid}/${n.id}`));
+                return;
+            }
+            const uSnap = await get(ref(db, `users/${n.fromUid}`));
+            const user = uSnap.val();
+            if(!user) return;
+
+            let textMsg = '', icon = '', actionHtml = '';
+            if(n.type === 'like') { textMsg = 'liked your post.'; icon = '<i class="fas fa-heart" style="color:var(--danger)"></i>'; actionHtml = `onclick="openSinglePost('${n.postId}'); isRequestsTabActive=true;"`; }
+            else if(n.type === 'comment') { textMsg = `commented: "${n.text.substring(0, 20)}..."`; icon = '<i class="fas fa-comment" style="color:var(--primary-color)"></i>'; actionHtml = `onclick="openSinglePost('${n.postId}'); isRequestsTabActive=true;"`; }
+            else if(n.type === 'follow') { textMsg = 'started following you.'; icon = '<i class="fas fa-user-plus" style="color:var(--primary-color)"></i>'; actionHtml = `onclick="loadProfileById('${n.fromUid}')"`; }
+
+            const elWrapper = document.createElement('div');
+            elWrapper.innerHTML = `
+                <div class="list-item swipe-container" style="padding:0;" data-notif-id="${n.id}">
+                    <div class="swipe-delete-bg" onclick="deleteNotification('${n.id}')"><i class="fas fa-trash-alt"></i></div>
+                    <div class="swipe-content" data-logid="${n.id}" ${actionHtml} style="padding: 15px 25px; cursor:pointer;">
+                        <img src="${user.dpUrl}" class="avatar" loading="lazy">
+                        <div class="item-info">
+                            <div class="item-name" style="font-size:0.95rem;">${user.name}</div>
+                            <div class="item-sub" style="display:flex; align-items:center; gap:5px; font-size:0.8rem;">${icon} ${textMsg} <span style="font-size:0.7rem; color:var(--text-grey); margin-left:5px;">${getFriendlyDate(n.ts)}</span></div>
+                        </div>
+                    </div>
+                </div>`;
+            
+            div.insertBefore(elWrapper.firstElementChild, div.firstChild);
+            notifCount++;
+            setupNotificationSwipes();
+        });
+
+        onChildRemoved(notifRef, snap => {
+            const id = snap.key;
+            const el = div.querySelector(`[data-notif-id="${id}"]`);
+            if(el) {
+                el.style.transition = 'opacity 0.3s ease, transform 0.3s ease, height 0.3s ease';
+                el.style.opacity = '0';
+                el.style.transform = 'translateX(-100%)';
+                el.style.height = '0px';
+                el.style.overflow = 'hidden';
+                setTimeout(() => {
+                    el.remove();
+                    notifCount--;
+                    if(div.children.length === 0 || notifCount <= 0) {
+                        div.innerHTML = '<p id="no-notifs-msg" style="text-align:center; color:var(--text-grey); padding:15px;">No notifications.</p>';
+                    }
+                }, 300);
+            }
+        });
+    }
+
+    function setupNotificationSwipes() {
+        const list = getEl('user-notifications-list');
+        if(list.dataset.swipeBound) return;
+        list.dataset.swipeBound = "true";
+        
+        let sX = 0, cX = 0, activeEl = null, logId = null;
+        list.addEventListener('pointerdown', (e) => { const target = e.target.closest('.swipe-content'); if (!target) return; activeEl = target; logId = target.dataset.logid; sX = e.clientX; activeEl.style.transition = 'none'; activeEl.setPointerCapture(e.pointerId); });
+        list.addEventListener('pointermove', (e) => { if (!activeEl) return; cX = e.clientX - sX; if (cX < 0 && cX > -window.innerWidth) activeEl.style.transform = `translateX(${cX}px)`; });
+        list.addEventListener('pointerup', (e) => { if (!activeEl) return; activeEl.style.transition = 'transform 0.3s ease-out'; if (cX < -80) { activeEl.style.transform = `translateX(-100vw)`; const lid = logId; setTimeout(async () => { await remove(ref(db, `user_notifications/${currentUser.uid}/${lid}`)); }, 300); } else activeEl.style.transform = `translateX(0)`; activeEl.releasePointerCapture(e.pointerId); activeEl = null; logId = null; cX = 0; });
+        list.addEventListener('pointercancel', (e) => { if (!activeEl) return; activeEl.style.transition = 'transform 0.3s ease-out'; activeEl.style.transform = `translateX(0)`; activeEl.releasePointerCapture(e.pointerId); activeEl = null; logId = null; cX = 0; });
+    }
+
+    window.deleteNotification = async (id) => {
+        await remove(ref(db, `user_notifications/${currentUser.uid}/${id}`));
+    };
+
+    function loadSuggestions() {
+        get(ref(db, 'users')).then(snap => {
+            const div = getEl('suggestions-list-container'); div.innerHTML = ''; let count = 0;
+            snap.forEach(c => {
+                if(count >= 20) return; const u = c.val(); const uid = c.key;
+                if(uid === currentUser.uid) return; if(myFollowing[uid]) return; if(isBlocked(uid)) return;
+                const verifiedHtml = u.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+                div.innerHTML += `
+                <div class="list-item">
+                    <div style="display:flex; flex:1; align-items:center; cursor:pointer;" onclick="loadProfileById('${uid}')">
+                        <img src="${u.dpUrl}" class="avatar" loading="lazy">
+                        <div class="item-info"><div class="item-name">${u.name} ${verifiedHtml}</div></div>
+                    </div>
+                    <button class="follow-btn" data-uid="${uid}" data-type="list" onclick="event.stopPropagation(); toggleFollow('${uid}')" style="border:none; cursor:pointer; font-weight:600; padding:6px 15px; border-radius:20px; transition:0.2s;"></button>
+                </div>`;
+                count++;
+            });
+            if(count === 0) div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new suggestions right now.</p>';
+            window.updateAllFollowButtons();
+        });
+    }
+
+    window.filterFriends = () => renderLocalSearch(myFriends.filter(f => f.name.toLowerCase().includes(getEl('local-search-input').value.toLowerCase())));
+    
+    function renderLocalSearch(list) {
+        const div = getEl('local-search-results'); div.innerHTML = '';
+        list.forEach(f => {
+            const verifiedHtml = f.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+            const item = document.createElement('div'); item.className = 'list-item'; item.style.cursor = 'default';
+            const img = document.createElement('img'); img.src = f.dpUrl; img.className = 'avatar'; img.style.cursor = 'pointer'; img.loading = "lazy";
+            img.onclick = () => { loadProfileById(f.uid); toggleModal('add-friend-modal', false); };
+            const info = document.createElement('div'); info.className = 'item-info'; info.style.cursor = 'pointer';
+            info.onclick = () => { f.isGroup = false; openChat(f.uid, f); toggleModal('add-friend-modal', false); };
+            info.innerHTML = `<div class="item-name">${f.name} ${verifiedHtml}</div>`;
+            item.appendChild(img); item.appendChild(info); div.appendChild(item);
+        });
+    }
+
+    function playTone() { 
+        stopTone(); 
+        try { toneSynth = new Tone.Synth().toDestination(); toneLoop = new Tone.Loop(t => { toneSynth.triggerAttackRelease("C5", "8n", t); toneSynth.triggerAttackRelease("E5", "8n", t + 0.2); }, "1n"); Tone.start(); Tone.Transport.start(); toneLoop.start(0); } catch(e) {}
+    }
+    
+    function stopTone() { 
+        try { Tone.Transport.stop(); Tone.Transport.cancel(); if(toneLoop) { toneLoop.stop(); toneLoop.cancel(); toneLoop.dispose(); toneLoop = null; } if(toneSynth) { toneSynth.triggerRelease(); toneSynth.dispose(); toneSynth = null; } } catch (e) {}
+    }
+
+    function loadCalls() {
+        onValue(ref(db, `callLogs/${currentUser.uid}`), snap => {
+            const div = getEl('call-logs-container'); div.innerHTML = '';
+            snap.forEach(c => {
+                const l = c.val();
+                div.prepend(Object.assign(document.createElement('div'), {
+                    className: 'list-item swipe-container',
+                    innerHTML: `
+                        <div class="swipe-delete-bg"><i class="fas fa-trash-alt"></i></div>
+                        <div class="swipe-content" data-logid="${c.key}">
+                            <div style="width:40px; height:40px; background:#f0f0f5; border-radius:50%; display:flex; justify-content:center; align-items:center; margin-right:15px; color:var(--primary-color);">
+                                <i class="fas fa-${l.type==='video'?'video':'phone'}"></i>
+                            </div>
+                            <div class="item-info">
+                                <div class="item-name">${l.with}</div>
+                                <div class="item-sub">${new Date(l.ts).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>
+                            </div>
+                        </div>`
+                }));
+            });
+            if(snap.size === 0) div.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">No call history</p>';
+        });
+    }
+
+    let swipeStartX = 0; let currentSwipeX = 0; let activeSwipeEl = null; let activeLogId = null;
+    const callLogsContainer = getEl('call-logs-container');
+    callLogsContainer.addEventListener('pointerdown', (e) => { const target = e.target.closest('.swipe-content'); if (!target) return; activeSwipeEl = target; activeLogId = target.dataset.logid; swipeStartX = e.clientX; activeSwipeEl.style.transition = 'none'; activeSwipeEl.setPointerCapture(e.pointerId); });
+    callLogsContainer.addEventListener('pointermove', (e) => { if (!activeSwipeEl) return; currentSwipeX = e.clientX - swipeStartX; if (currentSwipeX < 0 && currentSwipeX > -window.innerWidth) activeSwipeEl.style.transform = `translateX(${currentSwipeX}px)`; });
+    callLogsContainer.addEventListener('pointerup', (e) => { if (!activeSwipeEl) return; activeSwipeEl.style.transition = 'transform 0.3s ease-out'; if (currentSwipeX < -80) { activeSwipeEl.style.transform = `translateX(-100vw)`; const logId = activeLogId; setTimeout(async () => { await remove(ref(db, `callLogs/${currentUser.uid}/${logId}`)); showToast("Call log deleted!"); }, 300); } else activeSwipeEl.style.transform = `translateX(0)`; activeSwipeEl.releasePointerCapture(e.pointerId); activeSwipeEl = null; activeLogId = null; currentSwipeX = 0; });
+    callLogsContainer.addEventListener('pointercancel', (e) => { if (!activeSwipeEl) return; activeSwipeEl.style.transition = 'transform 0.3s ease-out'; activeSwipeEl.style.transform = `translateX(0)`; activeSwipeEl.releasePointerCapture(e.pointerId); activeSwipeEl = null; activeLogId = null; currentSwipeX = 0; });
+
+    window.updatePostPreview = () => {
+        const urlInput = getEl('post-img-url').value;
+        const urls = urlInput.split(',').map(u => u.trim()).filter(u => u);
+        const img = getEl('post-preview-img');
+        if(urls.length > 0 && urls[0].startsWith('http')) { img.src = urls[0]; img.classList.remove('hidden'); } 
+        else { img.classList.add('hidden'); img.src = ''; }
+    };
+
+    window.submitPost = async () => {
+        const txt = getEl('post-caption').value.trim();
+        const imgUrl = getEl('post-img-url').value.trim();
+        const visibility = getEl('post-privacy').value;
+        if(!txt && !imgUrl) return alert("Write something or add a photo.");
+
+        const btn = getEl('btn-submit-post'); btn.disabled = true; btn.innerText = "Posting...";
+        await push(ref(db, 'posts'), { uid: currentUser.uid, text: txt, img: imgUrl || null, visibility: visibility, views: 0, ts: serverTimestamp() });
+        
+        getEl('post-caption').value = ''; getEl('post-img-url').value = ''; getEl('post-preview-img').classList.add('hidden');
+        btn.disabled = false; btn.innerText = "Post";
+        toggleModal('create-post-modal', false); showToast("Posted successfully!");
+        
+        document.querySelector('.nav-item[data-tab="feed"]').click(); 
+    };
+
+    window.toggleCaption = (id) => {
+        const el = getEl(`caption-${id}`);
+        const btn = getEl(`cap-btn-${id}`);
+        if(el.style.webkitLineClamp === '3') { el.style.webkitLineClamp = 'unset'; btn.innerText = 'Show Less'; } 
+        else { el.style.webkitLineClamp = '3'; btn.innerText = 'Read More'; }
+    };
+
+    function buildPostHtml(post, user) {
+        const verifiedHtml = user.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:0.8rem"></i>' : '';
+        const isOwner = post.uid === currentUser.uid;
+        
+        let followBtnHtml = '';
+        if(!isOwner) { followBtnHtml = `<span class="follow-btn" data-uid="${post.uid}" data-type="feed" onclick="event.stopPropagation(); toggleFollow('${post.uid}')" style="font-size: 0.75rem; color: var(--primary-color); font-weight: 600; cursor: pointer; margin-left: 5px;"></span>`; }
+
+        let images = post.images || (post.img ? post.img.split(',') : []);
+        let imgHtml = '';
+        if (images.length > 0) {
+            imgHtml = `
+            <div class="post-carousel" style="border-radius:15px; margin-bottom:10px;">
+                ${images.map((src, i) => `
+                    <div>
+                        <img src="${src.trim()}" class="post-img" style="width:100%; border-radius:15px; margin-bottom:0;" loading="lazy" onclick="window.open('${src.trim()}','_blank')">
+                        ${images.length > 1 ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold;">${i+1}/${images.length}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>`;
+        }
+
+        let likesCount = post.likes ? Object.keys(post.likes).length : 0;
+        let isLiked = post.likes && post.likes[currentUser.uid];
+        let commentsCount = post.comments ? Object.keys(post.comments).length : 0;
+        
+        let viewsHtml = `<div style="font-size:0.8rem; font-weight:600; color:var(--text-dark); margin-bottom:5px;">${formatNumber(post.views || 0)} views</div>`;
+
+        let captionHtml = '';
+        if (post.text) {
+            captionHtml = `
+            <div class="post-content" id="caption-${post.id}" style="margin-bottom:5px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; word-break: break-word; text-align: left;">${linkify(post.text)}</div>
+            ${post.text.length > 100 ? `<div onclick="toggleCaption('${post.id}')" id="cap-btn-${post.id}" style="color:var(--text-grey); font-size:0.85rem; cursor:pointer; margin-bottom:10px; font-weight:500;">Read More</div>` : ''}
+            `;
+        }
+
+        return `
+            <div class="post-card" data-pid="${post.id}">
+                <div class="post-header">
+                    <div class="post-user" onclick="loadProfileById('${post.uid}')">
+                        <img src="${user.dpUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" loading="lazy">
+                        <div>
+                            <div style="font-weight:600; color:var(--text-dark); display:flex; align-items:center;">${user.name} ${verifiedHtml} ${followBtnHtml}</div>
+                            <div style="font-size:0.75rem; color:var(--text-grey);">${user.address ? user.address + ' • ' : ''}${getFriendlyDate(post.ts)} <i class="fas fa-${post.visibility === 'public' ? 'globe-americas' : 'lock'}"></i></div>
+                        </div>
+                    </div>
+                    <div class="header-actions" style="position:relative;">
+                        <div class="action-btn" onclick="togglePostMenu(event)" style="box-shadow:none; width:30px; height:30px; background:transparent;"><i class="fas fa-ellipsis-v" style="color:var(--text-grey)"></i></div>
+                        <div class="dropdown-menu" style="right:0; top:35px; width:190px; z-index:100;">
+                            ${isOwner ? `
+                            <div class="dropdown-item" onclick="openEditPostModal('${post.id}')"><i class="fas fa-edit" style="width:20px;"></i> Edit Caption</div>
+                            <div class="dropdown-item" onclick="togglePostVisibility('${post.id}', '${post.visibility}')"><i class="fas fa-${post.visibility === 'public' ? 'lock' : 'globe'}" style="width:20px;"></i> ${post.visibility === 'public' ? 'Make Private' : 'Make Public'}</div>
+                            <div class="dropdown-item" onclick="toggleCommentsVisibility('${post.id}', ${post.commentsDisabled ? 'true' : 'false'})"><i class="fas fa-comment-slash" style="width:20px;"></i> ${post.commentsDisabled ? 'Enable Comments' : 'Disable Comments'}</div>
+                            <div class="dropdown-item" onclick="deletePost('${post.id}')" style="color:var(--danger)"><i class="fas fa-trash" style="width:20px;"></i> Delete Post</div>
+                            ` : `
+                            <div class="dropdown-item" onclick="reportPost('${post.id}')" style="color:var(--danger)"><i class="fas fa-flag" style="width:20px;"></i> Report Post</div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+                
+                ${captionHtml}
+                
+                ${imgHtml}
+
+                <div class="post-actions" style="border-top:1px solid var(--border-color); padding-top:10px; padding-bottom:5px; margin-bottom:5px; justify-content:flex-start; gap:20px; display:flex; align-items:center;">
+                    <div class="post-action ${isLiked ? 'liked' : ''}" onclick="toggleLike('${post.id}', '${post.uid}')" style="font-size: 1.2rem; display:flex; align-items:center; gap:6px;">
+                        <i class="${isLiked ? 'fas' : 'far'} fa-heart"></i>
+                        <span style="font-size:0.95rem; font-weight:500;">${likesCount > 0 ? formatNumber(likesCount) : 'Like'}</span>
+                    </div>
+                    ${!post.commentsDisabled ? `
+                    <div class="post-action" onclick="openComments('${post.id}')" style="font-size: 1.2rem; display:flex; align-items:center; gap:6px;">
+                        <i class="far fa-comment"></i>
+                        <span style="font-size:0.95rem; font-weight:500;">${commentsCount > 0 ? formatNumber(commentsCount) : 'Comment'}</span>
+                    </div>
+                    ` : ''}
+                    <div class="post-action" onclick="openSharePost('${post.id}')" style="font-size: 1.2rem; display:flex; align-items:center; gap:6px;">
+                        <i class="far fa-paper-plane"></i>
+                    </div>
+                </div>
+
+                ${viewsHtml}
+                
+                ${post.commentsDisabled ? `
+                <div style="font-size:0.85rem; color:var(--text-grey); margin-bottom:10px;">Comments are disabled for this post.</div>
+                ` : `
+                ${commentsCount > 0 ? `<div style="font-size:0.85rem; color:var(--text-grey); cursor:pointer; margin-bottom:10px;" onclick="openComments('${post.id}')">View all ${commentsCount} comments</div>` : ''}
+                <div style="display:flex; align-items:center; gap:10px; margin-top:10px; cursor:text;" onclick="openComments('${post.id}')">
+                    <img src="${getEl('header-avatar').src}" style="width:25px; height:25px; border-radius:50%;" loading="lazy">
+                    <input type="text" placeholder="Add a comment..." style="background:transparent; border:none; padding:0; margin:0; font-size:0.85rem; color:var(--text-grey); flex:1; pointer-events:none;" readonly>
+                </div>
+                `}
+            </div>
+        `;
+    }
+
+    let feedPosts = {};
+    let postViewed = {};
+    let feedObserver = null;
+
+    function observePosts() {
+        if(feedObserver) feedObserver.disconnect();
+        feedObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const pid = entry.target.dataset.pid;
+                    if(pid && !postViewed[pid]) {
+                        postViewed[pid] = true;
+                        const viewRef = ref(db, `posts/${pid}/viewers/${currentUser.uid}`);
+                        get(viewRef).then(s => {
+                            if(!s.exists()) {
+                                set(viewRef, true);
+                                get(ref(db, `posts/${pid}/views`)).then(vs => {
+                                    update(ref(db, `posts/${pid}`), { views: (vs.val() || 0) + 1 });
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.post-card').forEach(card => feedObserver.observe(card));
+    }
+
+    function loadFeed() {
+        const div = getEl('feed-list-container');
+        div.innerHTML = '';
+        feedPosts = {};
+        
+        const postsRef = query(ref(db, 'posts'), limitToLast(60));
+        off(postsRef); 
+
+        const renderSorted = () => {
+            const sorted = Object.values(feedPosts).sort((a,b) => b.score - a.score);
+            div.innerHTML = '';
+            sorted.forEach(item => {
+                div.appendChild(item.el);
+            });
+            window.updateAllFollowButtons();
+            observePosts();
+        };
+
+        onChildAdded(postsRef, async (snap) => {
+            const post = { id: snap.key, ...snap.val() };
+            if(post.visibility === 'private' && post.uid !== currentUser.uid) return; 
+            const user = (await get(ref(db, `users/${post.uid}`))).val();
+            if(!user) return;
+            
+            let eng = (post.likes ? Object.keys(post.likes).length : 0) + (post.comments ? Object.keys(post.comments).length : 0);
+            let score = post.ts + (eng * 7200000) + (Math.random() * 3600000); 
+
+            const el = document.createElement('div');
+            el.innerHTML = buildPostHtml(post, user);
+            feedPosts[post.id] = { post, user, el: el.firstElementChild, score };
+            renderSorted();
+        });
+
+        onChildChanged(postsRef, async (snap) => {
+            const post = { id: snap.key, ...snap.val() };
+            if(post.visibility === 'private' && post.uid !== currentUser.uid) {
+                if(feedPosts[post.id]) {
+                    if(div.contains(feedPosts[post.id].el)) div.removeChild(feedPosts[post.id].el);
+                    delete feedPosts[post.id];
+                }
+                return;
+            }
+
+            if(feedPosts[post.id]) {
+                feedPosts[post.id].post = post;
+                const temp = document.createElement('div');
+                temp.innerHTML = buildPostHtml(post, feedPosts[post.id].user);
+                
+                if(div.contains(feedPosts[post.id].el)) {
+                    div.replaceChild(temp.firstElementChild, feedPosts[post.id].el);
+                }
+                feedPosts[post.id].el = temp.firstElementChild;
+                window.updateAllFollowButtons();
+                observePosts();
+            }
+        });
+
+        onChildRemoved(postsRef, (snap) => {
+            if(feedPosts[snap.key]) {
+                if(div.contains(feedPosts[snap.key].el)) {
+                    div.removeChild(feedPosts[snap.key].el);
+                }
+                delete feedPosts[snap.key];
+            }
+        });
+    }
+
+    window.togglePostMenu = (e) => {
+        e.stopPropagation();
+        const menu = e.currentTarget.nextElementSibling;
+        const allMenus = document.querySelectorAll('.dropdown-menu');
+        allMenus.forEach(m => { if(m !== menu) m.style.display = 'none'; });
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    };
+    
+    document.addEventListener('click', (e) => { 
+        if(!e.target.closest('.header-actions') && !e.target.closest('.modal-header') && !e.target.closest('.post-header')) {
+            document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none'); 
+        }
+    });
+
+    window.openEditPostModal = async (postId) => {
+        const snap = await get(ref(db, `posts/${postId}`));
+        if (snap.exists()) {
+            getEl('edit-post-caption').value = snap.val().text || '';
+            getEl('edit-post-id').value = postId;
+            toggleModal('edit-post-modal', true);
+        }
+    };
+
+    window.saveEditPost = async () => {
+        const postId = getEl('edit-post-id').value;
+        const newText = getEl('edit-post-caption').value.trim();
+        await update(ref(db, `posts/${postId}`), { text: newText });
+        showToast("Caption updated!");
+        toggleModal('edit-post-modal', false);
+    };
+
+    window.toggleCommentsVisibility = async (postId, currentDisabled) => {
+        await update(ref(db, `posts/${postId}`), { commentsDisabled: !currentDisabled });
+        showToast(currentDisabled ? "Comments enabled" : "Comments disabled");
+    };
+
+    window.toggleLike = async (postId, postOwnerUid) => {
+        const likeRef = ref(db, `posts/${postId}/likes/${currentUser.uid}`);
+        const s = await get(likeRef);
+        if(s.exists()) {
+            remove(likeRef); 
+        } else {
+            set(likeRef, true);
+            if(postOwnerUid && postOwnerUid !== currentUser.uid) {
+                push(ref(db, `user_notifications/${postOwnerUid}`), {
+                    type: 'like',
+                    fromUid: currentUser.uid,
+                    postId: postId,
+                    ts: serverTimestamp()
+                });
+            }
+        }
+    };
+
+    window.deletePost = async (postId) => { if(confirm("Delete this post?")) { await remove(ref(db, `posts/${postId}`)); showToast("Post deleted"); toggleModal('single-post-modal', false); } };
+    window.togglePostVisibility = async (postId, currentVis) => { const newVis = currentVis === 'public' ? 'private' : 'public'; await update(ref(db, `posts/${postId}`), { visibility: newVis }); showToast(newVis === 'private' ? "Post is now Private" : "Post is now Public"); };
+    window.reportPost = async (postId) => { if(confirm("Report this post?")) { await push(ref(db, 'admin/reports'), { reporterUid: currentUser.uid, postId: postId, reason: "Post Report", timestamp: serverTimestamp() }); showToast("Report submitted."); } };
+
+    let userCache = {};
+    const getUserCached = async (uid) => {
+        if(userCache[uid]) return userCache[uid];
+        try {
+            const u = (await get(ref(db, `users/${uid}`))).val();
+            if(u) { userCache[uid] = u; return u; }
+            return { name: "Unknown User", dpUrl: "https://via.placeholder.com/150" };
+        } catch(e) {
+            return { name: "Unknown User", dpUrl: "https://via.placeholder.com/150" };
+        }
+    };
+
+    // Feature 2: Toggle Hide Comment Logic
+    window.toggleHideComment = async (postId, commentId, hideStatus) => {
+        await update(ref(db, `posts/${postId}/comments/${commentId}`), { hiddenByOwner: hideStatus });
+        showToast(hideStatus ? "Comment hidden." : "Comment visible.");
+    };
+
+    window.openComments = async (postId) => {
+        const snapP = await get(ref(db, `posts/${postId}`));
+        if(!snapP.exists()) return;
+        if(snapP.val().commentsDisabled) return showToast("Comments are disabled for this post.");
+        
+        // Feature 2: Check if current user is the owner of the post
+        const isPostOwner = snapP.val().uid === currentUser.uid;
+
+        activeCommentPostId = postId; 
+        cancelCommentReply();
+        toggleModal('comments-modal', true);
+        const div = getEl('comments-list-container');
+        
+        onValue(ref(db, `posts/${postId}/comments`), async snap => {
+            if(activeCommentPostId !== postId) return;
+            div.innerHTML = '';
+            if(!snap.exists()) { div.innerHTML = '<p style="text-align:center; color:var(--text-grey);">No comments yet.</p>'; return; }
+            
+            const comments =[]; 
+            snap.forEach(c => { comments.push({id: c.key, ...c.val()}); });
+
+            for(let c of comments) { c.user = await getUserCached(c.uid); }
+
+            const buildHtml = (c, isReply = false, topLevelId = null) => {
+                if(!c.user) return '';
+                
+                // Feature 2: Filter out hidden comments for normal users
+                if(c.hiddenByOwner && !isPostOwner) return '';
+
+                let likesCount = c.likes ? Object.keys(c.likes).length : 0;
+                let isLiked = c.likes && c.likes[currentUser.uid];
+                let isMyComment = c.uid === currentUser.uid;
+                
+                // Feature 2: Styling and button for Post Owner
+                let opacityStyle = c.hiddenByOwner ? 'opacity: 0.5;' : '';
+                let hideBtnHtml = isPostOwner ? `<span style="cursor:pointer; font-weight:600; color:var(--danger);" onclick="toggleHideComment('${postId}', '${c.id}', ${c.hiddenByOwner ? 'false' : 'true'})">${c.hiddenByOwner ? 'Unhide' : 'Hide'}</span>` : '';
+
+                return `
+                <div style="display:flex; gap:10px; margin-bottom:15px; ${opacityStyle} ${isReply ? 'margin-left:45px; border-left:2px solid var(--border-color); padding-left:10px;' : ''}">
+                    <img src="${c.user.dpUrl}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; cursor:pointer;" onclick="loadProfileById('${c.uid}')" loading="lazy">
+                    <div style="flex:1;">
+                        <div style="background:var(--border-color); padding:10px; border-radius:15px; display:inline-block; min-width:50%; max-width:90%; user-select:none; -webkit-user-select:none;"
+                             onmousedown="startCommentLongPress('${postId}', '${c.id}', ${isMyComment})" 
+                             onmouseup="endCommentLongPress()" 
+                             onmouseleave="endCommentLongPress()" 
+                             ontouchstart="startCommentLongPress('${postId}', '${c.id}', ${isMyComment})" 
+                             ontouchend="endCommentLongPress()" 
+                             ontouchmove="cancelCommentLongPress()">
+                             
+                            <div style="font-weight:600; font-size:0.85rem; cursor:pointer;" onclick="loadProfileById('${c.uid}')">
+                                <span>${c.user.name}</span>
+                            </div>
+                            <div style="font-size:0.9rem; word-break:break-word; margin-top:3px;">${linkify(c.text)}</div>
+                        </div>
+                        <div style="font-size:0.75rem; color:var(--text-grey); margin-top:5px; margin-left:5px; display:flex; gap:15px; align-items:center;">
+                            <span style="cursor:pointer; font-weight:600; color:${isLiked ? 'var(--primary-color)' : 'inherit'};" onclick="toggleCommentLike('${postId}', '${c.id}')">${likesCount > 0 ? likesCount + ' ' : ''}Like</span>
+                            <span style="cursor:pointer; font-weight:600;" onclick="setCommentReply('${c.id}', '${c.user.name}', '${topLevelId || c.id}')">Reply</span>
+                            ${hideBtnHtml}
+                            <span>${getFriendlyDate(c.ts)}</span>
+                        </div>
+                    </div>
+                </div>`;
+            };
+            let finalHtml = '';
+            const topLevel = comments.filter(c => !c.parentId);
+            topLevel.sort((a,b) => parseTs(a.ts) - parseTs(b.ts)); 
+
+            const getReplies = (parentId) => {
+                let html = '';
+                let reps = comments.filter(r => r.parentId === parentId);
+                reps.sort((a,b) => parseTs(a.ts) - parseTs(b.ts)); 
+                for(let r of reps) {
+                    html += buildHtml(r, true, parentId); 
+                    html += getReplies(r.id); 
+                }
+                return html;
+            };
+
+            for(let c of topLevel) {
+                finalHtml += buildHtml(c, false);
+                finalHtml += getReplies(c.id);
+            }
+
+            div.innerHTML = finalHtml || '<p style="text-align:center; color:var(--text-grey);">No comments yet.</p>';
+            div.scrollTo({ top: div.scrollHeight, behavior: 'smooth' });
+        });
+    };
+
+    window.deleteComment = async (postId, commentId) => {
+        if(confirm("Delete this comment?")) {
+            await remove(ref(db, `posts/${postId}/comments/${commentId}`));
+            showToast("Comment deleted.");
+        }
+    };
+
+    window.toggleCommentLike = async (postId, commentId) => {
+        const likeRef = ref(db, `posts/${postId}/comments/${commentId}/likes/${currentUser.uid}`);
+        const s = await get(likeRef);
+        if(s.exists()) remove(likeRef); else set(likeRef, true);
+    };
+
+    window.setCommentReply = (commentId, name, topLevelId) => {
+        replyingToCommentId = topLevelId || commentId; 
+        getEl('replying-to-indicator').classList.remove('hidden');
+        getEl('replying-to-name').innerText = 'Replying to ' + name;
+        getEl('comment-input').focus();
+    };
+
+    window.cancelCommentReply = () => {
+        replyingToCommentId = null;
+        getEl('replying-to-indicator').classList.add('hidden');
+    };
+
+    getEl('send-comment-btn').onclick = async () => {
+        const inp = getEl('comment-input'); const txt = inp.value.trim();
+        if(txt && activeCommentPostId) { 
+            const payload = { uid: currentUser.uid, text: txt, ts: serverTimestamp() };
+            if(replyingToCommentId) payload.parentId = replyingToCommentId;
+            await push(ref(db, `posts/${activeCommentPostId}/comments`), payload); 
+            
+            get(ref(db, `posts/${activeCommentPostId}/uid`)).then(s => {
+                const ownerUid = s.val();
+                if(ownerUid && ownerUid !== currentUser.uid) {
+                    push(ref(db, `user_notifications/${ownerUid}`), {
+                        type: 'comment',
+                        fromUid: currentUser.uid,
+                        postId: activeCommentPostId,
+                        text: txt,
+                        ts: serverTimestamp()
+                    });
+                }
+            });
+
+            inp.value = '';
+            cancelCommentReply();
+        }
+    };
+
+    window.openSharePost = async (postId) => {
+        const pSnap = await get(ref(db, `posts/${postId}`)); const post = pSnap.val();
+        if(!post) return;
+        const div = getEl('share-friends-list'); div.innerHTML = '';
+        myFriends.forEach(f => {
+            const item = document.createElement('div'); item.className = 'list-item';
+            item.innerHTML = `
+                <img src="${f.dpUrl}" class="avatar" style="width:40px; height:40px;" loading="lazy">
+                <div class="item-info"><div class="item-name">${f.name}</div></div>
+                <button class="btn btn-primary" style="padding:6px 15px; font-size:0.8rem;">Send</button>
+            `;
+            item.querySelector('button').onclick = async () => {
+                const chatId = currentUser.uid < f.uid ? `${currentUser.uid}_${f.uid}` : `${f.uid}_${currentUser.uid}`;
+                const msgTxt = `Shared a post`;
+                let firstImg = post.img ? post.img.split(',')[0] : null;
+                
+                // Feature 4: Include preview text when sharing
+                let postCaption = post.text ? (post.text.length > 50 ? post.text.substring(0, 50) + '...' : post.text) : '';
+                
+                await push(ref(db, `messages/${chatId}`), { from: currentUser.uid, txt: msgTxt, img: firstImg, postId: postId, postPreviewText: postCaption, ts: serverTimestamp(), seen: false });
+                showToast("Post sent to " + f.name); toggleModal('share-post-modal', false);
+            };
+            div.appendChild(item);
+        });
+        if(myFriends.length === 0) div.innerHTML = '<p style="text-align:center; padding:20px;">No friends to share with.</p>';
+        toggleModal('share-post-modal', true);
+    };
+
+    window.openSinglePost = async (postId) => {
+        if(!postId) return;
+        const pSnap = await get(ref(db, `posts/${postId}`));
+        const post = pSnap.val();
+        if(!post) return showToast("Post not found");
+        post.id = postId;
+
+        const uSnap = await get(ref(db, `users/${post.uid}`));
+        const user = uSnap.val();
+        
+        toggleModal('single-post-modal', true);
+        
+        const container = getEl('single-post-container');
+        container.innerHTML = buildPostHtml(post, user);
+        window.updateAllFollowButtons();
+
+        onValue(ref(db, `posts/${postId}`), async (snap) => {
+            if(getEl('single-post-modal').classList.contains('hidden')) return;
+            const updatedPost = { id: snap.key, ...snap.val() };
+            if(!updatedPost) return;
+            const u = (await get(ref(db, `users/${updatedPost.uid}`))).val();
+            container.innerHTML = buildPostHtml(updatedPost, u);
+            window.updateAllFollowButtons();
+        });
+    };
+
+    async function getMediaStream(constraints) {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) { return await navigator.mediaDevices.getUserMedia(constraints); } 
+        else { const legacyGetUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+            if (legacyGetUserMedia) { return new Promise((resolve, reject) => { legacyGetUserMedia.call(navigator, constraints, resolve, reject); }); } 
+            else { throw new Error("Media Devices API is blocked or missing."); }
+        }
+    }
+
+    getEl('btn-audio-call').onclick = () => { if(!isBlocked(currentChatUser.uid)) startCall(currentChatUser.uid, 'voice'); else alert("Blocked user"); };
+    getEl('btn-video-call').onclick = () => { if(!isBlocked(currentChatUser.uid)) startCall(currentChatUser.uid, 'video'); else alert("Blocked user"); };
+
+    function createPC(callId, isCaller) {
+        peerConnection = new RTCPeerConnection(servers); iceCandidateQueue =[];
+        peerConnection.onicecandidate = (event) => { if (event.candidate) push(ref(db, `calls/${callId}/${isCaller ? 'callerCand' : 'calleeCand'}`), event.candidate.toJSON()); };
+        peerConnection.ontrack = (event) => { const remoteVid = getEl('remote-video'); if (remoteVid.srcObject !== event.streams[0]) remoteVid.srcObject = event.streams[0]; };
+        
+        peerConnection.onconnectionstatechange = () => { 
+            if (peerConnection.connectionState === 'connected') {
+                setupCallUI(window.currentCallType, currentChatUser, 'connected');
+                startCallTimer();
+            }
+            if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') hangup(); 
+        };
+    }
+
+    async function handleRemoteCandidate(candidate) { if (!peerConnection) return; if (!peerConnection.remoteDescription) iceCandidateQueue.push(candidate); else { try { await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); } catch (e) { console.error(e); } } }
+    async function processIceQueue() { if (!peerConnection) return; while (iceCandidateQueue.length > 0) { const candidate = iceCandidateQueue.shift(); try { await peerConnection.addIceCandidate(new RTCIceCandidate(candidate)); } catch (e) { console.error(e); } } }
+
+    function startCallTimer() {
+        if(callTimerInterval) clearInterval(callTimerInterval);
+        callStartTime = Date.now();
+        getEl('call-timer').classList.remove('hidden');
+        callTimerInterval = setInterval(() => {
+            const diff = Math.floor((Date.now() - callStartTime)/1000);
+            const m = String(Math.floor(diff/60)).padStart(2,'0');
+            const s = String(diff%60).padStart(2,'0');
+            getEl('call-timer').innerText = `${m}:${s}`;
+        }, 1000);
+    }
+
+    function stopCallTimer() {
+        if(callTimerInterval) clearInterval(callTimerInterval);
+        callTimerInterval = null;
+        getEl('call-timer').classList.add('hidden');
+        getEl('call-timer').innerText = "00:00";
+    }
+
+    function setupCallUI(type, user, state = 'ringing') {
+        toggleModal('call-screen', true);
+        getEl('call-name').innerText = user.name;
+        getEl('call-avatar').src = user.dpUrl;
+        
+        getEl('call-status-text').innerText = state === 'connected' ? 'Connected' : 'Calling...';
+
+        getEl('voice-ui').classList.remove('hidden');
+        getEl('remote-video').classList.add('hidden');
+        getEl('local-video').classList.add('hidden');
+        getEl('switch-cam-btn').classList.add('hidden');
+
+        if (state === 'connected' && type === 'video') {
+            getEl('voice-ui').classList.add('hidden');
+            getEl('remote-video').classList.remove('hidden');
+            getEl('local-video').classList.remove('hidden');
+            getEl('switch-cam-btn').classList.remove('hidden');
+        }
+    }
+
+    async function startCall(targetUid, type) {
+        if(isGroupChat) return;
+        window.currentCallType = type;
+        currentCallId = generateUniqueId(); isCallEnding = false; const callRef = ref(db, `calls/${currentCallId}`);
+        setupCallUI(type, currentChatUser, 'ringing'); 
+        createPC(currentCallId, true); 
+
+        try {
+            window.facingMode = 'user';
+            const constraints = type === 'video' ? { video: { facingMode: window.facingMode }, audio: true } : { audio: true, video: false };
+            localStream = await getMediaStream(constraints);
+            const localVid = getEl('local-video'); localVid.srcObject = localStream; localVid.muted = true;
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            const offer = await peerConnection.createOffer(); await peerConnection.setLocalDescription(offer);
+            await set(callRef, { offer: { sdp: offer.sdp, type: offer.type }, caller: currentUser.uid, type });
+            await set(ref(db, `users/${targetUid}/incomingCall`), { callId: currentCallId, caller: currentUser.uid, type });
+            playTone(); isInCall = true;
+
+            callTimeoutTimer = setTimeout(() => { if(currentCallId) { alert("No Answer"); hangup(); } }, 30000); 
+            onValue(child(callRef, 'busy'), (snapshot) => { if(snapshot.val()) { alert("User is busy now"); hangup(); } });
+            onValue(child(callRef, 'answer'), async (snapshot) => { const data = snapshot.val(); if (data && !peerConnection.currentRemoteDescription) { if(callTimeoutTimer) clearTimeout(callTimeoutTimer); stopTone(); await peerConnection.setRemoteDescription(new RTCSessionDescription(data)); processIceQueue(); } });
+            onChildAdded(child(callRef, 'calleeCand'), (snapshot) => { if(snapshot.val()) handleRemoteCandidate(snapshot.val()); });
+        } catch (err) { alert("Could not access camera/microphone."); hangup(); }
+    }
+
+    getEl('accept-call').onclick = async () => {
+        stopTone(); toggleModal('incoming-call-modal', false); if (!incomingCallData) return;
+        const { callId, type, caller } = incomingCallData;
+        window.currentCallType = type;
+        currentCallId = callId; isCallEnding = false; isInCall = true; set(ref(db, `users/${currentUser.uid}/incomingCall`), null);
+
+        setupCallUI(type, currentChatUser, 'ringing'); 
+        createPC(callId, false); 
+
+        try {
+            window.facingMode = 'user';
+            const constraints = type === 'video' ? { video: { facingMode: window.facingMode }, audio: true } : { audio: true, video: false };
+            localStream = await getMediaStream(constraints);
+            const localVid = getEl('local-video'); localVid.srcObject = localStream; localVid.muted = true;
+            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+
+            const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(callRef, 'offer')); const offer = offerSnap.val();
+
+            if (offer) { await peerConnection.setRemoteDescription(new RTCSessionDescription(offer)); const answer = await peerConnection.createAnswer(); await peerConnection.setLocalDescription(answer); await update(callRef, { answer: { sdp: answer.sdp, type: answer.type } }); processIceQueue(); onChildAdded(child(callRef, 'callerCand'), (snapshot) => { if(snapshot.val()) handleRemoteCandidate(snapshot.val()); }); }
+        } catch (err) { alert("Connection failed"); hangup(); }
+    };
+
+    getEl('reject-call').onclick = () => { stopTone(); if (incomingCallData) { set(ref(db, `calls/${incomingCallData.callId}/busy`), true); } set(ref(db, `users/${currentUser.uid}/incomingCall`), null); incomingCallData = null; };
+
+    window.hangup = () => hangup(); 
+    
+    function hangup() {
+        if(isCallEnding) return; isCallEnding = true; stopTone(); stopCallTimer();
+        isInCall = false; if(callTimeoutTimer) clearTimeout(callTimeoutTimer);
+
+        if(currentCallId) {
+            const callRef = ref(db, `calls/${currentCallId}`); off(child(callRef, 'answer')); off(child(callRef, 'calleeCand')); off(child(callRef, 'callerCand')); off(child(callRef, 'busy'));
+            setTimeout(() => { remove(ref(db, `calls/${currentCallId}`)); }, 2000);
+        }
+
+        if (peerConnection) { peerConnection.close(); peerConnection = null; }
+        if (localStream) { localStream.getTracks().forEach(track => { track.stop(); track.enabled = false; }); localStream = null; }
+        getEl('local-video').srcObject = null; getEl('remote-video').srcObject = null; toggleModal('call-screen', false);
+
+        if (currentCallId) {
+             const isVideo = window.currentCallType === 'video'; const name = getEl('call-name').innerText;
+             push(ref(db, `callLogs/${currentUser.uid}`), { type: isVideo ? 'video' : 'voice', with: name, ts: serverTimestamp() });
+             set(ref(db, `users/${currentUser.uid}/incomingCall`), null); if(currentChatUser) set(ref(db, `users/${currentChatUser.uid}/incomingCall`), null); currentCallId = null;
+        }
+    };
+    getEl('hangup-btn').onclick = hangup;
+
+    let isMuted = false; let isCamOff = false;
+    getEl('toggle-mute').onclick = () => { if(localStream) { isMuted = !isMuted; localStream.getAudioTracks()[0].enabled = !isMuted; getEl('toggle-mute').style.background = isMuted ? 'var(--danger)' : 'rgba(255,255,255,0.2)'; getEl('toggle-mute').innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>'; } };
+    getEl('toggle-cam').onclick = () => { if(localStream) { isCamOff = !isCamOff; localStream.getVideoTracks()[0].enabled = !isCamOff; getEl('toggle-cam').style.background = isCamOff ? 'var(--danger)' : 'rgba(255,255,255,0.2)'; getEl('toggle-cam').innerHTML = isCamOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>'; } };
+
+    getEl('switch-cam-btn').onclick = async () => {
+        if(!localStream) return;
+        window.facingMode = window.facingMode === 'user' ? 'environment' : 'user';
+        try {
+            const constraints = { video: { facingMode: window.facingMode }, audio: true };
+            const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+            const newVideoTrack = newStream.getVideoTracks()[0];
+            
+            const oldVideoTrack = localStream.getVideoTracks()[0];
+            if(oldVideoTrack) {
+                localStream.removeTrack(oldVideoTrack);
+                oldVideoTrack.stop();
+            }
+            localStream.addTrack(newVideoTrack);
+            getEl('local-video').srcObject = localStream;
+            
+            if(peerConnection) {
+                const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                if(sender) sender.replaceTrack(newVideoTrack);
+            }
+        } catch(e) {
+            alert("Could not switch camera.");
+        }
+    };
+
+    const dragItem = getEl('local-video'); let active = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
+    dragItem.onmousedown = dragStart; dragItem.ontouchstart = dragStart; dragItem.onmouseup = dragEnd; dragItem.ontouchend = dragEnd; dragItem.onmousemove = drag; dragItem.ontouchmove = drag;
+    function dragStart(e) { if (e.type === "touchstart") { initialX = e.touches[0].clientX - xOffset; initialY = e.touches[0].clientY - yOffset; } else { initialX = e.clientX - xOffset; initialY = e.clientY - yOffset; } if (e.target === dragItem) active = true; }
+    function dragEnd() { initialX = currentX; initialY = currentY; active = false; }
+    function drag(e) { if (active) { e.preventDefault(); if (e.type === "touchmove") { currentX = e.touches[0].clientX - initialX; currentY = e.touches[0].clientY - initialY; } else { currentX = e.clientX - initialX; currentY = e.clientY - initialY; } xOffset = currentX; yOffset = currentY; dragItem.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`; } }
+
+    document.querySelectorAll('.view').forEach(view => {
+        let touchStartY = 0;
+        view.addEventListener('touchstart', e => {
+            if(view.scrollTop === 0) touchStartY = e.touches[0].clientY;
+        }, {passive: true});
+        
+        view.addEventListener('touchend', e => {
+            if(touchStartY !== 0 && view.scrollTop === 0) {
+                let touchEndY = e.changedTouches[0].clientY;
+                if(touchEndY - touchStartY > 80) {
+                    const viewId = view.id;
+                    const ptrId = 'ptr-' + viewId;
+                    const ptr = getEl(ptrId);
+                    if(ptr) ptr.style.display = 'block';
+                    
+                    setTimeout(() => { 
+                        if(viewId === 'tab-feed') loadFeed();
+                        else if(viewId === 'tab-chats') loadContacts();
+                        else if(viewId === 'tab-requests') { loadRequests(); loadUserNotifications(); }
+                        else if(viewId === 'tab-profile') loadMyProfileTab();
+                        
+                        if(ptr) ptr.style.display = 'none'; 
+                        showToast("Refreshed successfully!"); 
+                    }, 800);
+                }
+            }
+            touchStartY = 0;
+        });
+    });
+
+</script>
+</body>
+</html>
