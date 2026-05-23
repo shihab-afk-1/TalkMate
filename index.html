@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="iewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TalkMate - Pro</title>
     
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Tone.js & Emoji Picker -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
@@ -265,8 +265,56 @@
         @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 85px; opacity: 1; } }
         @keyframes fadeout { from { bottom: 85px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 
-        /* Splash Screen Additions */
+        /* Splash Screen Additions & Fixes */
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+        
+
+        /* --- Story System CSS --- */
+        .story-tray { display: flex; overflow-x: auto; padding: 15px 20px; gap: 15px; background: var(--bg-card); scrollbar-width: none; border-bottom: 1px solid var(--border-color); transition: background 0.3s;}
+        .story-tray::-webkit-scrollbar { display: none; }
+        .story-item { display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; position: relative; flex-shrink: 0; }
+        .story-avatar-wrap { width: 65px; height: 65px; border-radius: 50%; padding: 3px; background: var(--border-color); display:flex; justify-content:center; align-items:center; transition: transform 0.2s; }
+        .story-avatar-wrap.has-story { background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); }
+        .story-avatar { width: 100%; height: 100%; border-radius: 50%; border: 2px solid var(--bg-card); object-fit: cover; }
+        .story-add-btn { position: absolute; bottom: 20px; right: 0; width: 22px; height: 22px; background: var(--primary-color); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 0.8rem; border: 2px solid var(--bg-card); }
+        .story-name { font-size: 0.75rem; color: var(--text-dark); max-width: 65px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center;}
+
+        #story-viewer { background: #111; color: white; z-index: 1000; display: flex; flex-direction: column; position: absolute; top:0; left:0; width:100%; height:100%; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #story-viewer.show { transform: translateY(0); }
+        
+        .story-progress-bar-container { display: flex; gap: 4px; padding: 10px; position: absolute; top: 0; width: 100%; z-index: 20; background: linear-gradient(180deg, rgba(0,0,0,0.6) 0%, transparent 100%);}
+        .story-progress-bar { flex: 1; height: 3px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; overflow: hidden; }
+        .story-progress-fill { height: 100%; background: white; width: 0%; transition: width 0.1s linear;}
+        
+        .story-header-info { position: absolute; top: 25px; left: 10px; right: 10px; display: flex; justify-content: space-between; align-items: center; z-index: 20; text-shadow: 0 1px 3px rgba(0,0,0,0.5);}
+        .story-nav-area { position: absolute; top: 10%; height: 75%; width: 50%; z-index: 10; }
+        .story-nav-left { left: 0; }
+        .story-nav-right { right: 0; }
+        
+        .story-viewers-panel { position: absolute; bottom: 70px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; cursor: pointer; z-index: 20; display: flex; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.2);}
+        .story-reply-box { position: absolute; bottom: 15px; left: 15px; right: 15px; display: flex; gap: 15px; z-index: 20; align-items: center; }
+        .story-reply-input { flex: 1; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.4); border-radius: 30px; padding: 12px 20px; color: white; font-size: 0.95rem; outline: none; margin-bottom: 0; backdrop-filter: blur(5px);}
+        .story-reply-input::placeholder { color: rgba(255,255,255,0.7); }
+        .story-reaction-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));}
+        .story-reaction-btn:active { transform: scale(1.3); }
+
+    .story-ring {
+        padding: 2px !important;
+        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+        border-radius: 50% !important;
+        border: 0 !important; 
+        cursor: pointer !important;
+    }
+    .story-ring-seen {
+        padding: 2px !important; 
+        background: #d3d3d3 !important; 
+        border-radius: 50% !important;
+        border: 0 !important; 
+        cursor: pointer !important;
+    }
+        #story-media-container { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
+        #story-img { width: 100%; height: 100%; object-fit: contain; }
+        .story-caption { position: absolute; bottom: 80px; left: 15px; right: 15px; text-align: center; font-size: 1.1rem; color: white; font-weight: 500; text-shadow: 0 2px 5px rgba(0,0,0,0.8); z-index: 15; word-wrap: break-word;}
 
     </style>
 </head>
@@ -299,7 +347,6 @@
                     <i class="fas fa-eye toggle-pass" id="login-eye" onclick="togglePassword('login-pass', 'login-eye')"></i>
                 </div>
                 <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="btn-login">Login</button>
-                <!-- Feature 1: Google Login Button -->
                 <button class="btn" style="width:100%; margin-top:10px; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="loginWithGoogle()">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:20px;"> Continue with Google
                 </button>
@@ -312,7 +359,6 @@
                     <i class="fas fa-eye toggle-pass" id="signup-eye" onclick="togglePassword('signup-pass', 'signup-eye')"></i>
                 </div>
                 <button class="btn btn-primary" style="width:100%; margin-top:10px;" id="btn-signup">Create Account</button>
-                <!-- Feature 1: Google Sign-up Button -->
                 <button class="btn" style="width:100%; margin-top:10px; background: var(--bg-card); color: var(--text-dark); border: 1px solid var(--border-color); display:flex; align-items:center; justify-content:center; gap:10px;" onclick="loginWithGoogle()">
                     <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" style="width:20px;"> Continue with Google
                 </button>
@@ -351,16 +397,19 @@
 
         <!-- Feed Tab -->
         <div id="tab-feed" class="view">
-            <!-- Pull-To-Refresh Indicator -->
             <div id="ptr-tab-feed" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
                 <i class="fas fa-spinner fa-spin"></i> Refreshing Feed...
             </div>
+            
+            <div class="story-tray" id="story-tray">
+                <!-- Injected via JS -->
+            </div>
+
             <div id="feed-list-container" style="padding-top:10px; padding-bottom: 20px;"></div>
         </div>
 
         <!-- Chats Tab -->
         <div id="tab-chats" class="view hidden">
-            <!-- Pull-To-Refresh Indicator -->
             <div id="ptr-tab-chats" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
                 <i class="fas fa-spinner fa-spin"></i> Refreshing Chats...
             </div>
@@ -369,7 +418,6 @@
 
         <!-- Requests / Notifications Tab -->
         <div id="tab-requests" class="view hidden">
-            <!-- Pull-To-Refresh Indicator -->
             <div id="ptr-tab-requests" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
                 <i class="fas fa-spinner fa-spin"></i> Refreshing Updates...
             </div>
@@ -385,7 +433,6 @@
 
         <!-- My Profile Tab -->
         <div id="tab-profile" class="view hidden" style="background: var(--bg-body);">
-            <!-- Pull-To-Refresh Indicator -->
             <div id="ptr-tab-profile" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
                 <i class="fas fa-spinner fa-spin"></i> Refreshing Profile...
             </div>
@@ -471,15 +518,19 @@
         
         <emoji-picker id="emoji-picker"></emoji-picker>
 
-        <div class="chat-input-wrapper">
+    <div class="chat-input-wrapper">
             <div id="image-preview-wrapper">
                 <div class="btn-close-preview" onclick="clearImagePreview()"><i class="fas fa-times" style="font-size:0.7rem;"></i></div>
                 <img id="img-preview-tag" src="">
             </div>
             
+            <!-- হিডেন ফাইল আপলোড ইনপুট -->
+            <input type="file" id="chat-imgbb-file" accept="image/*" class="hidden" onchange="uploadChatImageToImgBB()">
+            
             <div class="chat-input-pill">
                 <i class="far fa-smile" id="btn-emoji" style="color:var(--text-grey); font-size:1.2rem; margin-left:5px; cursor:pointer;"></i>
-                <i class="fas fa-image" id="btn-image-url" style="color:var(--text-grey); font-size:1.2rem; margin-left:10px; cursor:pointer;" onclick="openImageUrlPrompt()"></i>
+                <!-- ইমেজে ক্লিক করলে ইনপুট ট্রিগার হবে -->
+                <i class="fas fa-image" id="btn-image-url" style="color:var(--text-grey); font-size:1.2rem; margin-left:10px; cursor:pointer;" onclick="document.getElementById('chat-imgbb-file').click()"></i>
                 <input type="text" id="msg-input" placeholder="Type message..." autocomplete="off">
                 <button class="send-btn" id="send-msg-btn"><i class="fas fa-paper-plane"></i></button>
             </div>
@@ -557,18 +608,21 @@
         <div class="logout-link" id="btn-logout" style="margin-top:auto; cursor:pointer;"><i class="fas fa-sign-out-alt"></i> Logout</div>
     </div>
 
-    <!-- Modals -->
-    <div id="call-history-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
-        <div class="modal-header"><h3>Call History</h3><button class="btn-icon" onclick="toggleModal('call-history-modal', false)"><i class="fas fa-times"></i></button></div>
-        <div class="modal-body" id="call-logs-container" style="padding:0; overflow-x: hidden;"></div>
-    </div>
-
+    <!-- Create Post Modal -->
     <div id="create-post-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
         <div class="modal-header"><h3>Create Post</h3><button class="btn-icon" onclick="toggleModal('create-post-modal', false)"><i class="fas fa-times"></i></button></div>
         <div class="modal-body">
             <textarea id="post-caption" placeholder="What's on your mind?"></textarea>
-            <textarea id="post-img-url" placeholder="Photo URLs (comma separated, optional)" oninput="updatePostPreview()" style="height: 60px;"></textarea>
+            
+            <div style="background:var(--border-color); padding:15px; border-radius:15px; margin-bottom:15px;">
+                <p style="font-size:0.85rem; font-weight:600; margin-bottom:10px;">Upload Image (ImgBB)</p>
+                <input type="file" id="post-imgbb-file" accept="image/*" style="margin-bottom:10px; background:transparent; padding:0;">
+                <button class="btn btn-primary" id="post-imgbb-upload-btn" style="width:100%; padding:8px;" onclick="uploadPostToImgBB()">Upload Image</button>
+            </div>
+
+            <textarea id="post-img-url" placeholder="Photo/Video URLs (comma separated, optional)" oninput="updatePostPreview()" style="height: 60px;"></textarea>
             <img id="post-preview-img" class="hidden" style="width:100%; border-radius:15px; margin-top:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            
             <div style="display:flex; align-items:center; gap:10px; margin-top:15px; margin-bottom: 20px;">
                 <label style="font-size:0.9rem; font-weight:500;">Privacy:</label>
                 <select id="post-privacy" style="padding:8px 12px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-body); outline:none;">
@@ -580,6 +634,75 @@
         </div>
     </div>
 
+    <!-- Create Story Modal -->
+    <div id="create-story-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
+        <div class="modal-header"><h3>Add to Story</h3><button class="btn-icon" onclick="toggleModal('create-story-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <p style="color:var(--text-grey); font-size:0.85rem; margin-bottom:10px;">Stories disappear after 24 hours.</p>
+            
+            <div style="background:var(--border-color); padding:15px; border-radius:15px; margin-bottom:15px;">
+                <p style="font-size:0.85rem; font-weight:600; margin-bottom:10px;">Upload Image (ImgBB)</p>
+                <input type="file" id="story-imgbb-file" accept="image/*" style="margin-bottom:10px; background:transparent; padding:0;">
+                <button class="btn btn-primary" id="story-imgbb-upload-btn" style="width:100%; padding:8px;" onclick="uploadStoryToImgBB()">Upload Image</button>
+            </div>
+
+            <textarea id="story-img-url" placeholder="Photo/Video URL (Required)" oninput="updateStoryPreview()" style="height: 60px;"></textarea>
+            <input type="url" id="story-audio-url" placeholder="Background Music URL (.mp3) (Optional)" style="margin-bottom:10px;">
+            <textarea id="story-caption" placeholder="Add a short caption... (Optional)" maxlength="100" style="height: 60px;"></textarea>
+            
+            <img id="story-preview-img" class="hidden" style="width:100%; max-height:200px; object-fit:contain; border-radius:15px; margin-top:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); background:#000;">
+            <video id="story-preview-vid" class="hidden" autoplay muted loop playsinline style="width:100%; max-height:200px; object-fit:contain; border-radius:15px; margin-top:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); background:#000;"></video>
+            
+            <button class="btn btn-primary" id="btn-submit-story" style="width:100%; margin-top:20px;" onclick="submitStory()">Share to Story</button>
+        </div>
+    </div>
+
+    <!-- Fullscreen Story Viewer -->
+    <div id="story-viewer" class="hidden">
+        <div class="story-progress-bar-container" id="story-progress-container"></div>
+        <div class="story-header-info">
+            <div style="display:flex; align-items:center; gap:10px;" onclick="if(currentStoryUser && currentStoryUser.uid !== currentUser.uid){closeStoryViewer(); loadProfileById(currentStoryUser.uid);}">
+                <img id="sv-avatar" src="" style="width:35px; height:35px; border-radius:50%; border:2px solid white; object-fit:cover;">
+                <div style="line-height:1.2;">
+                    <div id="sv-name" style="font-weight:600; font-size:0.95rem;">User Name</div>
+                    <div id="sv-time" style="font-size:0.75rem; opacity:0.8;">Just now</div>
+                </div>
+            </div>
+            <div style="display:flex; gap:15px; align-items:center;">
+                <button id="sv-delete-btn" class="hidden" style="background:none; border:none; color:white; font-size:1.2rem; cursor:pointer; text-shadow:0 1px 3px rgba(0,0,0,0.5);"><i class="fas fa-trash"></i></button>
+                <button style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer; text-shadow:0 1px 3px rgba(0,0,0,0.5);" onclick="closeStoryViewer()"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <div id="story-media-container">
+            <img id="story-img" src="">
+            <video id="story-video" class="hidden" controls autoplay playsinline style="width: 100%; height: 100%; object-fit: contain; z-index: 11; position: relative;"></video>
+            <audio id="story-audio" hidden></audio>
+            <div class="story-caption" id="sv-caption"></div>
+            
+            <div class="story-nav-area story-nav-left" onclick="prevStory()" onmousedown="pauseStory()" onmouseup="resumeStory()" ontouchstart="pauseStory()" ontouchend="resumeStory()"></div>
+            <div class="story-nav-area story-nav-right" onclick="nextStory()" onmousedown="pauseStory()" onmouseup="resumeStory()" ontouchstart="pauseStory()" ontouchend="resumeStory()"></div>
+        </div>
+
+        <div id="sv-viewers-panel" class="story-viewers-panel hidden">
+            <i class="fas fa-eye"></i> <span id="sv-views-count">0</span>
+        </div>
+
+        <div id="sv-reply-box" class="story-reply-box hidden">
+            <input type="text" id="sv-reply-input" class="story-reply-input" placeholder="Reply to story..." onfocus="pauseStory()" onblur="resumeStory()">
+            <button class="story-reaction-btn" onclick="sendStoryReaction('❤️')">❤️</button>
+            <button class="story-reaction-btn" onclick="sendStoryReaction('😂')">😂</button>
+            <button class="story-reaction-btn" onclick="sendStoryReaction('🔥')">🔥</button>
+            <button class="story-reaction-btn" onclick="sendStoryReaction('😎')">😎</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="call-history-modal" class="full-screen hidden" style="z-index:100; background:var(--bg-card);">
+        <div class="modal-header"><h3>Call History</h3><button class="btn-icon" onclick="toggleModal('call-history-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body" id="call-logs-container" style="padding:0; overflow-x: hidden;"></div>
+    </div>
+    
     <div id="edit-post-modal" class="full-screen hidden" style="z-index:140; background:var(--bg-card);">
         <div class="modal-header"><h3>Edit Caption</h3><button class="btn-icon" onclick="toggleModal('edit-post-modal', false)"><i class="fas fa-times"></i></button></div>
         <div class="modal-body">
@@ -593,7 +716,6 @@
         <div class="modal-header"><h3>Comments</h3><button class="btn-icon" onclick="toggleModal('comments-modal', false)"><i class="fas fa-times"></i></button></div>
         <div id="comments-list-container" style="flex:1; overflow-y:auto; padding:20px;"></div>
         
-        <!-- Reply Indicator -->
         <div id="replying-to-indicator" class="hidden" style="padding:8px 15px; font-size:0.8rem; background:var(--border-color); display:flex; justify-content:space-between; align-items:center;">
             <span id="replying-to-name" style="font-weight: 500; color: var(--text-dark);">Replying to User</span>
             <i class="fas fa-times" style="cursor:pointer; color: var(--text-grey);" onclick="cancelCommentReply()"></i>
@@ -607,7 +729,7 @@
 
     <div id="share-post-modal" class="full-screen hidden" style="z-index:130; background:var(--bg-card);">
         <div class="modal-header"><h3>Share with Friends</h3><button class="btn-icon" onclick="toggleModal('share-post-modal', false)"><i class="fas fa-times"></i></button></div>
-        <div class="modal-body" id="share-friends-list"></div>
+        <div class="modal-body" id="share-friends-list" style="padding:0; overflow-y:auto;"></div>
     </div>
 
     <div id="follow-list-modal" class="full-screen hidden" style="z-index:150; background:var(--bg-card); display:flex; flex-direction:column;">
@@ -721,7 +843,6 @@
         </div>
     </div>
 
-    <!-- PUBLIC PROFILE VIEW -->
     <div id="friend-profile-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card); display:flex; flex-direction:column;">
         <div class="modal-header">
             <h3>Profile</h3>
@@ -828,7 +949,6 @@
 <!-- FIREBASE & LOGIC -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
-    // Feature 1: Added Google Auth imports
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
     import { getDatabase, ref, set, get, onValue, push, child, update, serverTimestamp, onChildAdded, onChildChanged, onChildRemoved, onDisconnect, remove, off, query, limitToLast } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
@@ -846,7 +966,6 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Feature 1: Google Auth Logic
     const googleProvider = new GoogleAuthProvider();
     window.loginWithGoogle = async () => {
         try {
@@ -870,6 +989,7 @@
     let currentUser = null;
     let myCustomId = null; 
     window.currentProfileUid = null;
+    window.myDpUrl = null;
 
     let currentChatId = null;
     let currentChatUser = null; 
@@ -899,20 +1019,35 @@
     let selectedMsgId = null;
     let pendingImageUrl = null;
 
+    // Story System Variables
+    let allStories = {}; 
+    let groupedStoryKeys = []; 
+    let currentStoryUser = null;
+    let currentStoryGroupIndex = 0;
+    let currentStoryIndex = 0;
+    let storyProgress = 0;
+    let isStoryPaused = false;
+    let storyTimer = null;
+
     let activeCommentPostId = null;
     let replyingToCommentId = null;
-// কমেন্টে লং-প্রেস করার জন্য টাইমার ভেরিয়েবল
     let commentLongPressTimer;
     let isCommentScrolling = false;
 
+    // Video check helper
+    window.isVideoURL = (url) => {
+        if(!url) return false;
+        return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url) || url.includes('.mp4');
+    };
+
     window.startCommentLongPress = (postId, commentId, isMyComment) => {
-        if (!isMyComment) return; // শুধুমাত্র নিজের কমেন্টেই কাজ করবে
+        if (!isMyComment) return; 
         isCommentScrolling = false;
         commentLongPressTimer = setTimeout(() => {
             if (!isCommentScrolling) {
                 window.deleteComment(postId, commentId);
             }
-        }, 700); // ৭০০ মিলি-সেকেন্ড চেপে ধরলে ডিলিট অপশন আসবে
+        }, 700); 
     };
 
     window.endCommentLongPress = () => {
@@ -920,7 +1055,7 @@
     };
 
     window.cancelCommentLongPress = () => {
-        isCommentScrolling = true; // স্ক্রল করলে টাইমার ক্যানসেল হয়ে যাবে
+        isCommentScrolling = true; 
         clearTimeout(commentLongPressTimer);
     };
     const servers = { iceServers:[ { urls:['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] } ] };
@@ -971,6 +1106,17 @@
             toggleModal('friend-profile-modal', false);
             return;
         }
+
+        // --- Block Check ---
+        const [myBlockSnap, theirBlockSnap] = await Promise.all([
+            get(ref(db, `blocked/${currentUser.uid}/${uid}`)),
+            get(ref(db, `blocked/${uid}/${currentUser.uid}`))
+        ]);
+        if (myBlockSnap.exists() || theirBlockSnap.exists()) {
+            return showToast("This profile is unavailable.");
+        }
+        // -------------------
+
         const snap = await get(ref(db, `users/${uid}`));
         if(snap.exists()) {
             const u = snap.val();
@@ -1007,6 +1153,69 @@
         } catch(e) { alert("Error: " + e.message); } finally { btn.innerHTML = "Upload Image"; btn.disabled = false; }
     };
 
+    window.uploadStoryToImgBB = async () => {
+        const fileInput = getEl('story-imgbb-file');
+        if(!fileInput.files[0]) return alert("Please select an image");
+        const btn = getEl('story-imgbb-upload-btn'); btn.innerHTML = "Uploading..."; btn.disabled = true;
+        
+        let apiKey = '#';
+        try {
+            const apiSnap = await get(ref(db, 'settings/api'));
+            if(apiSnap.exists() && apiSnap.val().imgbbKey) apiKey = apiSnap.val().imgbbKey;
+        } catch(e) {}
+
+        const formData = new FormData(); formData.append('image', fileInput.files[0]);
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if(data.success) { 
+                getEl('story-img-url').value = data.data.url; 
+                updateStoryPreview(); 
+                showToast("Image Uploaded");
+            } else { alert("Upload failed."); }
+        } catch(e) { alert("Error: " + e.message); } finally { btn.innerHTML = "Upload Image"; btn.disabled = false; }
+    };
+
+    window.uploadPostToImgBB = async () => {
+        const fileInput = getEl('post-imgbb-file');
+        if(!fileInput.files[0]) return alert("Please select an image");
+        const btn = getEl('post-imgbb-upload-btn'); 
+        btn.innerHTML = "Uploading..."; 
+        btn.disabled = true;
+        
+        let apiKey = '#';
+        try {
+            const apiSnap = await get(ref(db, 'settings/api'));
+            if(apiSnap.exists() && apiSnap.val().imgbbKey) apiKey = apiSnap.val().imgbbKey;
+        } catch(e) {}
+
+        const formData = new FormData(); 
+        formData.append('image', fileInput.files[0]);
+        
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if(data.success) { 
+                const urlInput = getEl('post-img-url');
+                if(urlInput.value.trim() !== '') {
+                    urlInput.value += ', ' + data.data.url;
+                } else {
+                    urlInput.value = data.data.url;
+                }
+                updatePostPreview(); 
+                showToast("Image Uploaded successfully!");
+            } else { 
+                alert("Upload failed."); 
+            }
+        } catch(e) { 
+            alert("Error: " + e.message); 
+        } finally { 
+            btn.innerHTML = "Upload Image"; 
+            btn.disabled = false; 
+            fileInput.value = ''; 
+        }
+    };
+    
     window.openDevNotifs = () => {
         closeMenu(); 
         const dot = getEl('dev-notif-dot'); 
@@ -1037,7 +1246,6 @@
                         if (!isNaN(dt.getTime())) dateStr = dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString(); 
                     }
                     
-                    // এখানে linkify(n.message) ব্যবহার করা হয়েছে
                     container.innerHTML += `<div class="notif-card"><div class="notif-time">${dateStr}</div><div class="notif-msg" style="word-break: break-word;">${linkify(n.message)}</div></div>`;
                 }
             });
@@ -1282,17 +1490,25 @@
     }
 
     onAuthStateChanged(auth, async (user) => {
-    getEl('splash-screen').classList.add('hidden'); 
-    if (user) {
-        currentUser = user; 
-        window.currentUser = user; 
-        toggleClass('auth-screen', 'hidden', true);
-            const s = await get(ref(db, `users/${user.uid}`));
-            if (s.exists()) { 
-                if (s.val().status === 'blocked') { alert("Your account blocked"); signOut(auth); return; }
-                setupPresence(user.uid); toggleClass('main-app', 'hidden', false); initApp(); 
-            } else { toggleClass('auth-screen', 'hidden', false); toggleClass('auth-forms', 'hidden', true); toggleClass('profile-setup', 'hidden', false); }
-        } else { toggleClass('auth-screen', 'hidden', false); toggleClass('main-app', 'hidden', true); }
+        if (user) {
+            currentUser = user; 
+            window.currentUser = user; 
+            toggleClass('auth-screen', 'hidden', true);
+            try {
+                const s = await get(ref(db, `users/${user.uid}`));
+                if (s.exists()) { 
+                    if (s.val().status === 'blocked') { alert("Your account blocked"); signOut(auth); return; }
+                    window.myDpUrl = s.val().dpUrl; // Save global Dp
+                    setupPresence(user.uid); toggleClass('main-app', 'hidden', false); initApp(); 
+                } else { 
+                    toggleClass('auth-screen', 'hidden', false); toggleClass('auth-forms', 'hidden', true); toggleClass('profile-setup', 'hidden', false); 
+                }
+            } catch(e) { console.error(e); }
+        } else { 
+            toggleClass('auth-screen', 'hidden', false); toggleClass('main-app', 'hidden', true); 
+        }
+        
+        getEl('splash-screen').classList.add('hidden');
     });
 
     function setupPresence(uid) {
@@ -1307,6 +1523,7 @@
                 if (d.status === 'blocked') { alert("Your account blocked"); signOut(auth); location.reload(); }
                 
                 myCustomId = d.userId; 
+                window.myDpUrl = d.dpUrl; // Keep dpUrl updated
                 getEl('header-avatar').src = d.dpUrl; 
                 const verifiedBadgeHtml = d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:0.75rem;"></i>' : '';
                 const verifiedBadgeHtmlMenu = d.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
@@ -1327,6 +1544,7 @@
             const el = getEl('my-stat-following');
             if(el) el.innerText = Object.keys(myFollowing).length;
             window.updateAllFollowButtons();
+            loadStories(); 
         });
 
         onValue(ref(db, `followers/${currentUser.uid}`), snap => {
@@ -1352,14 +1570,14 @@
             if(!isRequestsTabActive) getEl('req-dot').classList.add('show');
         });
 
-        loadProfileUI(); loadContacts(); loadRequests(); loadUserNotifications(); loadCalls(); loadBlockedUsers(); loadFeed();
+        loadProfileUI(); loadContacts(); loadRequests(); loadUserNotifications(); loadCalls(); loadBlockedUsers(); loadFeed(); loadStories();
         
         document.querySelectorAll('.nav-item[data-tab]').forEach(t => {
             t.onclick = () => {
                 if (t.dataset.tab === 'feed' && t.classList.contains('active')) {
                     const ptr = getEl('ptr-tab-feed');
                     if (ptr) ptr.style.display = 'block';
-                    setTimeout(() => { loadFeed(); if(ptr) ptr.style.display = 'none'; showToast("Feed refreshed!"); }, 800);
+                    setTimeout(() => { loadFeed(); loadStories(); if(ptr) ptr.style.display = 'none'; showToast("Feed refreshed!"); }, 800);
                     return;
                 }
 
@@ -1394,6 +1612,447 @@
             } else { toggleModal('incoming-call-modal', false); stopTone(); incomingCallData = null; }
         });
     }
+
+    // --- Story System Implementation ---
+    function loadStories() {
+        onValue(ref(db, 'stories'), async snap => {
+            allStories = {};
+            const ONE_DAY = 24 * 60 * 60 * 1000;
+            const now = Date.now();
+            const promises = [];
+            
+            snap.forEach(userNode => {
+                const uid = userNode.key;
+                let validStories = [];
+                userNode.forEach(storyNode => {
+                    const story = { id: storyNode.key, ...storyNode.val() };
+                    if (now - parseTs(story.ts) < ONE_DAY) {
+                        validStories.push(story);
+                    } else {
+                        remove(ref(db, `stories/${uid}/${story.id}`));
+                    }
+                });
+                
+                if (validStories.length > 0) {
+                    if (uid === currentUser.uid || myFollowing[uid]) {
+                        promises.push(
+                            // --- Block Check for Stories ---
+                            Promise.all([
+                                get(ref(db, `blocked/${currentUser.uid}/${uid}`)),
+                                get(ref(db, `blocked/${uid}/${currentUser.uid}`))
+                            ]).then(([myBlock, theirBlock]) => {
+                                if(!myBlock.exists() && !theirBlock.exists()) {
+                                    return getUserCached(uid).then(u => {
+                                        allStories[uid] = {
+                                            user: u,
+                                            stories: validStories.sort((a,b) => parseTs(a.ts) - parseTs(b.ts))
+                                        };
+                                    });
+                                }
+                            })
+                            // -------------------------------
+                        );
+                    }
+                }
+            });
+            
+            await Promise.all(promises);
+            renderStoryTray();
+        });
+    }
+
+    function renderStoryTray() {
+        const tray = getEl('story-tray');
+        tray.innerHTML = '';
+        
+        const myData = allStories[currentUser.uid];
+        const hasMyStory = myData && myData.stories.length > 0;
+        
+        const myStoryItem = document.createElement('div');
+        myStoryItem.className = 'story-item my-story';
+        myStoryItem.innerHTML = `
+            <div class="story-avatar-wrap ${hasMyStory ? 'has-story' : ''}" onclick="${hasMyStory ? `openStoryViewer('${currentUser.uid}')` : `openCreateStoryModal()`}">
+                <img src="${getEl('header-avatar').src}" class="story-avatar" loading="lazy">
+                <div class="story-add-btn" onclick="event.stopPropagation(); openCreateStoryModal()"><i class="fas fa-plus"></i></div>
+            </div>
+            <div class="story-name">${hasMyStory ? 'Your Story' : 'Add Story'}</div>
+        `;
+        tray.appendChild(myStoryItem);
+
+        groupedStoryKeys = Object.keys(allStories).filter(uid => uid !== currentUser.uid);
+
+        groupedStoryKeys.sort((a, b) => {
+            const aStories = allStories[a].stories;
+            const bStories = allStories[b].stories;
+            const aUnseen = aStories.some(s => !s.views || !s.views[currentUser.uid]);
+            const bUnseen = bStories.some(s => !s.views || !s.views[currentUser.uid]);
+            if (aUnseen && !bUnseen) return -1;
+            if (!aUnseen && bUnseen) return 1;
+            return parseTs(bStories[bStories.length-1].ts) - parseTs(aStories[aStories.length-1].ts);
+        });
+
+        groupedStoryKeys.forEach(uid => {
+            const data = allStories[uid];
+            const hasUnseen = data.stories.some(s => !s.views || !s.views[currentUser.uid]);
+            
+            const item = document.createElement('div');
+            item.className = 'story-item';
+            item.onclick = () => openStoryViewer(uid);
+            item.innerHTML = `
+                <div class="story-avatar-wrap ${hasUnseen ? 'has-story' : ''}" style="${!hasUnseen ? 'opacity: 0.7;' : ''}">
+                    <img src="${data.user.dpUrl}" class="story-avatar" loading="lazy">
+                </div>
+                <div class="story-name">${data.user.name.split(' ')[0]}</div>
+            `;
+            tray.appendChild(item);
+        });
+    }
+
+    window.openCreateStoryModal = () => {
+        getEl('story-img-url').value = '';
+        getEl('story-audio-url').value = '';
+        getEl('story-caption').value = '';
+        getEl('story-preview-img').classList.add('hidden');
+        getEl('story-preview-img').src = '';
+        getEl('story-preview-vid').classList.add('hidden');
+        getEl('story-preview-vid').src = '';
+        toggleModal('create-story-modal', true);
+    };
+
+    window.updateStoryPreview = () => {
+        const url = getEl('story-img-url').value.trim();
+        const img = getEl('story-preview-img');
+        const vid = getEl('story-preview-vid');
+        img.classList.add('hidden'); img.src = '';
+        vid.classList.add('hidden'); vid.src = '';
+        if(url && url.startsWith('http')) { 
+            if(window.isVideoURL(url)) {
+                vid.src = url; vid.classList.remove('hidden'); 
+            } else {
+                img.src = url; img.classList.remove('hidden'); 
+            }
+        }
+    };
+
+    window.submitStory = async () => {
+        const imgUrl = getEl('story-img-url').value.trim();
+        const audioUrl = getEl('story-audio-url').value.trim();
+        const caption = getEl('story-caption').value.trim();
+        
+        if (!imgUrl) return alert("Photo/Video URL is required for a story!");
+
+        const btn = getEl('btn-submit-story'); 
+        btn.disabled = true; btn.innerText = "Sharing...";
+        
+        await push(ref(db, `stories/${currentUser.uid}`), { 
+            img: imgUrl, 
+            audio: audioUrl || null,
+            text: caption || null, 
+            ts: serverTimestamp() 
+        });
+        
+        btn.disabled = false; btn.innerText = "Share to Story";
+        toggleModal('create-story-modal', false); 
+        showToast("Story shared!");
+    };
+
+    window.openStoryViewer = (uid) => {
+        if (!allStories[uid]) return;
+        
+        if (uid === currentUser.uid) {
+            currentStoryGroupIndex = -1;
+        } else {
+            currentStoryGroupIndex = groupedStoryKeys.indexOf(uid);
+        }
+        
+        currentStoryUser = allStories[uid].user;
+        currentStoryIndex = 0;
+        
+        const viewer = getEl('story-viewer');
+        viewer.classList.remove('hidden');
+        setTimeout(() => viewer.classList.add('show'), 10);
+        
+        renderCurrentStory();
+    };
+
+    function renderCurrentStory() {
+        const uid = currentStoryGroupIndex === -1 ? currentUser.uid : groupedStoryKeys[currentStoryGroupIndex];
+        const data = allStories[uid];
+        if (!data) return closeStoryViewer();
+        
+        const story = data.stories[currentStoryIndex];
+        
+        if (uid !== currentUser.uid && (!story.views || !story.views[currentUser.uid])) {
+            set(ref(db, `stories/${uid}/${story.id}/views/${currentUser.uid}`), serverTimestamp());
+            if(!story.views) story.views = {};
+            story.views[currentUser.uid] = true;
+            updateStoryRingsInDOM(); 
+        }
+
+        // Setup Header
+        getEl('sv-avatar').src = data.user.dpUrl;
+        
+        const svImg = getEl('story-img');
+        const svVideo = getEl('story-video');
+        const svAudio = getEl('story-audio');
+        
+        // Stop previous playing media & clear events
+        svVideo.pause(); svVideo.src = ''; svVideo.classList.add('hidden');
+        svVideo.ontimeupdate = null; svVideo.onended = null;
+        
+        svAudio.pause(); svAudio.src = '';
+        svAudio.ontimeupdate = null; svAudio.onended = null;
+        
+        svImg.src = ''; svImg.classList.add('hidden');
+
+        let mediaType = 'image';
+        let activeMediaElement = null;
+
+        // Music icon if audio present
+        if(story.audio) {
+            getEl('sv-name').innerHTML = `${data.user.name} <span style="font-size:0.9rem; margin-left:4px;" title="Playing Music">🎵</span>`;
+            svAudio.src = story.audio;
+            svAudio.play().catch(e => console.log(e));
+            mediaType = 'audio';
+            activeMediaElement = svAudio;
+        } else {
+            getEl('sv-name').innerText = data.user.name;
+        }
+
+        // Setup Media (Video vs Image)
+        if(window.isVideoURL(story.img)) {
+            svVideo.src = story.img;
+            svVideo.classList.remove('hidden');
+            svVideo.play().catch(e => console.log(e));
+            mediaType = 'video';
+            activeMediaElement = svVideo; // Video duration overrides audio
+        } else {
+            svImg.src = story.img;
+            svImg.classList.remove('hidden');
+        }
+
+        getEl('sv-time').innerText = getFriendlyDate(story.ts) + ' • ' + formatTime(story.ts);
+        getEl('sv-caption').innerText = story.text || '';
+
+        // Progress Bars Setup
+        const progContainer = getEl('story-progress-container');
+        progContainer.innerHTML = '';
+        for (let i = 0; i < data.stories.length; i++) {
+            progContainer.innerHTML += `
+                <div class="story-progress-bar">
+                    <div class="story-progress-fill" id="sv-prog-${i}" style="width: ${i < currentStoryIndex ? '100%' : '0%'}"></div>
+                </div>`;
+        }
+
+        // Footer setup
+        if (uid === currentUser.uid) {
+            getEl('sv-reply-box').classList.add('hidden');
+            const viewersPanel = getEl('sv-viewers-panel');
+            viewersPanel.classList.remove('hidden');
+            getEl('sv-delete-btn').classList.remove('hidden');
+            getEl('sv-delete-btn').onclick = () => deleteStory(story.id);
+            getEl('sv-views-count').innerText = story.views ? Object.keys(story.views).length : 0;
+            viewersPanel.onclick = () => openStoryViewersList(story.id);
+        } else {
+            getEl('sv-reply-box').classList.remove('hidden');
+            getEl('sv-viewers-panel').classList.add('hidden');
+            getEl('sv-delete-btn').classList.add('hidden');
+            getEl('sv-reply-input').value = '';
+        }
+
+        // Call the progress logic
+        startStoryProgress(mediaType, activeMediaElement);
+    }
+
+    function startStoryProgress(mediaType, mediaElement) {
+        clearInterval(storyTimer);
+        storyProgress = 0;
+        const bar = getEl(`sv-prog-${currentStoryIndex}`);
+        
+        // যদি ভিডিও অথবা গান থাকে, তবে প্রোগ্রেস বার সেগুলোর ডিউরেশন অনুযায়ী চলবে
+        if ((mediaType === 'video' || mediaType === 'audio') && mediaElement) {
+            mediaElement.ontimeupdate = () => {
+                if(!isStoryPaused && mediaElement.duration) {
+                    storyProgress = (mediaElement.currentTime / mediaElement.duration) * 100;
+                    if (bar) bar.style.width = storyProgress + '%';
+                }
+            };
+            // ভিডিও বা অডিও শেষ হলে অটোমেটিক পরের স্টোরিতে যাবে
+            mediaElement.onended = () => {
+                nextStory();
+            };
+        } else {
+            // যদি শুধু ছবি হয় (ভিডিও বা অডিও ছাড়া), তবে ৫ সেকেন্ডের নরমাল টাইমার চলবে
+            storyTimer = setInterval(() => {
+                if (!isStoryPaused) {
+                    storyProgress += 2; 
+                    if (bar) bar.style.width = storyProgress + '%';
+                    if (storyProgress >= 100) nextStory();
+                }
+            }, 100);
+        }
+    }
+
+    window.pauseStory = () => { 
+        isStoryPaused = true; 
+        getEl('story-video').pause();
+        getEl('story-audio').pause();
+    };
+    
+    window.resumeStory = () => { 
+        isStoryPaused = false; 
+        getEl('story-video').play().catch(()=>{});
+        getEl('story-audio').play().catch(()=>{});
+    };
+
+    window.nextStory = () => {
+        const uid = currentStoryGroupIndex === -1 ? currentUser.uid : groupedStoryKeys[currentStoryGroupIndex];
+        const data = allStories[uid];
+        
+        if (currentStoryIndex < data.stories.length - 1) {
+            currentStoryIndex++;
+            renderCurrentStory();
+        } else {
+            if (currentStoryGroupIndex === -1) {
+                if(groupedStoryKeys.length > 0) {
+                    currentStoryGroupIndex = 0;
+                    currentStoryIndex = 0;
+                    currentStoryUser = allStories[groupedStoryKeys[0]].user;
+                    renderCurrentStory();
+                } else {
+                    closeStoryViewer();
+                }
+            } else if (currentStoryGroupIndex !== -1 && currentStoryGroupIndex < groupedStoryKeys.length - 1) {
+                currentStoryGroupIndex++;
+                currentStoryIndex = 0;
+                currentStoryUser = allStories[groupedStoryKeys[currentStoryGroupIndex]].user;
+                renderCurrentStory();
+            } else {
+                closeStoryViewer();
+            }
+        }
+    };
+
+    window.prevStory = () => {
+        if (currentStoryIndex > 0) {
+            currentStoryIndex--;
+            renderCurrentStory();
+        } else {
+            if (currentStoryGroupIndex > 0) {
+                currentStoryGroupIndex--;
+                const uid = groupedStoryKeys[currentStoryGroupIndex];
+                const data = allStories[uid];
+                currentStoryIndex = data.stories.length - 1; 
+                currentStoryUser = data.user;
+                renderCurrentStory();
+            } else if (currentStoryGroupIndex === 0) {
+                const myData = allStories[currentUser.uid];
+                if(myData && myData.stories.length > 0) {
+                    currentStoryGroupIndex = -1;
+                    currentStoryIndex = myData.stories.length - 1;
+                    currentStoryUser = myData.user;
+                    renderCurrentStory();
+                } else {
+                    storyProgress = 0; 
+                }
+            } else if (currentStoryGroupIndex === -1) {
+                storyProgress = 0; 
+            }
+        }
+    };
+
+    window.closeStoryViewer = () => {
+        clearInterval(storyTimer);
+        const viewer = getEl('story-viewer');
+        viewer.classList.remove('show');
+        setTimeout(() => viewer.classList.add('hidden'), 300);
+        
+        // স্টোরি ক্লোজ করার সাথে সাথে মিডিয়ার ইভেন্টগুলো রিমুভ করে দেওয়া হলো
+        const svVideo = getEl('story-video');
+        svVideo.pause();
+        svVideo.src = '';
+        svVideo.ontimeupdate = null;
+        svVideo.onended = null;
+        
+        const svAudio = getEl('story-audio');
+        svAudio.pause();
+        svAudio.src = '';
+        svAudio.ontimeupdate = null;
+        svAudio.onended = null;
+    };
+
+    // Swipe down to close story
+    let storyStartY = 0;
+    const storyViewerEl = getEl('story-viewer');
+    storyViewerEl.addEventListener('touchstart', e => { 
+        if(e.target.closest('.story-reply-box')) return;
+        storyStartY = e.touches[0].clientY; 
+        pauseStory(); 
+    }, {passive:true});
+    storyViewerEl.addEventListener('touchmove', e => {
+        if(e.target.closest('.story-reply-box')) return;
+        let currentY = e.touches[0].clientY;
+        if(currentY - storyStartY > 50) storyViewerEl.style.transform = `translateY(${currentY - storyStartY}px)`;
+    }, {passive:true});
+    storyViewerEl.addEventListener('touchend', e => {
+        if(e.target.closest('.story-reply-box')) return;
+        let currentY = e.changedTouches[0].clientY;
+        if(currentY - storyStartY > 100) { closeStoryViewer(); }
+        else { storyViewerEl.style.transform = 'translateY(0)'; resumeStory(); }
+    });
+
+    window.deleteStory = async (storyId) => {
+        if (confirm("Delete this story?")) {
+            await remove(ref(db, `stories/${currentUser.uid}/${storyId}`));
+            showToast("Story deleted");
+            closeStoryViewer();
+        }
+    };
+
+    getEl('sv-reply-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            const text = this.value.trim();
+            if(text) sendStoryReplyText(text);
+        }
+    });
+
+    function sendStoryReplyText(text) {
+        const uid = groupedStoryKeys[currentStoryGroupIndex];
+        const story = allStories[uid].stories[currentStoryIndex];
+        let chatId = currentUser.uid < uid ? `${currentUser.uid}_${uid}` : `${uid}_${currentUser.uid}`;
+        
+        push(ref(db, `messages/${chatId}`), {
+            from: currentUser.uid,
+            txt: `Replied to story: "${text}"`,
+            postId: story.id, 
+            postPreviewText: story.text || "View Story",
+            postPreviewImg: story.img,
+            isStory: true, 
+            storyUid: uid, 
+            ts: serverTimestamp(),
+            seen: false
+        });
+        
+        const tsNow = Date.now();
+        update(ref(db), {
+            [`contacts/${currentUser.uid}/${uid}/lastTs`]: tsNow,
+            [`contacts/${uid}/${currentUser.uid}/lastTs`]: tsNow
+        });
+        
+        showToast("Reply sent");
+        getEl('sv-reply-input').value = '';
+        closeStoryViewer();
+    }
+
+    window.sendStoryReaction = async (emoji) => {
+        const uid = groupedStoryKeys[currentStoryGroupIndex];
+        const story = allStories[uid].stories[currentStoryIndex];
+        
+        await set(ref(db, `stories/${uid}/${story.id}/reactions/${currentUser.uid}`), emoji);
+        await set(ref(db, `stories/${uid}/${story.id}/views/${currentUser.uid}`), serverTimestamp());
+
+        showToast("Reaction sent " + emoji);
+    };
 
     window.updateAllFollowButtons = () => {
         document.querySelectorAll('.follow-btn').forEach(btn => {
@@ -1511,14 +2170,22 @@
         posts.sort((a,b) => b.ts - a.ts);
         posts.forEach((post, index) => {
             postCount++;
-            const img = document.createElement('img');
             let firstImg = post.img.split(',')[0];
-            img.src = firstImg; img.style.width = "100%"; img.style.aspectRatio = "1"; img.style.objectFit = "cover"; img.style.borderRadius = "10px";
-            img.style.cursor = "pointer";
-            img.loading = "lazy";
-            img.onclick = () => openSinglePost(post.id);
-            if (index === 0 && posts.length > 2) { img.style.gridColumn = "span 2"; img.style.gridRow = "span 2"; }
-            grid.appendChild(img);
+            const isVid = window.isVideoURL(firstImg);
+            const mediaEl = document.createElement(isVid ? 'video' : 'img');
+            mediaEl.src = firstImg; 
+            mediaEl.style.width = "100%"; mediaEl.style.aspectRatio = "1"; mediaEl.style.objectFit = "cover"; mediaEl.style.borderRadius = "10px";
+            mediaEl.style.cursor = "pointer";
+            
+            if(isVid) {
+                mediaEl.autoplay = true; mediaEl.muted = true; mediaEl.loop = true; mediaEl.playsInline = true;
+            } else {
+                mediaEl.loading = "lazy";
+            }
+
+            mediaEl.onclick = () => openSinglePost(post.id);
+            if (index === 0 && posts.length > 2) { mediaEl.style.gridColumn = "span 2"; mediaEl.style.gridRow = "span 2"; }
+            grid.appendChild(mediaEl);
         });
         getEl('my-stat-posts').innerText = postCount;
     };
@@ -1559,7 +2226,23 @@
     }
 
     window.openBlockList = () => { closeMenu(); toggleModal('block-list-modal', true); };
-    window.blockUser = async (uid) => { if(confirm("Block this user?")) { await set(ref(db, `blocked/${currentUser.uid}/${uid}`), true); showToast("User Blocked"); toggleModal('friend-profile-modal', false); toggleModal('chat-interface', false); } };
+    window.blockUser = async (uid) => { 
+        if(confirm("Block this user?")) { 
+            await set(ref(db, `blocked/${currentUser.uid}/${uid}`), true); 
+            
+            // একে অপরকে আনফলো করে দেওয়া এবং চ্যাট লিস্ট থেকে রিমুভ করা
+            await remove(ref(db, `follows/${currentUser.uid}/${uid}`));
+            await remove(ref(db, `followers/${uid}/${currentUser.uid}`));
+            await remove(ref(db, `follows/${uid}/${currentUser.uid}`));
+            await remove(ref(db, `followers/${currentUser.uid}/${uid}`));
+            await remove(ref(db, `contacts/${currentUser.uid}/${uid}`));
+            await remove(ref(db, `contacts/${uid}/${currentUser.uid}`));
+            
+            showToast("User Blocked successfully"); 
+            toggleModal('friend-profile-modal', false); 
+            toggleModal('chat-interface', false); 
+        } 
+    };
     window.unblockUser = async (uid) => { await remove(ref(db, `blocked/${currentUser.uid}/${uid}`)); showToast("User Unblocked"); };
 
     window.toggleProfileMenu = () => {
@@ -1627,7 +2310,7 @@
                 const { user, online, isGrp, id } = item; if(!isGrp) myFriends.push(user);
                 const verifiedHtml = (!isGrp && user.isVerified) ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
                 const el = document.createElement('div'); el.className = 'list-item'; el.onclick = () => openChat(id, user);
-                el.innerHTML = `<img src="${user.dpUrl}" class="avatar ${online?'online':''}" loading="lazy"><div class="item-info"><div class="item-name">${user.name} ${verifiedHtml} ${isGrp ? '<span class="group-tag">Group</span>' : ''}</div><div class="item-sub">${online ? 'Active now' : (isGrp?'Tap to chat':'Offline')}</div></div>`;
+                el.innerHTML = `<img src="${user.dpUrl}" data-suid="${id}" class="avatar ${online?'online':''}" loading="lazy"><div class="item-info"><div class="item-name">${user.name} ${verifiedHtml} ${isGrp ? '<span class="group-tag">Group</span>' : ''}</div><div class="item-sub">${online ? 'Active now' : (isGrp?'Tap to chat':'Offline')}</div></div>`;
                 div.appendChild(el);
             });
             loadSuggestions(); 
@@ -1635,9 +2318,22 @@
     }
 
     window.openChat = async (id, user) => {
+        // --- Block Check ---
+        if (!user.isGroup) {
+            const [myBlockSnap, theirBlockSnap] = await Promise.all([
+                get(ref(db, `blocked/${currentUser.uid}/${id}`)),
+                get(ref(db, `blocked/${id}/${currentUser.uid}`))
+            ]);
+            if (myBlockSnap.exists() || theirBlockSnap.exists()) {
+                return showToast("You cannot chat with this user.");
+            }
+        }
+        // -------------------
+
         currentChatUser = user; isGroupChat = !!user.isGroup;
         currentChatId = isGroupChat ? id : (currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`);
         const verifiedHtml = (!isGroupChat && user.isVerified) ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+//... (বাকি সব আগের মতোই থাকবে)
 
         getEl('chat-header-img').src = user.dpUrl; getEl('chat-header-name').innerHTML = `${user.name} ${verifiedHtml}`;
         getEl('chat-header-status').innerText = isGroupChat ? 'Group Chat' : 'checking...';
@@ -1666,16 +2362,42 @@
                 const isMe = m.from === currentUser.uid; const d = document.createElement('div'); d.className = `message-bubble ${isMe ? 'msg-me' : 'msg-other'}`;
                 let tickIcon = isMe ? (m.seen ? '<i class="fas fa-check-double msg-tick read"></i>' : '<i class="fas fa-check msg-tick"></i>') : '';
                 
-                let imgHtml = m.img ? `<img src="${m.img}" class="chat-msg-img" loading="lazy" onmousedown="event.stopPropagation();" onclick="window.open('${m.img}','_blank');">` : '';
+                let imgHtml = '';
+                if (m.img) {
+                    imgHtml = window.isVideoURL(m.img) 
+    ? `<video src="${m.img}" class="chat-msg-img" controls playsinline onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" style="width:100%; border-radius:10px; margin-top:5px;"></video>`
+    : `<img src="${m.img}" class="chat-msg-img" loading="lazy" onclick="window.open('${m.img}','_blank');" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();">`;
+                }
                 
-                // Feature 4: Interactive Shared Post preview
                 let postShareHtml = '';
                 if(m.postId) {
+                    imgHtml = ''; 
+                    let srcLink = (m.postPreviewImg || m.img || '').split(',')[0];
+                    let previewMediaHtml = '';
+                    if(srcLink) {
+                        previewMediaHtml = window.isVideoURL(srcLink) 
+    ? `<video src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" controls playsinline onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();"></video>` 
+    : `<img src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" loading="lazy">`;
+                    }
+
+                    let action = m.isStory ? `openSharedStory('${m.storyUid}', '${m.postId}', '${srcLink}')` : `openSinglePost('${m.postId}')`;
+                    let title = m.isStory ? "View Story" : "View Shared Content";
+                    
                     postShareHtml = `
-                    <div class="shared-post-card" onclick="openSinglePost('${m.postId}')" style="background:var(--bg-body); border-radius:10px; padding:10px; margin-top:5px; border:1px solid var(--border-color); cursor:pointer; color: var(--text-dark); display: flex; flex-direction: column; gap: 5px;">
-                        <div style="font-size:0.8rem; font-weight:bold; color:var(--primary-color);"><i class="fas fa-share"></i> Shared Post</div>
-                        ${m.postPreviewText ? `<div style="font-size:0.85rem; color:var(--text-dark); opacity: 0.9; margin-bottom: 5px;">${m.postPreviewText}</div>` : ''}
-                        ${m.img ? `<img src="${m.img.split(',')[0]}" style="width:100%; border-radius:8px; max-height:150px; object-fit:cover;" loading="lazy">` : ''}
+                    <div class="shared-post-card" onclick="event.stopPropagation(); ${action}" 
+                         style="background:var(--bg-body); border-radius:10px; padding:10px; margin-top:5px; border:1px solid var(--border-color); cursor:pointer; color: var(--text-dark); display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s;"
+                         onmousedown="event.stopPropagation(); this.style.transform='scale(0.97)'" 
+                         onmouseup="event.stopPropagation(); this.style.transform='scale(1)'" 
+                         ontouchstart="event.stopPropagation(); this.style.transform='scale(0.97)'" 
+                         ontouchend="event.stopPropagation(); this.style.transform='scale(1)'">
+                         
+                        <div style="font-size:0.8rem; font-weight:bold; color:var(--primary-color); display:flex; align-items:center; gap:5px;">
+                            <i class="fas fa-external-link-alt"></i> ${title}
+                        </div>
+                        
+                        ${m.postPreviewText ? `<div style="font-size:0.85rem; color:var(--text-dark); opacity: 0.9; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${m.postPreviewText}</div>` : ''}
+                        
+                        ${previewMediaHtml}
                     </div>`;
                 }
 
@@ -1719,10 +2441,55 @@
     getEl('btn-emoji').onclick = (e) => { e.stopPropagation(); toggleClass('emoji-picker', 'show'); };
     picker.addEventListener('emoji-click', event => { input.value += event.detail.unicode; toggleClass('emoji-picker', 'show', false); input.focus(); });
     document.addEventListener('click', (e) => { if (!picker.contains(e.target) && e.target.id !== 'btn-emoji') picker.classList.remove('show'); });
+window.uploadChatImageToImgBB = async () => {
+        const fileInput = getEl('chat-imgbb-file');
+        if(!fileInput.files[0]) return;
+        
+        // আপলোড চলাকালীন আইকন ঘুরবে
+        const btnIcon = getEl('btn-image-url');
+        btnIcon.classList.remove('fa-image');
+        btnIcon.classList.add('fa-spinner', 'fa-spin');
+        
+        let apiKey = '#'; // আপনার ফায়ারবেস ডেটাবেস থেকে ImgBB API Key নেবে
+        try {
+            const apiSnap = await get(ref(db, 'settings/api'));
+            if(apiSnap.exists() && apiSnap.val().imgbbKey) apiKey = apiSnap.val().imgbbKey;
+        } catch(e) {}
 
+        const formData = new FormData(); 
+        formData.append('image', fileInput.files[0]);
+        
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if(data.success) { 
+                pendingImageUrl = data.data.url; 
+                getEl('img-preview-tag').outerHTML = `<img id="img-preview-tag" src="${pendingImageUrl}" style="max-width: 80px; max-height: 80px; border-radius: 10px; object-fit: cover;">`;
+                getEl('image-preview-wrapper').style.display = 'block'; 
+                showToast("Image ready to send!");
+            } else { 
+                alert("Upload failed."); 
+            }
+        } catch(e) { 
+            alert("Error: " + e.message); 
+        } finally { 
+            // আপলোড শেষে আইকন আবার আগের মতো হয়ে যাবে
+            btnIcon.classList.remove('fa-spinner', 'fa-spin');
+            btnIcon.classList.add('fa-image');
+            fileInput.value = ''; 
+        }
+    };
     window.openImageUrlPrompt = () => {
-        const url = prompt("Enter Image URL to send:");
-        if(url && url.startsWith('http')) { pendingImageUrl = url; getEl('img-preview-tag').src = url; getEl('image-preview-wrapper').style.display = 'block'; } 
+        const url = prompt("Enter Image/Video URL to send:");
+        if(url && url.startsWith('http')) { 
+            pendingImageUrl = url; 
+            if(window.isVideoURL(url)) {
+                getEl('img-preview-tag').outerHTML = `<video id="img-preview-tag" src="${url}" style="max-width: 80px; max-height: 80px; border-radius: 10px; object-fit: cover;" autoplay muted loop playsinline></video>`;
+            } else {
+                getEl('img-preview-tag').outerHTML = `<img id="img-preview-tag" src="${url}" style="max-width: 80px; max-height: 80px; border-radius: 10px; object-fit: cover;">`;
+            }
+            getEl('image-preview-wrapper').style.display = 'block'; 
+        } 
         else if (url) { alert("Invalid URL. Must start with http or https"); }
     };
     
@@ -1754,7 +2521,19 @@
         const q = getEl('search-id-input').value.trim(); const snap = await get(ref(db, 'users'));
         let found = null; snap.forEach(c => { if(c.val().userId===q && c.key!==currentUser.uid) found={id:c.key, ...c.val()}; });
         const res = getEl('search-result');
+        
         if(found) { 
+            // --- Block Check ---
+            const [myBlockSnap, theirBlockSnap] = await Promise.all([
+                get(ref(db, `blocked/${currentUser.uid}/${found.id}`)),
+                get(ref(db, `blocked/${found.id}/${currentUser.uid}`))
+            ]);
+            if (myBlockSnap.exists() || theirBlockSnap.exists()) {
+                res.innerHTML = `<p style="text-align:center; color:#999">User not found</p>`;
+                return;
+            }
+            // -------------------
+
             const verifiedHtml = found.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
             res.innerHTML = `
             <div class="list-item" style="background:var(--bg-body); cursor:pointer; border-radius:15px; border-bottom:none;" onclick="loadProfileById('${found.id}')">
@@ -1810,14 +2589,22 @@
         posts.sort((a,b) => b.ts - a.ts);
         posts.forEach((post, index) => {
             postCount++;
-            const img = document.createElement('img');
             let firstImg = post.img.split(',')[0];
-            img.src = firstImg; img.style.width = "100%"; img.style.aspectRatio = "1"; img.style.objectFit = "cover"; img.style.borderRadius = "10px";
-            img.style.cursor = "pointer";
-            img.loading = "lazy";
-            img.onclick = () => openSinglePost(post.id);
-            if (index === 0 && posts.length > 2) { img.style.gridColumn = "span 2"; img.style.gridRow = "span 2"; }
-            grid.appendChild(img);
+            const isVid = window.isVideoURL(firstImg);
+            const mediaEl = document.createElement(isVid ? 'video' : 'img');
+            mediaEl.src = firstImg; 
+            mediaEl.style.width = "100%"; mediaEl.style.aspectRatio = "1"; mediaEl.style.objectFit = "cover"; mediaEl.style.borderRadius = "10px";
+            mediaEl.style.cursor = "pointer";
+            
+            if(isVid) {
+                mediaEl.autoplay = true; mediaEl.muted = true; mediaEl.loop = true; mediaEl.playsInline = true;
+            } else {
+                mediaEl.loading = "lazy";
+            }
+            
+            mediaEl.onclick = () => openSinglePost(post.id);
+            if (index === 0 && posts.length > 2) { mediaEl.style.gridColumn = "span 2"; mediaEl.style.gridRow = "span 2"; }
+            grid.appendChild(mediaEl);
         });
         getEl('fp-stat-posts').innerText = postCount;
 
@@ -1825,7 +2612,6 @@
         toggleModal('friend-profile-modal', true);
     };
 
-    // Feature 3: Follower notification swipe-to-dismiss setup
     function setupFollowerSwipes() {
         const list = getEl('requests-list-container');
         if(list.dataset.swipeBound) return;
@@ -1838,7 +2624,6 @@
         list.addEventListener('pointercancel', (e) => { if (!activeEl) return; activeEl.style.transition = 'transform 0.3s ease-out'; activeEl.style.transform = `translateX(0)`; activeEl.releasePointerCapture(e.pointerId); activeEl = null; logId = null; cX = 0; });
     }
 
-    // Feature 3: Dismiss Logic
     window.dismissFollower = async (followerId) => {
         await set(ref(db, `dismissed_requests/${currentUser.uid}/${followerId}`), true);
         loadRequests(); 
@@ -1848,7 +2633,6 @@
         onValue(ref(db, `followers/${currentUser.uid}`), async snap => {
             const div = getEl('requests-list-container'); div.innerHTML = '';
             
-            // Feature 3: Check dismissed requests
             const dSnap = await get(ref(db, `dismissed_requests/${currentUser.uid}`));
             const dismissed = dSnap.val() || {};
 
@@ -1862,7 +2646,6 @@
                         if(!u) continue;
                         const verifiedHtml = u.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
                         
-                        // Added swipe wrapper for Feature 3
                         div.innerHTML += `
                         <div class="list-item swipe-container" style="padding:0; border-bottom:1px solid var(--border-color);">
                             <div class="swipe-delete-bg" onclick="dismissFollower('${key}')"><i class="fas fa-trash-alt"></i></div>
@@ -1880,7 +2663,7 @@
                     }
                 }
                 if(count === 0) div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new followers.</p>';
-                else setupFollowerSwipes(); // Initialize swipe gesture
+                else setupFollowerSwipes(); 
             } else { div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new followers.</p>'; }
             window.updateAllFollowButtons();
         });
@@ -2067,7 +2850,7 @@
         const txt = getEl('post-caption').value.trim();
         const imgUrl = getEl('post-img-url').value.trim();
         const visibility = getEl('post-privacy').value;
-        if(!txt && !imgUrl) return alert("Write something or add a photo.");
+        if(!txt && !imgUrl) return alert("Write something or add a photo/video.");
 
         const btn = getEl('btn-submit-post'); btn.disabled = true; btn.innerText = "Posting...";
         await push(ref(db, 'posts'), { uid: currentUser.uid, text: txt, img: imgUrl || null, visibility: visibility, views: 0, ts: serverTimestamp() });
@@ -2098,12 +2881,19 @@
         if (images.length > 0) {
             imgHtml = `
             <div class="post-carousel" style="border-radius:15px; margin-bottom:10px;">
-                ${images.map((src, i) => `
-                    <div>
-                        <img src="${src.trim()}" class="post-img" style="width:100%; border-radius:15px; margin-bottom:0;" loading="lazy" onclick="window.open('${src.trim()}','_blank')">
-                        ${images.length > 1 ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold;">${i+1}/${images.length}</div>` : ''}
-                    </div>
-                `).join('')}
+                ${images.map((src, i) => {
+                    const cleanSrc = src.trim();
+                    const isVid = window.isVideoURL(cleanSrc);
+                    return `
+                        <div>
+                          ${isVid 
+    ? `<video src="${cleanSrc}" class="post-img" style="width:100%; border-radius:15px; margin-bottom:0;" autoplay muted controls playsinline></video>`
+    : `<img src="${cleanSrc}" class="post-img" style="width:100%; border-radius:15px; margin-bottom:0;" loading="lazy" onclick="window.open('${cleanSrc}','_blank')">`
+}
+                            ${images.length > 1 ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold;">${i+1}/${images.length}</div>` : ''}
+                        </div>
+                    `;
+                }).join('')}
             </div>`;
         }
 
@@ -2125,7 +2915,7 @@
             <div class="post-card" data-pid="${post.id}">
                 <div class="post-header">
                     <div class="post-user" onclick="loadProfileById('${post.uid}')">
-                        <img src="${user.dpUrl}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" loading="lazy">
+                      <img src="${user.dpUrl}" data-suid="${post.uid}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" loading="lazy">
                         <div>
                             <div style="font-weight:600; color:var(--text-dark); display:flex; align-items:center;">${user.name} ${verifiedHtml} ${followBtnHtml}</div>
                             <div style="font-size:0.75rem; color:var(--text-grey);">${user.address ? user.address + ' • ' : ''}${getFriendlyDate(post.ts)} <i class="fas fa-${post.visibility === 'public' ? 'globe-americas' : 'lock'}"></i></div>
@@ -2173,7 +2963,7 @@
                 ` : `
                 ${commentsCount > 0 ? `<div style="font-size:0.85rem; color:var(--text-grey); cursor:pointer; margin-bottom:10px;" onclick="openComments('${post.id}')">View all ${commentsCount} comments</div>` : ''}
                 <div style="display:flex; align-items:center; gap:10px; margin-top:10px; cursor:text;" onclick="openComments('${post.id}')">
-                    <img src="${getEl('header-avatar').src}" style="width:25px; height:25px; border-radius:50%;" loading="lazy">
+                    <img src="${window.myDpUrl || 'https://via.placeholder.com/150'}" style="width:25px; height:25px; border-radius:50%;" loading="lazy">
                     <input type="text" placeholder="Add a comment..." style="background:transparent; border:none; padding:0; margin:0; font-size:0.85rem; color:var(--text-grey); flex:1; pointer-events:none;" readonly>
                 </div>
                 `}
@@ -2231,8 +3021,16 @@
         onChildAdded(postsRef, async (snap) => {
             const post = { id: snap.key, ...snap.val() };
             if(post.visibility === 'private' && post.uid !== currentUser.uid) return; 
+            
+            // --- Block Check for Feed ---
+            if (isBlocked(post.uid)) return;
+            const theirBlockSnap = await get(ref(db, `blocked/${post.uid}/${currentUser.uid}`));
+            if (theirBlockSnap.exists()) return;
+            // ----------------------------
+
             const user = (await get(ref(db, `users/${post.uid}`))).val();
             if(!user) return;
+//...
             
             let eng = (post.likes ? Object.keys(post.likes).length : 0) + (post.comments ? Object.keys(post.comments).length : 0);
             let score = post.ts + (eng * 7200000) + (Math.random() * 3600000); 
@@ -2347,7 +3145,6 @@
         }
     };
 
-    // Feature 2: Toggle Hide Comment Logic
     window.toggleHideComment = async (postId, commentId, hideStatus) => {
         await update(ref(db, `posts/${postId}/comments/${commentId}`), { hiddenByOwner: hideStatus });
         showToast(hideStatus ? "Comment hidden." : "Comment visible.");
@@ -2358,7 +3155,6 @@
         if(!snapP.exists()) return;
         if(snapP.val().commentsDisabled) return showToast("Comments are disabled for this post.");
         
-        // Feature 2: Check if current user is the owner of the post
         const isPostOwner = snapP.val().uid === currentUser.uid;
 
         activeCommentPostId = postId; 
@@ -2379,14 +3175,12 @@
             const buildHtml = (c, isReply = false, topLevelId = null) => {
                 if(!c.user) return '';
                 
-                // Feature 2: Filter out hidden comments for normal users
                 if(c.hiddenByOwner && !isPostOwner) return '';
 
                 let likesCount = c.likes ? Object.keys(c.likes).length : 0;
                 let isLiked = c.likes && c.likes[currentUser.uid];
                 let isMyComment = c.uid === currentUser.uid;
                 
-                // Feature 2: Styling and button for Post Owner
                 let opacityStyle = c.hiddenByOwner ? 'opacity: 0.5;' : '';
                 let hideBtnHtml = isPostOwner ? `<span style="cursor:pointer; font-weight:600; color:var(--danger);" onclick="toggleHideComment('${postId}', '${c.id}', ${c.hiddenByOwner ? 'false' : 'true'})">${c.hiddenByOwner ? 'Unhide' : 'Hide'}</span>` : '';
 
@@ -2492,31 +3286,58 @@
     };
 
     window.openSharePost = async (postId) => {
-        const pSnap = await get(ref(db, `posts/${postId}`)); const post = pSnap.val();
-        if(!post) return;
-        const div = getEl('share-friends-list'); div.innerHTML = '';
-        myFriends.forEach(f => {
-            const item = document.createElement('div'); item.className = 'list-item';
-            item.innerHTML = `
-                <img src="${f.dpUrl}" class="avatar" style="width:40px; height:40px;" loading="lazy">
-                <div class="item-info"><div class="item-name">${f.name}</div></div>
-                <button class="btn btn-primary" style="padding:6px 15px; font-size:0.8rem;">Send</button>
-            `;
-            item.querySelector('button').onclick = async () => {
-                const chatId = currentUser.uid < f.uid ? `${currentUser.uid}_${f.uid}` : `${f.uid}_${currentUser.uid}`;
-                const msgTxt = `Shared a post`;
-                let firstImg = post.img ? post.img.split(',')[0] : null;
-                
-                // Feature 4: Include preview text when sharing
-                let postCaption = post.text ? (post.text.length > 50 ? post.text.substring(0, 50) + '...' : post.text) : '';
-                
-                await push(ref(db, `messages/${chatId}`), { from: currentUser.uid, txt: msgTxt, img: firstImg, postId: postId, postPreviewText: postCaption, ts: serverTimestamp(), seen: false });
-                showToast("Post sent to " + f.name); toggleModal('share-post-modal', false);
-            };
-            div.appendChild(item);
-        });
-        if(myFriends.length === 0) div.innerHTML = '<p style="text-align:center; padding:20px;">No friends to share with.</p>';
+        const listDiv = getEl('share-friends-list');
+        listDiv.innerHTML = '<p style="text-align:center; color:var(--text-grey); padding: 20px;">Loading...</p>';
         toggleModal('share-post-modal', true);
+        
+        const pSnap = await get(ref(db, `posts/${postId}`));
+        const postData = pSnap.val();
+        if(!postData) {
+            toggleModal('share-post-modal', false);
+            return showToast("Post not found");
+        }
+        
+        listDiv.innerHTML = '';
+        if(myFriends.length === 0) {
+            listDiv.innerHTML = '<p style="text-align:center; color:var(--text-grey); padding: 20px;">No friends to share with.</p>';
+            return;
+        }
+        
+        myFriends.forEach(f => {
+            const item = document.createElement('div');
+            item.className = 'list-item';
+            item.innerHTML = `
+                <img src="${f.dpUrl}" class="avatar" loading="lazy">
+                <div class="item-info"><div class="item-name">${f.name}</div></div>
+                <button class="btn btn-primary" style="padding:6px 15px; font-size:0.8rem; border-radius:20px;" onclick="sharePostToUser('${postId}', '${f.uid}', this, '${(postData.text || '').replace(/'/g, "\\'")}', '${(postData.img || '').split(',')[0]}')">Send</button>
+            `;
+            listDiv.appendChild(item);
+        });
+    };
+
+    window.sharePostToUser = async (postId, targetUid, btnElem, postText, postImg) => {
+        btnElem.innerText = 'Sent';
+        btnElem.disabled = true;
+        btnElem.style.background = 'var(--success)';
+        
+        let chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+        
+        await push(ref(db, `messages/${chatId}`), {
+            from: currentUser.uid,
+            txt: "Check out this post!",
+            postId: postId,
+            postPreviewText: postText,
+            postPreviewImg: postImg,
+            ts: serverTimestamp(),
+            seen: false
+        });
+        
+        const tsNow = Date.now();
+        await update(ref(db), {
+            [`contacts/${currentUser.uid}/${targetUid}/lastTs`]: tsNow,
+            [`contacts/${targetUid}/${currentUser.uid}/lastTs`]: tsNow
+        });
+        showToast("Post shared!");
     };
 
     window.openSinglePost = async (postId) => {
@@ -2609,6 +3430,8 @@
             getEl('remote-video').classList.remove('hidden');
             getEl('local-video').classList.remove('hidden');
             getEl('switch-cam-btn').classList.remove('hidden');
+        } else if (type === 'video') {
+            getEl('switch-cam-btn').classList.remove('hidden');
         }
     }
 
@@ -2693,11 +3516,16 @@
         if(!localStream) return;
         window.facingMode = window.facingMode === 'user' ? 'environment' : 'user';
         try {
-            const constraints = { video: { facingMode: window.facingMode }, audio: true };
-            const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-            const newVideoTrack = newStream.getVideoTracks()[0];
+            let newStream;
+            try {
+                newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: window.facingMode } } });
+            } catch(e) {
+                newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: window.facingMode } });
+            }
             
+            const newVideoTrack = newStream.getVideoTracks()[0];
             const oldVideoTrack = localStream.getVideoTracks()[0];
+            
             if(oldVideoTrack) {
                 localStream.removeTrack(oldVideoTrack);
                 oldVideoTrack.stop();
@@ -2710,7 +3538,9 @@
                 if(sender) sender.replaceTrack(newVideoTrack);
             }
         } catch(e) {
+            console.error("Camera switch error:", e);
             alert("Could not switch camera.");
+            window.facingMode = window.facingMode === 'user' ? 'environment' : 'user'; 
         }
     };
 
@@ -2736,7 +3566,7 @@
                     if(ptr) ptr.style.display = 'block';
                     
                     setTimeout(() => { 
-                        if(viewId === 'tab-feed') loadFeed();
+                        if(viewId === 'tab-feed') { loadFeed(); loadStories(); }
                         else if(viewId === 'tab-chats') loadContacts();
                         else if(viewId === 'tab-requests') { loadRequests(); loadUserNotifications(); }
                         else if(viewId === 'tab-profile') loadMyProfileTab();
@@ -2750,6 +3580,177 @@
         });
     });
 
+    window.openSharedStory = async (uid, storyId, fallbackImg) => {
+        // --- Block Check for Shared Story ---
+        if (uid !== currentUser.uid) {
+            const [myBlockSnap, theirBlockSnap] = await Promise.all([
+                get(ref(db, `blocked/${currentUser.uid}/${uid}`)),
+                get(ref(db, `blocked/${uid}/${currentUser.uid}`))
+            ]);
+            if (myBlockSnap.exists() || theirBlockSnap.exists()) {
+                return showToast("This story is unavailable.");
+            }
+        }
+        // ------------------------------------
+
+        toggleModal('single-post-modal', true);
+        const container = getEl('single-post-container');
+        container.innerHTML = '<div style="display:flex; justify-content:center; align-items:center; height:100%;"><i class="fas fa-spinner fa-spin fa-2x" style="color:var(--primary-color);"></i></div>';
+        
+        const snap = await get(ref(db, `stories/${uid}/${storyId}`));
+        if(snap.exists()) {
+            const story = snap.val();
+            let mediaHtml = '';
+            
+            if(window.isVideoURL(story.img)) {
+                mediaHtml = `<video src="${story.img}" style="width:100%; max-height:80vh; object-fit:contain;" controls autoplay playsinline></video>`;
+            } else {
+                mediaHtml = `<img src="${story.img}" style="width:100%; max-height:80vh; object-fit:contain;">`;
+            }
+
+            container.innerHTML = `
+                <div style="background:#000; height:100%; min-height:80vh; display:flex; flex-direction:column; justify-content:center; position:relative;">
+                    ${mediaHtml}
+                    ${story.text ? `<div style="position:absolute; bottom:30px; left:0; width:100%; text-align:center; color:white; font-size:1.1rem; text-shadow:0 2px 5px rgba(0,0,0,0.8); padding:0 15px;">${story.text}</div>` : ''}
+                </div>
+            `;
+        } else {
+            let mediaHtml = '';
+            if(window.isVideoURL(fallbackImg)) {
+                mediaHtml = `<video src="${fallbackImg}" style="width:100%; max-height:80vh; object-fit:contain; opacity:0.6;" controls playsinline></video>`;
+            } else {
+                mediaHtml = `<img src="${fallbackImg}" style="width:100%; max-height:80vh; object-fit:contain; opacity:0.6;">`;
+            }
+            container.innerHTML = `
+                <div style="background:#000; height:100%; min-height:80vh; display:flex; flex-direction:column; justify-content:center; position:relative;">
+                    ${mediaHtml}
+                    <div style="position:absolute; bottom:50px; left:0; width:100%; text-align:center; color:white; font-size:1.1rem; text-shadow:0 2px 5px rgba(0,0,0,0.8);">Story Expired</div>
+                </div>
+            `;
+        }
+    };
+
+    window.openStoryViewersList = async (storyId) => {
+        pauseStory(); 
+        getEl('follow-list-title').innerText = 'Story Viewers';
+        
+        const modal = getEl('follow-list-modal');
+        modal.style.zIndex = '1100'; 
+        
+        const closeBtn = getEl('follow-list-title').parentElement.querySelector('.btn-icon');
+        closeBtn.onclick = () => {
+            toggleModal('follow-list-modal', false);
+            modal.style.zIndex = '150'; 
+            if(!getEl('story-viewer').classList.contains('hidden')) {
+                resumeStory(); 
+            }
+        };
+
+        const container = getEl('follow-list-container');
+        container.innerHTML = '<p style="text-align:center; padding: 20px; color:var(--text-grey);">Loading...</p>';
+        toggleModal('follow-list-modal', true);
+
+        const [viewsSnap, reactSnap] = await Promise.all([
+            get(ref(db, `stories/${currentUser.uid}/${storyId}/views`)),
+            get(ref(db, `stories/${currentUser.uid}/${storyId}/reactions`))
+        ]);
+        
+        container.innerHTML = '';
+        
+        if(!viewsSnap.exists() || Object.keys(viewsSnap.val()).length === 0) {
+            container.innerHTML = '<p style="text-align:center; padding: 20px; color:var(--text-grey);">No viewers yet.</p>';
+            return;
+        }
+
+        const viewsObj = viewsSnap.val();
+        const reactsObj = reactSnap.exists() ? reactSnap.val() : {};
+        const userIds = Object.keys(viewsObj);
+        
+        let html = '';
+        for(let id of userIds) {
+            const uSnap = await get(ref(db, `users/${id}`));
+            const user = uSnap.val();
+            if(user) {
+                const verifiedHtml = user.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+                const reactionHtml = reactsObj[id] ? `<span style="font-size:1.5rem; margin-left:auto; background:var(--border-color); padding:5px 10px; border-radius:20px; box-shadow:0 2px 5px rgba(0,0,0,0.05);">${reactsObj[id]}</span>` : '';
+                
+                html += `
+                <div class="list-item" style="cursor:pointer; display:flex; align-items:center;" onclick="toggleModal('follow-list-modal', false); document.getElementById('follow-list-modal').style.zIndex='150'; closeStoryViewer(); loadProfileById('${id}')">
+                    <img src="${user.dpUrl}" data-suid="${id}" class="avatar" loading="lazy">
+                    <div class="item-info">
+                        <div class="item-name">${user.name} ${verifiedHtml}</div>
+                    </div>
+                    ${reactionHtml}
+                </div>
+                `;
+            }
+        }
+        container.innerHTML = html;
+    };
+
+    const originalOpenFollowList = window.openFollowList;
+    window.openFollowList = async (type, targetUid) => {
+        const modal = getEl('follow-list-modal');
+        modal.style.zIndex = '150'; 
+        
+        const closeBtn = getEl('follow-list-title').parentElement.querySelector('.btn-icon');
+        closeBtn.onclick = () => toggleModal('follow-list-modal', false);
+        originalOpenFollowList(type, targetUid);
+    };
+    
+    window.updateStoryRingsInDOM = () => {
+        document.querySelectorAll('img[data-suid]').forEach(img => {
+            const uid = img.dataset.suid;
+            img.classList.remove('story-ring', 'story-ring-seen');
+            
+            if (allStories[uid] && allStories[uid].stories.length > 0) {
+                let unseen = allStories[uid].stories.some(s => !s.views || !s.views[currentUser.uid]);
+                img.classList.add(unseen ? 'story-ring' : 'story-ring-seen');
+                img.onclick = (e) => { e.stopPropagation(); openStoryViewer(uid); };
+                img.style.cursor = 'pointer';
+            } else {
+                img.onclick = (e) => { e.stopPropagation(); loadProfileById(uid); };
+            }
+        });
+        
+        if(typeof currentChatUser !== 'undefined' && currentChatUser && !isGroupChat) {
+            const chatImg = getEl('chat-header-img');
+            chatImg.classList.remove('story-ring', 'story-ring-seen');
+            if(allStories[currentChatUser.uid] && allStories[currentChatUser.uid].stories.length > 0) {
+                let unseen = allStories[currentChatUser.uid].stories.some(s => !s.views || !s.views[currentUser.uid]);
+                chatImg.classList.add(unseen ? 'story-ring' : 'story-ring-seen');
+                chatImg.onclick = (e) => { e.stopPropagation(); openStoryViewer(currentChatUser.uid); };
+                chatImg.style.cursor = 'pointer';
+            } else { 
+                chatImg.onclick = null; 
+                chatImg.style.cursor = 'default';
+            }
+        }
+
+        if(typeof window.currentProfileUid !== 'undefined' && window.currentProfileUid) {
+            const fpImg = getEl('fp-img');
+            fpImg.classList.remove('story-ring', 'story-ring-seen');
+            if(allStories[window.currentProfileUid] && allStories[window.currentProfileUid].stories.length > 0) {
+                let unseen = allStories[window.currentProfileUid].stories.some(s => !s.views || !s.views[currentUser.uid]);
+                fpImg.classList.add(unseen ? 'story-ring' : 'story-ring-seen');
+                fpImg.onclick = (e) => { e.stopPropagation(); openStoryViewer(window.currentProfileUid); };
+                fpImg.style.cursor = 'pointer';
+            } else { 
+                fpImg.onclick = null; 
+                fpImg.style.cursor = 'default';
+            }
+        }
+    };
+
+    let ringUpdateTimer = null;
+    const domObserver = new MutationObserver(() => {
+        clearTimeout(ringUpdateTimer);
+        ringUpdateTimer = setTimeout(() => {
+            if(typeof updateStoryRingsInDOM === 'function') updateStoryRingsInDOM();
+        }, 150);
+    });
+    domObserver.observe(document.body, { childList: true, subtree: true });
+    
 </script>
 </body>
 </html>
