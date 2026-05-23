@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="iewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TalkMate - Pro</title>
     
     <!-- Fonts & Icons -->
@@ -229,7 +230,7 @@
         .modal-header { padding: 25px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); background: var(--bg-card); position: sticky; top: 0; z-index: 10;}
         .modal-body { padding: 25px; }
 
-        #call-screen { background: #1a1a1a; display: flex; flex-direction: column; z-index: 150 !important; }
+        #call-screen { background: #1a1a1a; display: flex; flex-direction: column; z-index: 1500 !important; }
         #remote-video { width: 100%; height: 100%; object-fit: cover; }
         #local-video { position: absolute; width: 110px; height: 160px; background: #333; bottom: 120px; right: 20px; border-radius: 15px; object-fit: cover; border: 2px solid white; z-index: 20; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .call-controls-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.15); backdrop-filter: blur(10px); padding: 15px 30px; border-radius: 40px; display: flex; gap: 20px; z-index: 20; border: 1px solid rgba(255,255,255,0.2); }
@@ -241,7 +242,7 @@
         .info-logo { width: 80px; height: 80px; background: var(--primary-color); border-radius: 20px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; transform: rotate(10deg); }
         .dev-badge { background: #f0f0f5; padding: 8px 15px; border-radius: 20px; color: var(--text-dark); font-weight: 600; display: inline-block; margin-top: 10px; }
         
-        #incoming-call-modal { z-index: 200 !important; }
+        #incoming-call-modal { z-index: 2000 !important; }
 
         .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
@@ -367,10 +368,19 @@
         </div>
         <div id="profile-setup" class="hidden">
             <h3 style="margin-bottom:20px; color:var(--text-dark)">Setup Profile</h3>
+            
             <div style="text-align:center; margin-bottom:20px;">
                 <input type="text" id="setup-emoji" placeholder="😊" maxlength="2" style="width:80px; text-align:center; font-size:2rem; padding:10px;">
+                <div style="font-size:0.8rem; color:var(--text-grey); margin-top:5px;">Or use an Emoji</div>
             </div>
-            <input type="url" id="setup-dp-url" placeholder="Photo URL (https://...)">
+            
+            <div style="background:var(--border-color); padding:15px; border-radius:15px; margin-bottom:12px; text-align:left;">
+                <p style="font-size:0.85rem; font-weight:600; margin-bottom:10px;">Upload Image (ImgBB)</p>
+                <input type="file" id="setup-imgbb-file" accept="image/*" style="margin-bottom:10px; background:transparent; padding:0;">
+                <button class="btn btn-primary" id="setup-imgbb-upload-btn" style="width:100%; padding:8px;" onclick="uploadProfileToImgBB('setup')">Upload Image</button>
+            </div>
+
+            <input type="url" id="setup-dp-url" placeholder="Photo URL (Will auto-fill after upload)">
             <input type="text" id="setup-name" placeholder="Display Name (max 20)" maxlength="20">
             <input type="text" id="setup-bio" placeholder="Bio">
             <input type="text" id="setup-address" placeholder="Address">
@@ -833,8 +843,16 @@
         <div class="modal-body" style="text-align:center;">
              <div style="margin-bottom:20px;">
                  <input type="text" id="edit-emoji" placeholder="😊" maxlength="2" style="width:80px; text-align:center; font-size:2rem; padding:10px;">
+                 <div style="font-size:0.8rem; color:var(--text-grey); margin-top:5px;">Or use an Emoji</div>
              </div>
-            <input type="url" id="edit-dp-url" placeholder="Photo URL (https://...)">
+            
+            <div style="background:var(--border-color); padding:15px; border-radius:15px; margin-bottom:12px; text-align:left;">
+                <p style="font-size:0.85rem; font-weight:600; margin-bottom:10px;">Upload Image (ImgBB)</p>
+                <input type="file" id="edit-imgbb-file" accept="image/*" style="margin-bottom:10px; background:transparent; padding:0;">
+                <button class="btn btn-primary" id="edit-imgbb-upload-btn" style="width:100%; padding:8px;" onclick="uploadProfileToImgBB('edit')">Upload Image</button>
+            </div>
+
+            <input type="url" id="edit-dp-url" placeholder="Photo URL (Will auto-fill after upload)">
             <input type="text" id="edit-name" placeholder="Display Name">
             <input type="text" id="edit-bio" placeholder="Bio">
             <input type="text" id="edit-address" placeholder="Address">
@@ -1151,6 +1169,41 @@
             if(data.success) { getEl('imgbb-url-result').value = data.data.url; getEl('imgbb-result-container').classList.remove('hidden'); } 
             else { alert("Upload failed."); }
         } catch(e) { alert("Error: " + e.message); } finally { btn.innerHTML = "Upload Image"; btn.disabled = false; }
+    };
+
+    window.uploadProfileToImgBB = async (mode) => {
+        const fileInput = getEl(`${mode}-imgbb-file`);
+        if(!fileInput.files[0]) return alert("Please select an image");
+        const btn = getEl(`${mode}-imgbb-upload-btn`); 
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "Uploading..."; 
+        btn.disabled = true;
+        
+        let apiKey = '#';
+        try {
+            const apiSnap = await get(ref(db, 'settings/api'));
+            if(apiSnap.exists() && apiSnap.val().imgbbKey) apiKey = apiSnap.val().imgbbKey;
+        } catch(e) {}
+
+        const formData = new FormData(); 
+        formData.append('image', fileInput.files[0]);
+        
+        try {
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if(data.success) { 
+                getEl(`${mode}-dp-url`).value = data.data.url;
+                showToast("Image Uploaded successfully!");
+            } else { 
+                alert("Upload failed."); 
+            }
+        } catch(e) { 
+            alert("Error: " + e.message); 
+        } finally { 
+            btn.innerHTML = originalText; 
+            btn.disabled = false; 
+            fileInput.value = ''; 
+        }
     };
 
     window.uploadStoryToImgBB = async () => {
@@ -1614,8 +1667,10 @@
     }
 
     // --- Story System Implementation ---
+    let unsubStories;
     function loadStories() {
-        onValue(ref(db, 'stories'), async snap => {
+        if(unsubStories) unsubStories();
+        unsubStories = onValue(ref(db, 'stories'), async snap => {
             allStories = {};
             const ONE_DAY = 24 * 60 * 60 * 1000;
             const now = Date.now();
@@ -2286,8 +2341,10 @@
         await update(ref(db), updates); showToast("Group Created!"); toggleModal('new-group-modal', false);
     };
 
+    let unsubContacts;
     function loadContacts() {
-        onValue(ref(db, `contacts/${currentUser.uid}`), async snap => {
+        if(unsubContacts) unsubContacts();
+        unsubContacts = onValue(ref(db, `contacts/${currentUser.uid}`), async snap => {
             const promises =[];
             snap.forEach(c => {
                 const id = c.key; const isGrp = c.val() && c.val().type === 'group';
@@ -2333,7 +2390,6 @@
         currentChatUser = user; isGroupChat = !!user.isGroup;
         currentChatId = isGroupChat ? id : (currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`);
         const verifiedHtml = (!isGroupChat && user.isVerified) ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
-//... (বাকি সব আগের মতোই থাকবে)
 
         getEl('chat-header-img').src = user.dpUrl; getEl('chat-header-name').innerHTML = `${user.name} ${verifiedHtml}`;
         getEl('chat-header-status').innerText = isGroupChat ? 'Group Chat' : 'checking...';
@@ -2441,7 +2497,8 @@
     getEl('btn-emoji').onclick = (e) => { e.stopPropagation(); toggleClass('emoji-picker', 'show'); };
     picker.addEventListener('emoji-click', event => { input.value += event.detail.unicode; toggleClass('emoji-picker', 'show', false); input.focus(); });
     document.addEventListener('click', (e) => { if (!picker.contains(e.target) && e.target.id !== 'btn-emoji') picker.classList.remove('show'); });
-window.uploadChatImageToImgBB = async () => {
+
+    window.uploadChatImageToImgBB = async () => {
         const fileInput = getEl('chat-imgbb-file');
         if(!fileInput.files[0]) return;
         
@@ -2479,6 +2536,7 @@ window.uploadChatImageToImgBB = async () => {
             fileInput.value = ''; 
         }
     };
+
     window.openImageUrlPrompt = () => {
         const url = prompt("Enter Image/Video URL to send:");
         if(url && url.startsWith('http')) { 
@@ -2629,8 +2687,10 @@ window.uploadChatImageToImgBB = async () => {
         loadRequests(); 
     };
 
+    let unsubRequests;
     function loadRequests() {
-        onValue(ref(db, `followers/${currentUser.uid}`), async snap => {
+        if(unsubRequests) unsubRequests();
+        unsubRequests = onValue(ref(db, `followers/${currentUser.uid}`), async snap => {
             const div = getEl('requests-list-container'); div.innerHTML = '';
             
             const dSnap = await get(ref(db, `dismissed_requests/${currentUser.uid}`));
@@ -2669,12 +2729,15 @@ window.uploadChatImageToImgBB = async () => {
         });
     }
 
+    let unsubNotifAdded, unsubNotifRemoved;
     function loadUserNotifications() {
         const div = getEl('user-notifications-list'); 
         div.innerHTML = '<p id="no-notifs-msg" style="text-align:center; color:var(--text-grey); padding:15px;">Loading...</p>';
         
         const notifRef = ref(db, `user_notifications/${currentUser.uid}`);
-        off(notifRef);
+        
+        if (unsubNotifAdded) unsubNotifAdded();
+        if (unsubNotifRemoved) unsubNotifRemoved();
 
         let notifCount = 0;
 
@@ -2687,7 +2750,7 @@ window.uploadChatImageToImgBB = async () => {
             }
         });
 
-        onChildAdded(notifRef, async snap => {
+        unsubNotifAdded = onChildAdded(notifRef, async snap => {
             const msg = getEl('no-notifs-msg');
             if(msg) msg.remove();
             
@@ -2724,7 +2787,7 @@ window.uploadChatImageToImgBB = async () => {
             setupNotificationSwipes();
         });
 
-        onChildRemoved(notifRef, snap => {
+        unsubNotifRemoved = onChildRemoved(notifRef, snap => {
             const id = snap.key;
             const el = div.querySelector(`[data-notif-id="${id}"]`);
             if(el) {
@@ -3000,13 +3063,17 @@ window.uploadChatImageToImgBB = async () => {
         document.querySelectorAll('.post-card').forEach(card => feedObserver.observe(card));
     }
 
+    let unsubFeedAdded, unsubFeedChanged, unsubFeedRemoved;
     function loadFeed() {
         const div = getEl('feed-list-container');
         div.innerHTML = '';
         feedPosts = {};
         
         const postsRef = query(ref(db, 'posts'), limitToLast(60));
-        off(postsRef); 
+        
+        if (unsubFeedAdded) unsubFeedAdded();
+        if (unsubFeedChanged) unsubFeedChanged();
+        if (unsubFeedRemoved) unsubFeedRemoved();
 
         const renderSorted = () => {
             const sorted = Object.values(feedPosts).sort((a,b) => b.score - a.score);
@@ -3018,7 +3085,7 @@ window.uploadChatImageToImgBB = async () => {
             observePosts();
         };
 
-        onChildAdded(postsRef, async (snap) => {
+        unsubFeedAdded = onChildAdded(postsRef, async (snap) => {
             const post = { id: snap.key, ...snap.val() };
             if(post.visibility === 'private' && post.uid !== currentUser.uid) return; 
             
@@ -3030,7 +3097,6 @@ window.uploadChatImageToImgBB = async () => {
 
             const user = (await get(ref(db, `users/${post.uid}`))).val();
             if(!user) return;
-//...
             
             let eng = (post.likes ? Object.keys(post.likes).length : 0) + (post.comments ? Object.keys(post.comments).length : 0);
             let score = post.ts + (eng * 7200000) + (Math.random() * 3600000); 
@@ -3041,7 +3107,7 @@ window.uploadChatImageToImgBB = async () => {
             renderSorted();
         });
 
-        onChildChanged(postsRef, async (snap) => {
+        unsubFeedChanged = onChildChanged(postsRef, async (snap) => {
             const post = { id: snap.key, ...snap.val() };
             if(post.visibility === 'private' && post.uid !== currentUser.uid) {
                 if(feedPosts[post.id]) {
@@ -3065,7 +3131,7 @@ window.uploadChatImageToImgBB = async () => {
             }
         });
 
-        onChildRemoved(postsRef, (snap) => {
+        unsubFeedRemoved = onChildRemoved(postsRef, (snap) => {
             if(feedPosts[snap.key]) {
                 if(div.contains(feedPosts[snap.key].el)) {
                     div.removeChild(feedPosts[snap.key].el);
@@ -3477,7 +3543,7 @@ window.uploadChatImageToImgBB = async () => {
             const localVid = getEl('local-video'); localVid.srcObject = localStream; localVid.muted = true;
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-            const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(callRef, 'offer')); const offer = offerSnap.val();
+const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(callRef, 'offer')); const offer = offerSnap.val();
 
             if (offer) { await peerConnection.setRemoteDescription(new RTCSessionDescription(offer)); const answer = await peerConnection.createAnswer(); await peerConnection.setLocalDescription(answer); await update(callRef, { answer: { sdp: answer.sdp, type: answer.type } }); processIceQueue(); onChildAdded(child(callRef, 'callerCand'), (snapshot) => { if(snapshot.val()) handleRemoteCandidate(snapshot.val()); }); }
         } catch (err) { alert("Connection failed"); hangup(); }
