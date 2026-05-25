@@ -3470,7 +3470,7 @@ getEl('back-chat').onclick = () => {
                     return `
                         <div>
                           ${isVid 
-    ? `<video src="${cleanSrc}" class="post-img feed-video" style="width:100%; border-radius:15px; margin-bottom:0;" muted controls playsinline loop></video>`
+    ? `<video src="${cleanSrc}" class="post-img feed-video" style="width:100%; border-radius:15px; margin-bottom:0;" controls playsinline loop></video>`
     : `<img src="${cleanSrc}" class="post-img" style="width:100%; border-radius:15px; margin-bottom:0;" loading="lazy" onclick="window.open('${cleanSrc}','_blank')">`
 }
                             ${images.length > 1 ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold;">${i+1}/${images.length}</div>` : ''}
