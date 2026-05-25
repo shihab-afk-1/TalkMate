@@ -1,7 +1,7 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="monetag" content="e489e863bbcf253bd7f827c41f9d3f31">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TalkMate - Pro</title>
@@ -13,6 +13,18 @@
     <!-- Tone.js & Emoji Picker -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+
+    <!-- ========================================== -->
+    <!-- MONETIZATION SCRIPTS (MONETAG)             -->
+    <!-- ========================================== -->
+    
+    <!-- 1. Interstitial Exit Ad Script (Monetag) -->
+    <!-- <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('example.com', YOUR_INTERSTITIAL_ZONE_ID, document.createElement('script'))</script> -->
+
+    <!-- 2. In-Page Push Ad Script (Monetag) -->
+    <!-- <script>(function(d,z,s){s.src='https://'+d+'/401/'+z;try{(document.body||document.documentElement).appendChild(s)}catch(e){}})('example.com', YOUR_IN_PAGE_PUSH_ZONE_ID, document.createElement('script'))</script> -->
+
+    <!-- ========================================== -->
 
     <style>
         :root {
@@ -45,6 +57,7 @@
         }
 
         body.dark-mode input, body.dark-mode textarea { background: #2c2c2c; color: white; }
+        body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
         body.dark-mode .list-item:hover { background: #2c2c2c; }
 
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -94,6 +107,7 @@
             padding: 15px 20px; border-radius: 20px; width: 100%; outline: none; 
             margin-bottom: 12px; font-family: inherit; font-size: 0.95rem;
         }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
         textarea { resize: none; height: 120px; }
 
         .pass-wrapper { position: relative; width: 100%; margin-bottom: 12px; }
@@ -269,7 +283,6 @@
         /* Splash Screen Additions & Fixes */
         @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
         
-
         /* --- Story System CSS --- */
         .story-tray { display: flex; overflow-x: auto; padding: 15px 20px; gap: 15px; background: var(--bg-card); scrollbar-width: none; border-bottom: 1px solid var(--border-color); transition: background 0.3s;}
         .story-tray::-webkit-scrollbar { display: none; }
@@ -299,24 +312,50 @@
         .story-reaction-btn { background: none; border: none; font-size: 1.6rem; cursor: pointer; transition: transform 0.2s; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));}
         .story-reaction-btn:active { transform: scale(1.3); }
 
-    .story-ring {
-        padding: 2px !important;
-        background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
-        border-radius: 50% !important;
-        border: 0 !important; 
-        cursor: pointer !important;
-    }
-    .story-ring-seen {
-        padding: 2px !important; 
-        background: #d3d3d3 !important; 
-        border-radius: 50% !important;
-        border: 0 !important; 
-        cursor: pointer !important;
-    }
+        .story-ring {
+            padding: 2px !important;
+            background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%) !important;
+            border-radius: 50% !important;
+            border: 0 !important; 
+            cursor: pointer !important;
+        }
+        .story-ring-seen {
+            padding: 2px !important; 
+            background: #d3d3d3 !important; 
+            border-radius: 50% !important;
+            border: 0 !important; 
+            cursor: pointer !important;
+        }
         #story-media-container { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #000; }
         #story-img { width: 100%; height: 100%; object-fit: contain; }
         .story-caption { position: absolute; bottom: 80px; left: 15px; right: 15px; text-align: center; font-size: 1.1rem; color: white; font-weight: 500; text-shadow: 0 2px 5px rgba(0,0,0,0.8); z-index: 15; word-wrap: break-word;}
+/* Adsterra Native Ad Customization */
+        .adsterra-native-ad-wrapper iframe {
+            border-radius: 15px !important;
+        }
 
+        /* Dark mode support for Adsterra Wrapper */
+        body.dark-mode .adsterra-native-ad-wrapper {
+            filter: brightness(0.8) contrast(1.2);
+        }
+        /* Modern Chat List Styles */
+        .chat-item { border-bottom: 1px solid var(--border-color); cursor: pointer; }
+        .chat-avatar-wrap { position: relative; margin-right: 15px; }
+        .chat-online-dot { position: absolute; bottom: 2px; right: 2px; width: 14px; height: 14px; background: var(--success); border: 2.5px solid var(--bg-card); border-radius: 50%; }
+        .chat-info { flex: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+        .chat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .chat-name { font-weight: 600; font-size: 1rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px; }
+        .chat-time { font-size: 0.75rem; color: var(--text-grey); white-space: nowrap; margin-left: 10px; }
+        .chat-time.unread-time { color: var(--primary-color); font-weight: 600; }
+        .chat-preview-row { display: flex; justify-content: space-between; align-items: center; }
+        .chat-preview { font-size: 0.85rem; color: var(--text-grey); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; margin-right: 10px; display: flex; align-items: center; gap: 4px; }
+        .chat-preview.unread { font-weight: 600; color: var(--text-dark); }
+        .unread-badge { background: var(--primary-color); color: white; font-size: 0.7rem; font-weight: bold; padding: 2px 7px; border-radius: 12px; min-width: 20px; text-align: center; }
+        
+        /* Typing animation */
+        .typing-dots::after { content: '.'; animation: typing 1.5s steps(4, end) infinite; }
+        @keyframes typing { 0%, 20% { color: transparent; text-shadow: .25em 0 0 transparent, .5em 0 0 transparent; } 40% { color: var(--primary-color); text-shadow: .25em 0 0 transparent, .5em 0 0 transparent; } 60% { text-shadow: .25em 0 0 var(--primary-color), .5em 0 0 transparent; } 80%, 100% { text-shadow: .25em 0 0 var(--primary-color), .5em 0 0 var(--primary-color); } }
+        
     </style>
 </head>
 <body>
@@ -382,6 +421,7 @@
 
             <input type="url" id="setup-dp-url" placeholder="Photo URL (Will auto-fill after upload)">
             <input type="text" id="setup-name" placeholder="Display Name (max 20)" maxlength="20">
+            <input type="date" id="setup-dob" placeholder="Date of Birth" style="color:var(--text-grey); background: #f4f4f8; padding: 15px 20px; border-radius: 20px; width: 100%; border: none; outline: none; margin-bottom: 12px; font-family: inherit; font-size: 0.95rem;">
             <input type="text" id="setup-bio" placeholder="Bio">
             <input type="text" id="setup-address" placeholder="Address">
             <input type="text" id="setup-study" placeholder="Study/Work">
@@ -415,6 +455,7 @@
                 <!-- Injected via JS -->
             </div>
 
+            <!-- Feed Content -> JS creates DOM elements directly here -->
             <div id="feed-list-container" style="padding-top:10px; padding-bottom: 20px;"></div>
         </div>
 
@@ -455,6 +496,8 @@
                 <h2 id="my-profile-name" style="margin-top: 10px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; justify-content: center;">Name</h2>
                 <p id="my-profile-loc" style="color: var(--text-grey); font-size: 0.9rem;">N/A</p>
                 <p id="my-profile-bio" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 8px; padding: 0 20px;">Bio</p>
+                <p id="my-profile-study" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 5px; padding: 0 20px;">Study</p>
+                <p id="my-profile-dob" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 5px; padding: 0 20px;">DOB</p>
                 
                 <button class="btn btn-primary" style="margin-top: 15px; border-radius: 20px; font-size: 0.85rem; padding: 8px 25px;" onclick="openEditProfile()">Edit Profile</button>
             </div>
@@ -483,7 +526,9 @@
         <!-- Floating Bottom Navigation -->
         <nav class="bottom-nav">
             <div class="nav-item active" data-tab="feed"><i class="fas fa-home"></i></div>
-            <div class="nav-item" data-tab="chats"><i class="far fa-comment-dots"></i></div>
+            <div class="nav-item" data-tab="chats"><i class="far fa-comment-dots"></i><span id="chat-req-dot" class="req-dot"></span>
+            </div>
+            
             <div class="nav-center-wrap">
                 <div class="plus-btn" onclick="toggleModal('create-post-modal', true)"><i class="fas fa-plus"></i></div>
             </div>
@@ -534,12 +579,10 @@
                 <img id="img-preview-tag" src="">
             </div>
             
-            <!-- হিডেন ফাইল আপলোড ইনপুট -->
             <input type="file" id="chat-imgbb-file" accept="image/*" class="hidden" onchange="uploadChatImageToImgBB()">
             
             <div class="chat-input-pill">
                 <i class="far fa-smile" id="btn-emoji" style="color:var(--text-grey); font-size:1.2rem; margin-left:5px; cursor:pointer;"></i>
-                <!-- ইমেজে ক্লিক করলে ইনপুট ট্রিগার হবে -->
                 <i class="fas fa-image" id="btn-image-url" style="color:var(--text-grey); font-size:1.2rem; margin-left:10px; cursor:pointer;" onclick="document.getElementById('chat-imgbb-file').click()"></i>
                 <input type="text" id="msg-input" placeholder="Type message..." autocomplete="off">
                 <button class="send-btn" id="send-msg-btn"><i class="fas fa-paper-plane"></i></button>
@@ -623,6 +666,7 @@
         <div class="modal-header"><h3>Create Post</h3><button class="btn-icon" onclick="toggleModal('create-post-modal', false)"><i class="fas fa-times"></i></button></div>
         <div class="modal-body">
             <textarea id="post-caption" placeholder="What's on your mind?"></textarea>
+            <input type="text" id="post-location" placeholder="Add Location (Optional)" style="margin-bottom:15px; width:100%;">
             
             <div style="background:var(--border-color); padding:15px; border-radius:15px; margin-bottom:15px;">
                 <p style="font-size:0.85rem; font-weight:600; margin-bottom:10px;">Upload Image (ImgBB)</p>
@@ -854,6 +898,7 @@
 
             <input type="url" id="edit-dp-url" placeholder="Photo URL (Will auto-fill after upload)">
             <input type="text" id="edit-name" placeholder="Display Name">
+            <input type="date" id="edit-dob" placeholder="Date of Birth" style="color:var(--text-grey); background: #f4f4f8; padding: 15px 20px; border-radius: 20px; width: 100%; border: none; outline: none; margin-bottom: 12px; font-family: inherit; font-size: 0.95rem;">
             <input type="text" id="edit-bio" placeholder="Bio">
             <input type="text" id="edit-address" placeholder="Address">
             <input type="text" id="edit-study" placeholder="Study/Work">
@@ -883,6 +928,7 @@
                 <p id="fp-address" style="color: var(--text-grey); font-size: 0.9rem;">N/A</p>
                 <p id="fp-bio" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 8px; padding: 0 20px;">Bio...</p>
                 <p id="fp-study" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 5px;">Study</p>
+                <p id="fp-dob" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 5px;">DOB</p>
                 <p style="margin-top:10px; color:var(--primary-color); font-weight:600; display:flex; justify-content:center; align-items:center; gap:8px;">
                     <span id="fp-id"></span>
                     <i class="far fa-copy copy-icon" style="cursor:pointer; font-size:1.1rem;" onclick="copyFriendId()"></i>
@@ -918,6 +964,27 @@
             <div style="height: 30px;"></div>
         </div>
     </div>
+
+<!-- Exit Ad Modal -->
+<div id="exit-ad-modal" class="full-screen hidden" style="z-index: 3000; background: var(--bg-card); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
+    
+    <h2 style="margin-bottom: 10px; color: var(--primary-color);">Wait! Check this out</h2>
+    <p style="color: var(--text-grey); margin-bottom: 20px;">App will close in <span id="exit-timer" style="font-weight:bold; color:var(--danger);">3</span> seconds...</p>
+    
+    <!-- Ad Banner (Direct Link) -->
+    <div style="width: 100%; max-width: 320px; height: 250px; background: #eee; border-radius: 15px; overflow: hidden; margin-bottom: 30px; cursor: pointer; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.1);" 
+         onclick="window.open('YOUR_ADSTERRA_OR_MONETAG_DIRECT_LINK_HERE', '_blank')">
+         
+        <!-- এখানে Ad এর একটি আকর্ষণীয় ছবি দিতে পারেন -->
+        <img src="https://i.ibb.co/r2yvw74j/1000011993.png" style="width: 100%; height: 100%; object-fit: cover;">
+        
+        <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.7); color: white; padding: 8px; font-size: 0.85rem;">
+            Sponsored Ad <i class="fas fa-external-link-alt" style="margin-left:5px;"></i>
+        </div>
+    </div>
+    
+    <button class="btn" style="background: transparent; border: 2px solid var(--danger); color: var(--danger); width: 100%; max-width: 200px;" onclick="forceExitApp()">Close App Now</button>
+</div>
 
     <!-- Single Post Modal -->
     <div id="single-post-modal" class="full-screen hidden" style="z-index: 120; background: var(--bg-card); display:flex; flex-direction:column;">
@@ -968,7 +1035,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
-    import { getDatabase, ref, set, get, onValue, push, child, update, serverTimestamp, onChildAdded, onChildChanged, onChildRemoved, onDisconnect, remove, off, query, limitToLast } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
+    import { getDatabase, ref, set, get, onValue, push, child, update, serverTimestamp, onChildAdded, onChildChanged, onChildRemoved, onDisconnect, remove, off, query, limitToLast, orderByChild, endBefore } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCjZV3yPpdVQ151o7tWcZFNARDnZQsKSVA",
@@ -996,7 +1063,7 @@
                     email: user.email,
                     dpUrl: user.photoURL || emojiToSVG(user.displayName ? user.displayName.charAt(0) : 'U'),
                     userId: generateUniqueId(),
-                    bio: '', address: '', study: ''
+                    bio: '', address: '', study: '', dob: ''
                 });
             }
         } catch(e) {
@@ -1014,6 +1081,8 @@
     let isGroupChat = false;
     let isRequestsTabActive = false;
     let unsubMessages = null; 
+    let unsubTypingStatus = null;
+    let typingTimeoutTimer = null;
     
     let peerConnection = null;
     let localStream = null;
@@ -1052,6 +1121,17 @@
     let commentLongPressTimer;
     let isCommentScrolling = false;
 
+    // Video Auto-Play/Pause Observer
+    const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.play().catch(e => {});
+            } else {
+                entry.target.pause();
+            }
+        });
+    }, { threshold: 0.5 });
+
     // Video check helper
     window.isVideoURL = (url) => {
         if(!url) return false;
@@ -1085,7 +1165,14 @@
     window.openMenu = () => { getEl('side-menu').classList.add('open'); getEl('menu-overlay').classList.add('open'); };
     const closeMenu = () => { getEl('side-menu').classList.remove('open'); getEl('menu-overlay').classList.remove('open'); };
     getEl('menu-overlay').onclick = closeMenu;
-    getEl('back-chat').onclick = () => toggleModal('chat-interface', false);
+getEl('back-chat').onclick = () => { 
+        if (currentChatId && currentUser && !isGroupChat) {
+            set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
+            if (typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+        }
+        if (unsubTypingStatus) { unsubTypingStatus(); unsubTypingStatus = null; }
+        toggleModal('chat-interface', false); 
+    };
 
     window.showToast = (msg) => {
         const t = getEl('toast'); t.innerText = msg; t.classList.add('show');
@@ -1125,7 +1212,6 @@
             return;
         }
 
-        // --- Block Check ---
         const [myBlockSnap, theirBlockSnap] = await Promise.all([
             get(ref(db, `blocked/${currentUser.uid}/${uid}`)),
             get(ref(db, `blocked/${uid}/${currentUser.uid}`))
@@ -1133,12 +1219,11 @@
         if (myBlockSnap.exists() || theirBlockSnap.exists()) {
             return showToast("This profile is unavailable.");
         }
-        // -------------------
 
         const snap = await get(ref(db, `users/${uid}`));
         if(snap.exists()) {
             const u = snap.val();
-            openSearchProfile(uid, u.name, u.dpUrl, u.bio, u.address, u.study, u.userId, u.isVerified);
+            openSearchProfile(uid, u.name, u.dpUrl, u.bio, u.address, u.study, u.userId, u.isVerified, u.dob);
         } else {
             showToast("User not found");
         }
@@ -1526,8 +1611,13 @@
 
     async function saveProfile(mode) {
         const prefix = mode === 'setup' ? 'setup' : 'edit';
-        const name = getEl(`${prefix}-name`).value; const bio = getEl(`${prefix}-bio`).value; const address = getEl(`${prefix}-address`).value; 
-        const study = getEl(`${prefix}-study`).value; const emoji = getEl(`${prefix}-emoji`).value; const photoUrl = getEl(`${prefix}-dp-url`).value.trim();
+        const name = getEl(`${prefix}-name`).value; 
+        const bio = getEl(`${prefix}-bio`).value; 
+        const address = getEl(`${prefix}-address`).value; 
+        const study = getEl(`${prefix}-study`).value; 
+        const dob = getEl(`${prefix}-dob`).value; 
+        const emoji = getEl(`${prefix}-emoji`).value; 
+        const photoUrl = getEl(`${prefix}-dp-url`).value.trim();
 
         if(!name) return alert("Name required");
         const snap = await get(ref(db, `users/${currentUser.uid}`)); const existing = snap.val() || {};
@@ -1536,11 +1626,54 @@
         if (photoUrl) dpUrl = photoUrl; else if (emoji) dpUrl = emojiToSVG(emoji); else if (!dpUrl || mode === 'setup') dpUrl = emojiToSVG(name.charAt(0)); 
 
         const userId = existing.userId || generateUniqueId();
-        await update(ref(db, `users/${currentUser.uid}`), { name, bio, address, study, userId, dpUrl, email: currentUser.email });
+        await update(ref(db, `users/${currentUser.uid}`), { name, bio, address, study, dob, userId, dpUrl, email: currentUser.email });
         
         if(mode === 'setup') { setupPresence(currentUser.uid); toggleClass('profile-setup', 'hidden', true); toggleClass('auth-screen', 'hidden', true); toggleClass('main-app', 'hidden', false); initApp(); } 
         else { showToast("Profile Updated!"); toggleModal('edit-profile-modal', false); loadProfileUI(); if(document.querySelector('.nav-item[data-tab="profile"]').classList.contains('active')) loadMyProfileTab(); }
     }
+
+// --- EXIT AD TRAPPING LOGIC ---
+    let hasTrappedBack = false;
+    let exitTimerInterval = null;
+
+    function setupExitAd() {
+        if(hasTrappedBack) return;
+        
+        // অ্যাপ ওপেন হওয়ার সাথে সাথে একটি ডামি হিস্ট্রি পুশ করছি
+        history.pushState({ page: 'app' }, 'TalkMate', location.href);
+        
+        window.addEventListener('popstate', function(event) {
+            // ইউজার ব্যাক বাটন চাপলে অ্যাপ ক্লোজ না করে আবার ডামি হিস্ট্রি পুশ করছি
+            history.pushState({ page: 'app' }, 'TalkMate', location.href); 
+            
+            // Exit Ad Modal শো করানো হচ্ছে
+            document.getElementById('exit-ad-modal').classList.remove('hidden');
+            
+            let timeLeft = 10; // ৩ সেকেন্ড পর অটো ক্লোজ হবে
+            document.getElementById('exit-timer').innerText = timeLeft;
+            
+            if(exitTimerInterval) clearInterval(exitTimerInterval);
+            
+            exitTimerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('exit-timer').innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(exitTimerInterval);
+                    forceExitApp(); // ৩ সেকেন্ড পর অটো অ্যাপ ক্লোজ
+                }
+            }, 1000);
+        });
+        hasTrappedBack = true;
+    }
+
+    // ম্যানুয়ালি বা টাইমার শেষ হলে অ্যাপ ক্লোজ করার ফাংশন
+    window.forceExitApp = () => {
+        if(exitTimerInterval) clearInterval(exitTimerInterval);
+        document.getElementById('exit-ad-modal').classList.add('hidden');
+        
+        // হিস্ট্রি থেকে বের হয়ে যাওয়ার জন্য ২ স্টেপ পেছনে যাওয়া হচ্ছে
+        history.go(-2); 
+    };
 
     onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -1551,7 +1684,7 @@
                 const s = await get(ref(db, `users/${user.uid}`));
                 if (s.exists()) { 
                     if (s.val().status === 'blocked') { alert("Your account blocked"); signOut(auth); return; }
-                    window.myDpUrl = s.val().dpUrl; // Save global Dp
+                    window.myDpUrl = s.val().dpUrl; 
                     setupPresence(user.uid); toggleClass('main-app', 'hidden', false); initApp(); 
                 } else { 
                     toggleClass('auth-screen', 'hidden', false); toggleClass('auth-forms', 'hidden', true); toggleClass('profile-setup', 'hidden', false); 
@@ -1570,13 +1703,15 @@
     }
 
     function initApp() {
+        setupExitAd();
+
         onValue(ref(db, `users/${currentUser.uid}`), (snap) => { 
             const d = snap.val();
             if (d) { 
                 if (d.status === 'blocked') { alert("Your account blocked"); signOut(auth); location.reload(); }
                 
                 myCustomId = d.userId; 
-                window.myDpUrl = d.dpUrl; // Keep dpUrl updated
+                window.myDpUrl = d.dpUrl; 
                 getEl('header-avatar').src = d.dpUrl; 
                 const verifiedBadgeHtml = d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:0.75rem;"></i>' : '';
                 const verifiedBadgeHtmlMenu = d.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
@@ -1691,7 +1826,6 @@
                 if (validStories.length > 0) {
                     if (uid === currentUser.uid || myFollowing[uid]) {
                         promises.push(
-                            // --- Block Check for Stories ---
                             Promise.all([
                                 get(ref(db, `blocked/${currentUser.uid}/${uid}`)),
                                 get(ref(db, `blocked/${uid}/${currentUser.uid}`))
@@ -1705,7 +1839,6 @@
                                     });
                                 }
                             })
-                            // -------------------------------
                         );
                     }
                 }
@@ -1851,7 +1984,7 @@
         const svVideo = getEl('story-video');
         const svAudio = getEl('story-audio');
         
-        // Stop previous playing media & clear events
+        // Stop previous playing media
         svVideo.pause(); svVideo.src = ''; svVideo.classList.add('hidden');
         svVideo.ontimeupdate = null; svVideo.onended = null;
         
@@ -1863,7 +1996,6 @@
         let mediaType = 'image';
         let activeMediaElement = null;
 
-        // Music icon if audio present
         if(story.audio) {
             getEl('sv-name').innerHTML = `${data.user.name} <span style="font-size:0.9rem; margin-left:4px;" title="Playing Music">🎵</span>`;
             svAudio.src = story.audio;
@@ -1874,13 +2006,12 @@
             getEl('sv-name').innerText = data.user.name;
         }
 
-        // Setup Media (Video vs Image)
         if(window.isVideoURL(story.img)) {
             svVideo.src = story.img;
             svVideo.classList.remove('hidden');
             svVideo.play().catch(e => console.log(e));
             mediaType = 'video';
-            activeMediaElement = svVideo; // Video duration overrides audio
+            activeMediaElement = svVideo; 
         } else {
             svImg.src = story.img;
             svImg.classList.remove('hidden');
@@ -1889,7 +2020,6 @@
         getEl('sv-time').innerText = getFriendlyDate(story.ts) + ' • ' + formatTime(story.ts);
         getEl('sv-caption').innerText = story.text || '';
 
-        // Progress Bars Setup
         const progContainer = getEl('story-progress-container');
         progContainer.innerHTML = '';
         for (let i = 0; i < data.stories.length; i++) {
@@ -1899,7 +2029,6 @@
                 </div>`;
         }
 
-        // Footer setup
         if (uid === currentUser.uid) {
             getEl('sv-reply-box').classList.add('hidden');
             const viewersPanel = getEl('sv-viewers-panel');
@@ -1915,7 +2044,6 @@
             getEl('sv-reply-input').value = '';
         }
 
-        // Call the progress logic
         startStoryProgress(mediaType, activeMediaElement);
     }
 
@@ -1924,7 +2052,6 @@
         storyProgress = 0;
         const bar = getEl(`sv-prog-${currentStoryIndex}`);
         
-        // যদি ভিডিও অথবা গান থাকে, তবে প্রোগ্রেস বার সেগুলোর ডিউরেশন অনুযায়ী চলবে
         if ((mediaType === 'video' || mediaType === 'audio') && mediaElement) {
             mediaElement.ontimeupdate = () => {
                 if(!isStoryPaused && mediaElement.duration) {
@@ -1932,12 +2059,10 @@
                     if (bar) bar.style.width = storyProgress + '%';
                 }
             };
-            // ভিডিও বা অডিও শেষ হলে অটোমেটিক পরের স্টোরিতে যাবে
             mediaElement.onended = () => {
                 nextStory();
             };
         } else {
-            // যদি শুধু ছবি হয় (ভিডিও বা অডিও ছাড়া), তবে ৫ সেকেন্ডের নরমাল টাইমার চলবে
             storyTimer = setInterval(() => {
                 if (!isStoryPaused) {
                     storyProgress += 2; 
@@ -2022,7 +2147,6 @@
         viewer.classList.remove('show');
         setTimeout(() => viewer.classList.add('hidden'), 300);
         
-        // স্টোরি ক্লোজ করার সাথে সাথে মিডিয়ার ইভেন্টগুলো রিমুভ করে দেওয়া হলো
         const svVideo = getEl('story-video');
         svVideo.pause();
         svVideo.src = '';
@@ -2036,7 +2160,6 @@
         svAudio.onended = null;
     };
 
-    // Swipe down to close story
     let storyStartY = 0;
     const storyViewerEl = getEl('story-viewer');
     storyViewerEl.addEventListener('touchstart', e => { 
@@ -2201,6 +2324,8 @@
             getEl('my-profile-name').innerHTML = `${d.name} ${d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:1rem"></i>' : ''}`;
             getEl('my-profile-loc').innerText = d.address || 'Location not set';
             getEl('my-profile-bio').innerText = d.bio || '';
+            getEl('my-profile-study').innerText = d.study || 'Study/Work not set';
+            getEl('my-profile-dob').innerText = d.dob ? 'Born: ' + d.dob : 'DOB not set';
         }
         
         get(ref(db, `followers/${currentUser.uid}`)).then(snap => {
@@ -2259,7 +2384,7 @@
     window.openEditProfile = async () => {
         closeMenu(); const s = await get(ref(db, `users/${currentUser.uid}`)); const d = s.val();
         getEl('edit-name').value = d.name; getEl('edit-bio').value = d.bio || ''; getEl('edit-address').value = d.address || ''; getEl('edit-study').value = d.study || ''; 
-        getEl('edit-emoji').value = ''; getEl('edit-dp-url').value = (d.dpUrl && d.dpUrl.startsWith('http')) ? d.dpUrl : '';
+        getEl('edit-dob').value = d.dob || ''; getEl('edit-emoji').value = ''; getEl('edit-dp-url').value = (d.dpUrl && d.dpUrl.startsWith('http')) ? d.dpUrl : '';
         toggleModal('edit-profile-modal', true);
     };
 
@@ -2285,7 +2410,6 @@
         if(confirm("Block this user?")) { 
             await set(ref(db, `blocked/${currentUser.uid}/${uid}`), true); 
             
-            // একে অপরকে আনফলো করে দেওয়া এবং চ্যাট লিস্ট থেকে রিমুভ করা
             await remove(ref(db, `follows/${currentUser.uid}/${uid}`));
             await remove(ref(db, `followers/${uid}/${currentUser.uid}`));
             await remove(ref(db, `follows/${uid}/${currentUser.uid}`));
@@ -2342,40 +2466,249 @@
     };
 
     let unsubContacts;
+    let chatListeners = []; // রিয়েল-টাইম প্রিভিউয়ের ইভেন্ট ক্লিন করার জন্য
+
     function loadContacts() {
         if(unsubContacts) unsubContacts();
+        
         unsubContacts = onValue(ref(db, `contacts/${currentUser.uid}`), async snap => {
+            // পুরোনো লিসেনারগুলো ক্লিন করছি যাতে ল্যাগ না হয়
+            chatListeners.forEach(unsub => unsub());
+            chatListeners = [];
+
             const promises =[];
             snap.forEach(c => {
-                const id = c.key; const isGrp = c.val() && c.val().type === 'group';
+                const id = c.key; 
+                const isGrp = c.val() && c.val().type === 'group';
                 const lastTs = c.val()?.lastTs || 0; 
+                const pinned = c.val()?.pinned || false; // পিন সাপোর্টের জন্য
+                
                 const p = new Promise(async (resolve) => {
                     let user, online = false;
-                    if(isGrp) { const gSnap = await get(ref(db, `groups/${id}`)); user = gSnap.val(); if(user) { user.uid = id; user.isGroup = true; } } 
-                    else { const[u, s] = await Promise.all([ get(ref(db, `users/${id}`)), get(ref(db, `status/${id}`)) ]); user = u.val(); if(user) { user.uid = id; online = s.val()?.state === 'online'; } }
-                    resolve(user ? { user, online, isGrp, id, lastTs } : null);
+                    if(isGrp) { 
+                        const gSnap = await get(ref(db, `groups/${id}`)); 
+                        user = gSnap.val(); 
+                        if(user) { user.uid = id; user.isGroup = true; } 
+                    } else { 
+                        const [u, s] = await Promise.all([ get(ref(db, `users/${id}`)), get(ref(db, `status/${id}`)) ]); 
+                        user = u.val(); 
+                        if(user) { user.uid = id; online = s.val()?.state === 'online'; } 
+                    }
+                    resolve(user ? { user, online, isGrp, id, lastTs, pinned } : null);
                 });
                 promises.push(p);
             });
+
             const results = await Promise.all(promises);
-            const div = getEl('contacts-list-container'); div.innerHTML = ''; myFriends =[];
+            const div = getEl('contacts-list-container'); 
+            div.innerHTML = ''; 
+            myFriends = [];
 
             const validResults = results.filter(item => item !== null);
-            validResults.sort((a, b) => b.lastTs - a.lastTs);
+            
+            // সর্টিং: পিন করা চ্যাট উপরে, তারপর সময় অনুযায়ী
+            validResults.sort((a, b) => {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+                return b.lastTs - a.lastTs;
+            });
+
+            const globalDot = getEl('chat-req-dot');
+            let totalGlobalUnread = 0;
+
+            if(validResults.length === 0) {
+                div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No chats yet.</p>';
+                if(globalDot) globalDot.classList.remove('show');
+                return;
+            }
 
             validResults.forEach(item => {
-                const { user, online, isGrp, id } = item; if(!isGrp) myFriends.push(user);
+                const { user, online, isGrp, id, pinned } = item; 
+                if(!isGrp) myFriends.push(user);
+                
                 const verifiedHtml = (!isGrp && user.isVerified) ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
-                const el = document.createElement('div'); el.className = 'list-item'; el.onclick = () => openChat(id, user);
-                el.innerHTML = `<img src="${user.dpUrl}" data-suid="${id}" class="avatar ${online?'online':''}" loading="lazy"><div class="item-info"><div class="item-name">${user.name} ${verifiedHtml} ${isGrp ? '<span class="group-tag">Group</span>' : ''}</div><div class="item-sub">${online ? 'Active now' : (isGrp?'Tap to chat':'Offline')}</div></div>`;
+                const pinHtml = pinned ? '<i class="fas fa-thumbtack" style="font-size:0.75rem; color:var(--text-grey); margin-left:5px; transform:rotate(45deg);"></i>' : '';
+
+                const el = document.createElement('div');
+
+                el.className = 'list-item swipe-container'; 
+                el.style.padding = '0'; 
+       
+                el.innerHTML = `
+                    <div class="swipe-delete-bg" onclick="deleteChatHistory('${id}')"><i class="fas fa-trash-alt"></i></div>
+                    <div class="swipe-content" data-chatid="${id}" style="padding: 15px 25px; width:100%; display:flex; align-items:center;" onclick="openChat('${id}', ${JSON.stringify(user).replace(/"/g, '&quot;')})">
+                        <img src="${user.dpUrl}" data-suid="${id}" class="avatar ${online ? 'online' : ''}" loading="lazy">
+                        <div class="item-info" style="overflow: hidden;">
+                            <div class="item-name" style="display:flex; justify-content:space-between; align-items:center;">
+                                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center;">${user.name} ${verifiedHtml} ${isGrp ? '<span class="group-tag">Group</span>' : ''} ${pinHtml}</span>
+                                <span id="time-${id}" style="font-size:0.7rem; color:var(--text-grey); font-weight:normal;"></span>
+                            </div>
+                            <div class="item-sub" style="display:flex; justify-content:space-between; align-items:center; margin-top:3px;">
+                                <span id="preview-${id}" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; margin-right:10px;">${online ? 'Active now' : (isGrp?'Tap to chat':'Offline')}</span>
+                                <span id="badge-${id}" style="background:var(--primary-color); color:white; font-size:0.7rem; padding:2px 7px; border-radius:12px; display:none; font-weight:bold;">0</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
                 div.appendChild(el);
+
+                // --- Real-time Preview Logic ---
+                const chatId = isGrp ? id : (currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`);
+                const previewEl = el.querySelector(`#preview-${id}`);
+                const timeEl = el.querySelector(`#time-${id}`);
+                const badgeEl = el.querySelector(`#badge-${id}`);
+                const nameEl = el.querySelector('.item-name span'); 
+
+                let currentLastMsg = null;
+                let currentUnread = 0;
+
+                const updateMessagePreview = () => {
+                    // টাইপিং চললে মেসেজ প্রিভিউ হাইড থাকবে
+                    if (!isGrp && previewEl.innerText.includes('Typing')) return;
+                    if (!currentLastMsg) return;
+
+                    let prefix = currentLastMsg.from === currentUser.uid ? 'You: ' : '';
+                    let tick = currentLastMsg.from === currentUser.uid 
+                        ? (currentLastMsg.seen ? '<i class="fas fa-check-double" style="color:#00BCD4; font-size:0.75rem; margin-right:4px;"></i>' : '<i class="fas fa-check" style="color:var(--text-grey); font-size:0.75rem; margin-right:4px;"></i>') 
+                        : '';
+                    
+                    let text = currentLastMsg.txt || '';
+                    if (currentLastMsg.isStory || currentLastMsg.postId) text = `🔗 Shared a link`;
+                    else if (currentLastMsg.img) {
+                        text = window.isVideoURL(currentLastMsg.img) ? `🎥 Video` : `📷 Photo`;
+                    } else if (!text) text = `🎤 Voice message`;
+
+                    previewEl.innerHTML = `${tick}${prefix}${text}`;
+                    
+                    // Unread ডিজাইন
+                    previewEl.style.color = currentUnread > 0 ? 'var(--text-dark)' : 'var(--text-grey)';
+                    previewEl.style.fontWeight = currentUnread > 0 ? '600' : 'normal';
+                    nameEl.style.fontWeight = currentUnread > 0 ? '700' : '600';
+                    timeEl.style.color = currentUnread > 0 ? 'var(--primary-color)' : 'var(--text-grey)';
+                    timeEl.style.fontWeight = currentUnread > 0 ? '600' : 'normal';
+
+                    // টাইম ফরম্যাট
+                    const date = new Date(currentLastMsg.ts);
+                    const now = new Date();
+                    if(now - date < 86400000 && now.getDate() === date.getDate()) {
+                        timeEl.innerText = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    } else if(now - date < 86400000 * 2) {
+                        timeEl.innerText = "Yesterday";
+                    } else {
+                        timeEl.innerText = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                    }
+                };
+
+                // টাইপিং লিসেনার
+                if(!isGrp) {
+                    const tRef = ref(db, `typing/${chatId}/${id}`);
+                    const unsubTyping = onValue(tRef, s => {
+                        if(s.val()) {
+                            previewEl.innerHTML = `<span style="color:var(--primary-color); font-weight:600;">Typing...</span>`;
+                        } else {
+                            updateMessagePreview();
+                        }
+                    });
+                    chatListeners.push(() => off(tRef, 'value', unsubTyping));
+                }
+
+                // লাস্ট মেসেজ এবং Unread লিসেনার
+                const msgRef = query(ref(db, `messages/${chatId}`), limitToLast(30));
+                const unsubMsg = onValue(msgRef, mSnap => {
+                    let unread = 0;
+                    let lastM = null;
+                    mSnap.forEach(c => {
+                        const m = c.val();
+                        lastM = m;
+                        if (m.from !== currentUser.uid && !m.seen) unread++;
+                    });
+                    
+                    currentLastMsg = lastM;
+                    currentUnread = unread;
+                    
+                    if(unread > 0) {
+                        badgeEl.style.display = 'inline-block';
+                        badgeEl.innerText = unread;
+                    } else {
+                        badgeEl.style.display = 'none';
+                    }
+
+                    totalGlobalUnread += unread;
+                    if(globalDot) globalDot.classList.toggle('show', totalGlobalUnread > 0);
+
+                    updateMessagePreview();
+                });
+                chatListeners.push(() => off(msgRef, 'value', unsubMsg));
             });
+            
+            // সোয়াইপ অপশন চালু করা
+            if(typeof setupFollowerSwipes === 'function') setupFollowerSwipes(); // আপনার অরিজিনাল সোয়াইপ সিস্টেম ব্যবহার করা হয়েছে
+         setupChatSwipes();
             loadSuggestions(); 
         });
     }
 
+    // চ্যাট হিস্ট্রি ডিলিট করার গ্লোবাল ফাংশন
+    window.deleteChatHistory = async (targetId) => {
+        if(confirm("Delete this conversation?")) {
+            await remove(ref(db, `contacts/${currentUser.uid}/${targetId}`));
+            showToast("Chat removed");
+        }
+    };
+    
+    // চ্যাট লিস্টের জন্য নতুন সোয়াইপ সিস্টেম
+    function setupChatSwipes() {
+        const list = getEl('contacts-list-container');
+        if (!list || list.dataset.swipeBound) return;
+        list.dataset.swipeBound = "true";
+        
+        let sX = 0, cX = 0, activeEl = null, chatId = null;
+        
+        list.addEventListener('pointerdown', (e) => { 
+            const target = e.target.closest('.swipe-content'); 
+            if (!target) return; 
+            activeEl = target; 
+            chatId = target.dataset.chatid; 
+            sX = e.clientX; 
+            activeEl.style.transition = 'none'; 
+            activeEl.setPointerCapture(e.pointerId); 
+        });
+        
+        list.addEventListener('pointermove', (e) => { 
+            if (!activeEl) return; 
+            cX = e.clientX - sX; 
+            // শুধু বাম দিকে সোয়াইপ অ্যালাউ করবে
+            if (cX < 0 && cX > -window.innerWidth) {
+                activeEl.style.transform = `translateX(${cX}px)`; 
+            }
+        });
+        
+        list.addEventListener('pointerup', (e) => { 
+            if (!activeEl) return; 
+            activeEl.style.transition = 'transform 0.3s ease-out'; 
+            // যদি ৮০ পিক্সেলের বেশি বামে টানে, তাহলে ডিলিট হয়ে যাবে
+            if (cX < -80) { 
+                activeEl.style.transform = `translateX(-100vw)`; 
+                const cid = chatId; 
+                setTimeout(() => { deleteChatHistory(cid); }, 300); 
+            } else { 
+                // না হলে আগের জায়গায় ফিরে আসবে
+                activeEl.style.transform = `translateX(0)`; 
+            }
+            activeEl.releasePointerCapture(e.pointerId); 
+            activeEl = null; chatId = null; cX = 0; 
+        });
+        
+        list.addEventListener('pointercancel', (e) => { 
+            if (!activeEl) return; 
+            activeEl.style.transition = 'transform 0.3s ease-out'; 
+            activeEl.style.transform = `translateX(0)`; 
+            activeEl.releasePointerCapture(e.pointerId); 
+            activeEl = null; chatId = null; cX = 0; 
+        });
+    }
+    
     window.openChat = async (id, user) => {
-        // --- Block Check ---
         if (!user.isGroup) {
             const [myBlockSnap, theirBlockSnap] = await Promise.all([
                 get(ref(db, `blocked/${currentUser.uid}/${id}`)),
@@ -2385,7 +2718,6 @@
                 return showToast("You cannot chat with this user.");
             }
         }
-        // -------------------
 
         currentChatUser = user; isGroupChat = !!user.isGroup;
         currentChatId = isGroupChat ? id : (currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`);
@@ -2404,25 +2736,43 @@
              toggleClass('friend-actions', 'hidden', false); toggleClass('group-actions', 'hidden', true);
         } else { toggleClass('friend-actions', 'hidden', true); toggleClass('group-actions', 'hidden', false); }
 
-        const msgList = getEl('messages-list'); 
+   const msgList = getEl('messages-list'); 
         if (unsubMessages) { unsubMessages(); unsubMessages = null; }
 
-        let lastDate = '';
         unsubMessages = onValue(ref(db, `messages/${currentChatId}`), snapshot => {
-            msgList.innerHTML = ''; lastDate = '';
+            msgList.innerHTML = ''; 
+            let lastDate = '';
+            let unreadUpdates = {}; // মেসেজ সিনের আপডেট একসাথে পাঠানোর জন্য
+
             snapshot.forEach(s => {
-                const m = s.val(); const msgId = s.key;
-                if(m.from !== currentUser.uid && !m.seen) update(ref(db, `messages/${currentChatId}/${msgId}`), { seen: true });
+                const m = s.val(); 
+                const msgId = s.key;
+                
+                // মেসেজ সিন করার কমান্ড ব্যাচ করা হচ্ছে
+                if(m.from !== currentUser.uid && !m.seen) {
+                    unreadUpdates[msgId + '/seen'] = true;
+                }
+                
                 const msgDate = getFriendlyDate(m.ts);
-                if(msgDate !== lastDate) { msgList.innerHTML += `<div class="date-divider"><span class="date-pill">${msgDate}</span></div>`; lastDate = msgDate; }
-                const isMe = m.from === currentUser.uid; const d = document.createElement('div'); d.className = `message-bubble ${isMe ? 'msg-me' : 'msg-other'}`;
+                if(msgDate !== lastDate) { 
+                    const dateDiv = document.createElement('div');
+                    dateDiv.className = 'date-divider';
+                    dateDiv.innerHTML = `<span class="date-pill">${msgDate}</span>`;
+                    msgList.appendChild(dateDiv);
+                    lastDate = msgDate; 
+                }
+                
+                const isMe = m.from === currentUser.uid; 
+                const d = document.createElement('div'); 
+                d.className = `message-bubble ${isMe ? 'msg-me' : 'msg-other'}`;
+                
                 let tickIcon = isMe ? (m.seen ? '<i class="fas fa-check-double msg-tick read"></i>' : '<i class="fas fa-check msg-tick"></i>') : '';
                 
                 let imgHtml = '';
                 if (m.img) {
                     imgHtml = window.isVideoURL(m.img) 
-    ? `<video src="${m.img}" class="chat-msg-img" controls playsinline onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" style="width:100%; border-radius:10px; margin-top:5px;"></video>`
-    : `<img src="${m.img}" class="chat-msg-img" loading="lazy" onclick="window.open('${m.img}','_blank');" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();">`;
+                    ? `<video src="${m.img}" class="chat-msg-img" controls playsinline onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" style="width:100%; border-radius:10px; margin-top:5px;"></video>`
+                    : `<img src="${m.img}" class="chat-msg-img" loading="lazy" onclick="window.open('${m.img}','_blank');" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();">`;
                 }
                 
                 let postShareHtml = '';
@@ -2432,8 +2782,8 @@
                     let previewMediaHtml = '';
                     if(srcLink) {
                         previewMediaHtml = window.isVideoURL(srcLink) 
-    ? `<video src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" controls playsinline onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();"></video>` 
-    : `<img src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" loading="lazy">`;
+                        ? `<video src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" controls playsinline onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();"></video>` 
+                        : `<img src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" loading="lazy">`;
                     }
 
                     let action = m.isStory ? `openSharedStory('${m.storyUid}', '${m.postId}', '${srcLink}')` : `openSinglePost('${m.postId}')`;
@@ -2460,16 +2810,79 @@
                 d.innerHTML = `<div class="msg-text">${linkify(m.txt)}</div>${imgHtml}${postShareHtml}<div class="msg-meta"><span>${formatTime(m.ts)}</span>${tickIcon}</div>`;
                 
                 addLongPressListener(d, msgId, m.txt, isMe);
-                if(m.reactions) { const rKey = Object.keys(m.reactions)[0]; d.innerHTML += `<div class="msg-reaction-badge"><span style="background:var(--bg-card); padding:2px 5px; border-radius:10px; font-size:0.8rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:absolute; bottom:-10px; right:0;">${m.reactions[rKey]}</span></div>`; }
+                if(m.reactions) { 
+                    const rKey = Object.keys(m.reactions)[0]; 
+                    d.innerHTML += `<div class="msg-reaction-badge"><span style="background:var(--bg-card); padding:2px 5px; border-radius:10px; font-size:0.8rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:absolute; bottom:-10px; right:0;">${m.reactions[rKey]}</span></div>`; 
+                }
                 msgList.appendChild(d);
             });
-            const chatRoom = getEl('chat-room'); chatRoom.scrollTo({ top: chatRoom.scrollHeight, behavior: 'smooth' });
+            
+            // রিসিভার স্ক্রিনে লুপের বাইরে একসাথে মেসেজ সিন আপডেট পাঠানো হচ্ছে (ল্যাগ/ডাবল মেসেজ রিমুভ করতে)
+            if(Object.keys(unreadUpdates).length > 0) {
+                update(ref(db, `messages/${currentChatId}`), unreadUpdates);
+            }
+            
+            const chatRoom = getEl('chat-room'); 
+            chatRoom.scrollTo({ top: chatRoom.scrollHeight, behavior: 'smooth' });
         });
 
-        getEl('msg-input').onkeyup = () => { if(!isGroupChat) { const typingRef = ref(db, `typing/${currentChatId}/${currentUser.uid}`); set(typingRef, true); onDisconnect(typingRef).remove(); setTimeout(() => set(typingRef, null), 2000); } };
-        if(!isGroupChat) onValue(ref(db, `typing/${currentChatId}/${id}`), s => getEl('typing-status').innerText = s.val() ? 'Typing...' : '');
+// --- Receiver Typing Listener (Fix Applied) ---
+        if (unsubTypingStatus) { unsubTypingStatus(); unsubTypingStatus = null; }
+        getEl('typing-status').innerText = ''; // আগের স্ট্যাটাস মুছে ফেলবে
+
+        if(!isGroupChat) {
+            unsubTypingStatus = onValue(ref(db, `typing/${currentChatId}/${id}`), s => {
+                const typingEl = getEl('typing-status');
+                if(typingEl) typingEl.innerText = s.val() ? 'Typing...' : '';
+            });
+        }
+
+        // --- Sender Typing Logic (Fix Applied) ---
+        // oninput ব্যবহার করা হলো যাতে ডুপ্লিকেট ইভেন্ট তৈরি না হয়
+        getEl('msg-input').oninput = (e) => { 
+            if(!isGroupChat && currentChatId) { 
+                const typingRef = ref(db, `typing/${currentChatId}/${currentUser.uid}`); 
+                const text = e.target.value.trim();
+
+                if (text === '') {
+                    // বক্স ফাঁকা হলে সাথে সাথে রিমুভ হবে
+                    set(typingRef, null);
+                    if (typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+                } else {
+                    // কিছু টাইপ করলে দেখাবে এবং ১.৫ সেকেন্ড পর অটো অফ হবে
+                    set(typingRef, true); 
+                    if (typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+                    
+                    typingTimeoutTimer = setTimeout(() => {
+                        set(typingRef, null);
+                    }, 1500); 
+                }
+            } 
+        };
+
         toggleModal('chat-interface', true);
-    }
+    } // <--- এটি openChat ফাংশনের শেষের ব্র্যাকেট
+
+
+    getEl('send-msg-btn').onclick = async () => {
+        if(!isGroupChat && isBlocked(currentChatUser.uid)) return alert("You blocked this user.");
+        const inp = getEl('msg-input'); const txt = inp.value.trim();
+        
+        if(txt || pendingImageUrl) { 
+            const tsNow = Date.now();
+            await push(ref(db, `messages/${currentChatId}`), { from: currentUser.uid, txt: txt, img: pendingImageUrl || null, ts: serverTimestamp(), seen: false }); 
+            const updates = {};
+            if(!isGroupChat) { updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; }
+            if(Object.keys(updates).length > 0) update(ref(db), updates);
+            inp.value = ''; clearImagePreview(); 
+            
+            // মেসেজ সেন্ড করার সাথে সাথেই টাইপিং ইন্ডিকেটর রিমুভ হবে
+            if(!isGroupChat && currentChatId) {
+                set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
+                if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+            }
+        }
+    };
 
     function addLongPressListener(el, msgId, txt, isMe) {
         let timer;
@@ -2502,12 +2915,11 @@
         const fileInput = getEl('chat-imgbb-file');
         if(!fileInput.files[0]) return;
         
-        // আপলোড চলাকালীন আইকন ঘুরবে
         const btnIcon = getEl('btn-image-url');
         btnIcon.classList.remove('fa-image');
         btnIcon.classList.add('fa-spinner', 'fa-spin');
         
-        let apiKey = '#'; // আপনার ফায়ারবেস ডেটাবেস থেকে ImgBB API Key নেবে
+        let apiKey = '#'; 
         try {
             const apiSnap = await get(ref(db, 'settings/api'));
             if(apiSnap.exists() && apiSnap.val().imgbbKey) apiKey = apiSnap.val().imgbbKey;
@@ -2530,7 +2942,6 @@
         } catch(e) { 
             alert("Error: " + e.message); 
         } finally { 
-            // আপলোড শেষে আইকন আবার আগের মতো হয়ে যাবে
             btnIcon.classList.remove('fa-spinner', 'fa-spin');
             btnIcon.classList.add('fa-image');
             fileInput.value = ''; 
@@ -2554,9 +2965,11 @@
     window.clearImagePreview = () => { pendingImageUrl = null; getEl('image-preview-wrapper').style.display = 'none'; getEl('img-preview-tag').src = ''; };
 
     function isBlocked(uid) { return blockedUsers.includes(uid); }
+// Message Send Button Logic
     getEl('send-msg-btn').onclick = async () => {
         if(!isGroupChat && isBlocked(currentChatUser.uid)) return alert("You blocked this user.");
         const inp = getEl('msg-input'); const txt = inp.value.trim();
+        
         if(txt || pendingImageUrl) { 
             const tsNow = Date.now();
             await push(ref(db, `messages/${currentChatId}`), { from: currentUser.uid, txt: txt, img: pendingImageUrl || null, ts: serverTimestamp(), seen: false }); 
@@ -2564,6 +2977,12 @@
             if(!isGroupChat) { updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; }
             if(Object.keys(updates).length > 0) update(ref(db), updates);
             inp.value = ''; clearImagePreview(); 
+            
+            // মেসেজ সেন্ড করার সাথে সাথেই টাইপিং ইন্ডিকেটর রিমুভ করা হচ্ছে
+            if(!isGroupChat && currentChatId) {
+                set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
+                if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+            }
         }
     };
 
@@ -2581,7 +3000,6 @@
         const res = getEl('search-result');
         
         if(found) { 
-            // --- Block Check ---
             const [myBlockSnap, theirBlockSnap] = await Promise.all([
                 get(ref(db, `blocked/${currentUser.uid}/${found.id}`)),
                 get(ref(db, `blocked/${found.id}/${currentUser.uid}`))
@@ -2590,7 +3008,6 @@
                 res.innerHTML = `<p style="text-align:center; color:#999">User not found</p>`;
                 return;
             }
-            // -------------------
 
             const verifiedHtml = found.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
             res.innerHTML = `
@@ -2606,7 +3023,7 @@
         } else res.innerHTML = `<p style="text-align:center; color:#999">Not found</p>`;
     };
 
-    window.openSearchProfile = async (uid, name, dpUrl, bio, address, study, userId, isVerified) => {
+    window.openSearchProfile = async (uid, name, dpUrl, bio, address, study, userId, isVerified, dob) => {
         window.currentProfileUid = uid; 
         getEl('fp-img').src = dpUrl;
         const verifiedHtml = isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
@@ -2614,6 +3031,7 @@
         getEl('fp-bio').innerText = (bio && bio !== 'undefined') ? bio : 'No Bio'; 
         getEl('fp-address').innerText = (address && address !== 'undefined') ? address : 'N/A';
         getEl('fp-study').innerText = (study && study !== 'undefined') ? study : 'N/A'; 
+        getEl('fp-dob').innerText = (dob && dob !== 'undefined') ? 'Born: ' + dob : 'DOB not set'; 
         getEl('fp-id').innerText = "ID: " + userId;
 
         getEl('btn-follow-profile').dataset.uid = uid;
@@ -2913,12 +3331,13 @@
         const txt = getEl('post-caption').value.trim();
         const imgUrl = getEl('post-img-url').value.trim();
         const visibility = getEl('post-privacy').value;
+        const location = getEl('post-location').value.trim();
         if(!txt && !imgUrl) return alert("Write something or add a photo/video.");
 
         const btn = getEl('btn-submit-post'); btn.disabled = true; btn.innerText = "Posting...";
-        await push(ref(db, 'posts'), { uid: currentUser.uid, text: txt, img: imgUrl || null, visibility: visibility, views: 0, ts: serverTimestamp() });
+        await push(ref(db, 'posts'), { uid: currentUser.uid, text: txt, img: imgUrl || null, visibility: visibility, location: location || null, views: 0, ts: serverTimestamp() });
         
-        getEl('post-caption').value = ''; getEl('post-img-url').value = ''; getEl('post-preview-img').classList.add('hidden');
+        getEl('post-caption').value = ''; getEl('post-img-url').value = ''; getEl('post-location').value = ''; getEl('post-preview-img').classList.add('hidden');
         btn.disabled = false; btn.innerText = "Post";
         toggleModal('create-post-modal', false); showToast("Posted successfully!");
         
@@ -2932,6 +3351,107 @@
         else { el.style.webkitLineClamp = '3'; btn.innerText = 'Read More'; }
     };
 
+   window.populateNativeAd = (adEl, postCount) => {
+        
+        // লজিক: বিজোড় ৫-এর গুণিতক হলে Adsterra (৫, ১৫, ২৫...), জোড় হলে Monetag (১০, ২০, ৩০...)
+        const isAdsterra = (postCount / 5) % 2 !== 0; 
+
+        if (isAdsterra) {
+            // ----------------------------------------------------
+            // 1. ADSTERRA NATIVE BANNER
+            // ----------------------------------------------------
+            adEl.innerHTML = `
+                <div class="post-header" style="margin-bottom:10px;">
+                    <div class="post-user">
+                        <div style="width:40px; height:40px; border-radius:50%; background:var(--primary-gradient); display:flex; justify-content:center; align-items:center; color:white; font-size:1.2rem; box-shadow:0 4px 10px rgba(0,0,0,0.1);"><i class="fas fa-star"></i></div>
+                        <div>
+                            <div style="font-weight:600; color:var(--text-dark);">Sponsored</div>
+                            <div style="font-size:0.75rem; color:var(--text-grey);">Recommended for you</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="adsterra-native-ad-wrapper" style="width:100%; border-radius:15px; overflow:hidden; display:flex; justify-content:center; align-items:center; min-height: 100px; background: transparent;">
+                </div>
+            `;
+
+            
+            const adWrapper = adEl.querySelector('.adsterra-native-ad-wrapper');
+            
+            const adContainer = document.createElement('div');
+            adContainer.id = 'container-e1b3e0253f17323525b99d80d50beab8'; // <-- আপনার নতুন আইডি
+            adWrapper.appendChild(adContainer);
+
+            const adScript = document.createElement('script');
+            adScript.async = true;
+            adScript.dataset.cfasync = "false";
+            adScript.src = "https://pl29543240.effectivecpmnetwork.com/e1b3e0253f17323525b99d80d50beab8/invoke.js"; 
+            adWrapper.appendChild(adScript);
+            
+
+        } else {
+            // ----------------------------------------------------
+            // 2. MONETAG DIRECT LINK (5 VARIATIONS WITH DIFFERENT LINKS)
+            // ----------------------------------------------------
+            
+            // ৫টি ভিন্ন ভিন্ন অ্যাড ভ্যারিয়েশন এবং তাদের আলাদা ডিরেক্ট লিংক
+            const adVariations = [
+                {text: "Huge clearance sale! Get up to 70% off on top brands. Tap to claim your discount before it ends.",
+                    img: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    btnText: "Shop Now",
+                    link: "https://n6wxm.com/monetag_direct_link_1" // <-- আপনার প্রথম ডিরেক্ট লিংক দিন
+                },
+                {text:"Play the most addictive game of the year. Join millions of players worldwide and dominate the leaderboard!",
+                    img: "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    btnText: "Play Now",
+                    link: "https://n6wxm.com/monetag_direct_link_2" // <-- আপনার দ্বিতীয় ডিরেক্ট লিংক দিন
+                },
+                {text: "Unlock the secrets to building a successful online business. Grab your free beginner's guide today.",
+                    img: "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    btnText: "Learn More",
+                    link: "https://n6wxm.com/monetag_direct_link_3" // <-- আপনার তৃতীয় ডিরেক্ট লিংক দিন
+                },
+                {text: "Upgrade your lifestyle with the latest smart gadgets. Exclusive limited-time offer available right now!",
+                    img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    btnText: "Get Offer",
+                    link: "https://n6wxm.com/monetag_direct_link_4" // <-- আপনার চতুর্থ ডিরেক্ট লিংক দিন
+                },
+                {text: "Ready for a getaway? Discover exclusive travel packages and experience the vacation of your dreams.",
+                    img: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+                    btnText: "Book Now",
+                    link: "https://n6wxm.com/monetag_direct_link_5" // <-- আপনার পঞ্চম ডিরেক্ট লিংক দিন
+                }
+            ];
+
+            // ৫টি অ্যাডের মধ্যে থেকে র‍্যান্ডমভাবে যেকোনো একটি বেছে নেওয়া
+            const randomAd = adVariations[Math.floor(Math.random() * adVariations.length)];
+            
+            adEl.innerHTML = `
+                <div class="post-header">
+                    <div class="post-user">
+                        <div style="width:40px; height:40px; border-radius:50%; background:var(--primary-gradient); display:flex; justify-content:center; align-items:center; color:white; font-size:1.2rem; box-shadow:0 4px 10px rgba(0,0,0,0.1);"><i class="fas fa-bullhorn"></i></div>
+                        <div>
+                            <div style="font-weight:600; color:var(--text-dark);">Sponsored</div>
+                            <div style="font-size:0.75rem; color:var(--text-grey);">Recommended for you</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="post-content" style="margin-bottom:10px; font-size:0.9rem;">
+                    ${randomAd.text}
+                </div>
+                
+                <div style="width:100%; border-radius:15px; overflow:hidden; margin-bottom:10px; cursor:pointer; position:relative;" onclick="window.open('${randomAd.link}', '_blank')">
+                    <img src="${randomAd.img}" style="width:100%; height:200px; object-fit:cover; display:block;">
+                    <div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.6); color:white; padding:2px 8px; border-radius:10px; font-size:0.7rem;">Ad</div>
+                </div>
+                
+                <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border-color); padding-top:10px; margin-top:5px;">
+                    <span style="font-size:0.8rem; color:var(--text-grey); font-weight:500;"><i class="fas fa-external-link-alt" style="margin-right:5px;"></i> Visit Website</span>
+                    <button class="btn btn-primary" style="padding: 6px 20px; font-size:0.85rem; border-radius:10px; box-shadow:0 2px 10px rgba(0, 188, 212, 0.3);" onclick="window.open('${randomAd.link}', '_blank')">${randomAd.btnText}</button>
+                </div>
+            `;
+        }
+    };
     function buildPostHtml(post, user) {
         const verifiedHtml = user.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:0.8rem"></i>' : '';
         const isOwner = post.uid === currentUser.uid;
@@ -2950,7 +3470,7 @@
                     return `
                         <div>
                           ${isVid 
-    ? `<video src="${cleanSrc}" class="post-img" style="width:100%; border-radius:15px; margin-bottom:0;" autoplay controls playsinline></video>`
+    ? `<video src="${cleanSrc}" class="post-img feed-video" style="width:100%; border-radius:15px; margin-bottom:0;" muted controls playsinline loop></video>`
     : `<img src="${cleanSrc}" class="post-img" style="width:100%; border-radius:15px; margin-bottom:0;" loading="lazy" onclick="window.open('${cleanSrc}','_blank')">`
 }
                             ${images.length > 1 ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold;">${i+1}/${images.length}</div>` : ''}
@@ -2974,6 +3494,11 @@
             `;
         }
 
+        let locationHtml = '';
+        if(post.location) {
+            locationHtml = `<div style="font-size:0.75rem; color:var(--primary-color); margin-top:2px;"><i class="fas fa-map-marker-alt"></i> ${post.location}</div>`;
+        }
+
         return `
             <div class="post-card" data-pid="${post.id}">
                 <div class="post-header">
@@ -2981,7 +3506,8 @@
                       <img src="${user.dpUrl}" data-suid="${post.uid}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" loading="lazy">
                         <div>
                             <div style="font-weight:600; color:var(--text-dark); display:flex; align-items:center;">${user.name} ${verifiedHtml} ${followBtnHtml}</div>
-                            <div style="font-size:0.75rem; color:var(--text-grey);">${user.address ? user.address + ' • ' : ''}${getFriendlyDate(post.ts)} <i class="fas fa-${post.visibility === 'public' ? 'globe-americas' : 'lock'}"></i></div>
+                            <div style="font-size:0.75rem; color:var(--text-grey);">${getFriendlyDate(post.ts)} <i class="fas fa-${post.visibility === 'public' ? 'globe-americas' : 'lock'}"></i></div>
+                            ${locationHtml}
                         </div>
                     </div>
                     <div class="header-actions" style="position:relative;">
@@ -3061,13 +3587,77 @@
         }, { threshold: 0.5 });
 
         document.querySelectorAll('.post-card').forEach(card => feedObserver.observe(card));
+        
+        // Attach auto-play/pause observer to new feed videos
+        videoObserver.disconnect();
+        document.querySelectorAll('.feed-video').forEach(vid => {
+            videoObserver.observe(vid);
+        });
     }
 
+    // ==========================================
+    // INFINITE SCROLL & LAZY LOAD FEED SYSTEM
+    // ==========================================
     let unsubFeedAdded, unsubFeedChanged, unsubFeedRemoved;
+    let currentlyDisplayedCount = 5; 
+    let isRenderingFeed = false;
+
+    const infiniteScrollObserver = new IntersectionObserver((entries) => {
+        const entry = entries[0];
+        if (entry.isIntersecting) {
+            currentlyDisplayedCount += 5; 
+            if (typeof window.triggerRenderSorted === 'function') {
+                window.triggerRenderSorted();
+            }
+        }
+    }, { rootMargin: '300px' });
+
+    window.triggerRenderSorted = () => {
+        if(isRenderingFeed) return;
+        isRenderingFeed = true;
+
+        requestAnimationFrame(() => {
+            const div = getEl('feed-list-container');
+            
+            div.querySelectorAll('.sponsored-ad, .scroll-trigger').forEach(el => el.remove());
+
+            const sorted = Object.values(feedPosts).sort((a,b) => b.score - a.score);
+            const postsToRender = sorted.slice(0, currentlyDisplayedCount);
+
+            postsToRender.forEach((item, index) => {
+                div.appendChild(item.el); 
+
+                if ((index + 1) % 5 === 0) {
+                    let adEl = document.createElement('div');
+                    adEl.className = 'post-card sponsored-ad';
+                    
+                    window.populateNativeAd(adEl, index + 1); 
+                    
+                    div.appendChild(adEl);
+                }
+            });
+
+            if(currentlyDisplayedCount < sorted.length) {
+                let trigger = document.createElement('div');
+                trigger.className = 'scroll-trigger';
+                trigger.style.height = '10px';
+                trigger.style.width = '100%';
+                trigger.innerHTML = '<div style="text-align:center; color:var(--text-grey); font-size:0.85rem;"><i class="fas fa-spinner fa-spin"></i> Loading more...</div>';
+                div.appendChild(trigger);
+                infiniteScrollObserver.observe(trigger);
+            }
+
+            window.updateAllFollowButtons();
+            observePosts();
+            isRenderingFeed = false;
+        });
+    };
+
     function loadFeed() {
         const div = getEl('feed-list-container');
         div.innerHTML = '';
         feedPosts = {};
+        currentlyDisplayedCount = 5; 
         
         const postsRef = query(ref(db, 'posts'), limitToLast(60));
         
@@ -3075,25 +3665,13 @@
         if (unsubFeedChanged) unsubFeedChanged();
         if (unsubFeedRemoved) unsubFeedRemoved();
 
-        const renderSorted = () => {
-            const sorted = Object.values(feedPosts).sort((a,b) => b.score - a.score);
-            div.innerHTML = '';
-            sorted.forEach(item => {
-                div.appendChild(item.el);
-            });
-            window.updateAllFollowButtons();
-            observePosts();
-        };
-
         unsubFeedAdded = onChildAdded(postsRef, async (snap) => {
             const post = { id: snap.key, ...snap.val() };
             if(post.visibility === 'private' && post.uid !== currentUser.uid) return; 
             
-            // --- Block Check for Feed ---
             if (isBlocked(post.uid)) return;
             const theirBlockSnap = await get(ref(db, `blocked/${post.uid}/${currentUser.uid}`));
             if (theirBlockSnap.exists()) return;
-            // ----------------------------
 
             const user = (await get(ref(db, `users/${post.uid}`))).val();
             if(!user) return;
@@ -3104,7 +3682,8 @@
             const el = document.createElement('div');
             el.innerHTML = buildPostHtml(post, user);
             feedPosts[post.id] = { post, user, el: el.firstElementChild, score };
-            renderSorted();
+            
+            window.triggerRenderSorted();
         });
 
         unsubFeedChanged = onChildChanged(postsRef, async (snap) => {
@@ -3126,6 +3705,7 @@
                     div.replaceChild(temp.firstElementChild, feedPosts[post.id].el);
                 }
                 feedPosts[post.id].el = temp.firstElementChild;
+                
                 window.updateAllFollowButtons();
                 observePosts();
             }
@@ -3543,7 +4123,7 @@
             const localVid = getEl('local-video'); localVid.srcObject = localStream; localVid.muted = true;
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(callRef, 'offer')); const offer = offerSnap.val();
+            const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(callRef, 'offer')); const offer = offerSnap.val();
 
             if (offer) { await peerConnection.setRemoteDescription(new RTCSessionDescription(offer)); const answer = await peerConnection.createAnswer(); await peerConnection.setLocalDescription(answer); await update(callRef, { answer: { sdp: answer.sdp, type: answer.type } }); processIceQueue(); onChildAdded(child(callRef, 'callerCand'), (snapshot) => { if(snapshot.val()) handleRemoteCandidate(snapshot.val()); }); }
         } catch (err) { alert("Connection failed"); hangup(); }
@@ -3578,10 +4158,18 @@ const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(ca
     getEl('toggle-mute').onclick = () => { if(localStream) { isMuted = !isMuted; localStream.getAudioTracks()[0].enabled = !isMuted; getEl('toggle-mute').style.background = isMuted ? 'var(--danger)' : 'rgba(255,255,255,0.2)'; getEl('toggle-mute').innerHTML = isMuted ? '<i class="fas fa-microphone-slash"></i>' : '<i class="fas fa-microphone"></i>'; } };
     getEl('toggle-cam').onclick = () => { if(localStream) { isCamOff = !isCamOff; localStream.getVideoTracks()[0].enabled = !isCamOff; getEl('toggle-cam').style.background = isCamOff ? 'var(--danger)' : 'rgba(255,255,255,0.2)'; getEl('toggle-cam').innerHTML = isCamOff ? '<i class="fas fa-video-slash"></i>' : '<i class="fas fa-video"></i>'; } };
 
+    // VIDEO CALL CAMERA SWITCH BUG FIX
     getEl('switch-cam-btn').onclick = async () => {
         if(!localStream) return;
         window.facingMode = window.facingMode === 'user' ? 'environment' : 'user';
         try {
+            // First Stop the existing video track fully
+            const oldVideoTrack = localStream.getVideoTracks()[0];
+            if(oldVideoTrack) {
+                localStream.removeTrack(oldVideoTrack);
+                oldVideoTrack.stop();
+            }
+
             let newStream;
             try {
                 newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: window.facingMode } } });
@@ -3590,12 +4178,6 @@ const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(ca
             }
             
             const newVideoTrack = newStream.getVideoTracks()[0];
-            const oldVideoTrack = localStream.getVideoTracks()[0];
-            
-            if(oldVideoTrack) {
-                localStream.removeTrack(oldVideoTrack);
-                oldVideoTrack.stop();
-            }
             localStream.addTrack(newVideoTrack);
             getEl('local-video').srcObject = localStream;
             
@@ -3605,7 +4187,7 @@ const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(ca
             }
         } catch(e) {
             console.error("Camera switch error:", e);
-            alert("Could not switch camera.");
+            alert("Could not switch camera. Hardware restricted.");
             window.facingMode = window.facingMode === 'user' ? 'environment' : 'user'; 
         }
     };
@@ -3647,7 +4229,6 @@ const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(ca
     });
 
     window.openSharedStory = async (uid, storyId, fallbackImg) => {
-        // --- Block Check for Shared Story ---
         if (uid !== currentUser.uid) {
             const [myBlockSnap, theirBlockSnap] = await Promise.all([
                 get(ref(db, `blocked/${currentUser.uid}/${uid}`)),
@@ -3657,7 +4238,6 @@ const callRef = ref(db, `calls/${callId}`); const offerSnap = await get(child(ca
                 return showToast("This story is unavailable.");
             }
         }
-        // ------------------------------------
 
         toggleModal('single-post-modal', true);
         const container = getEl('single-post-container');
