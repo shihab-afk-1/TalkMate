@@ -1,11 +1,11 @@
 import { sendPushNotification } from './notification-api.js';
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
 
-const db = getDatabase();
 const APP_URL = "https://talkmate-two.vercel.app";
 
 // Helper: Get User's OneSignal ID from Firebase
 async function getUserOneSignalId(uid) {
+    const db = getDatabase(); // ডাটাবেসটি এখন ফাংশনের ভেতরে কল করা হয়েছে, যাতে ক্র্যাশ না করে
     const snap = await get(ref(db, `users/${uid}/onesignalId`));
     return snap.exists() ? snap.val() : null;
 }
