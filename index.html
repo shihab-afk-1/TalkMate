@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -355,7 +354,38 @@
         /* Typing animation */
         .typing-dots::after { content: '.'; animation: typing 1.5s steps(4, end) infinite; }
         @keyframes typing { 0%, 20% { color: transparent; text-shadow: .25em 0 0 transparent, .5em 0 0 transparent; } 40% { color: var(--primary-color); text-shadow: .25em 0 0 transparent, .5em 0 0 transparent; } 60% { text-shadow: .25em 0 0 var(--primary-color), .5em 0 0 transparent; } 80%, 100% { text-shadow: .25em 0 0 var(--primary-color), .5em 0 0 var(--primary-color); } }
-        
+        /* ========================================== */
+/* MODERN SKELETON LOADING SYSTEM             */
+/* ========================================== */
+
+.is-skeleton { pointer-events: none !important; user-select: none !important; }
+
+.skeleton {
+    background: #e2e5e7;
+    background-image: linear-gradient(90deg, transparent 0px, rgba(255, 255, 255, 0.6) 40px, transparent 80px);
+    background-size: 200vw 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 8px;
+}
+
+body.dark-mode .skeleton {
+    background: #2c2c2c;
+    background-image: linear-gradient(90deg, transparent 0px, rgba(255, 255, 255, 0.05) 40px, transparent 80px);
+}
+
+@keyframes shimmer {
+    0% { background-position: -100vw 0; }
+    100% { background-position: 100vw 0; }
+}
+
+/* Skeleton Utilities */
+.sk-avatar { width: 45px; height: 45px; border-radius: 50%; flex-shrink: 0; }
+.sk-text { height: 12px; margin-bottom: 8px; border-radius: 6px; width: 100%; }
+.sk-text.short { width: 50%; }
+.sk-text.title { height: 16px; width: 70%; margin-bottom: 12px; }
+.sk-media { width: 100%; aspect-ratio: 1; border-radius: 15px; margin-top: 10px; }
+.sk-action { width: 80px; height: 30px; border-radius: 15px; }
+  
     </style>
 </head>
 <body>
@@ -500,8 +530,9 @@
                 <p id="my-profile-dob" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 5px; padding: 0 20px;">DOB</p>
                 
                 <button class="btn btn-primary" style="margin-top: 15px; border-radius: 20px; font-size: 0.85rem; padding: 8px 25px;" onclick="openEditProfile()">Edit Profile</button>
-            </div>
-
+<button class="btn btn-primary" style="border-radius: 20px; font-size: 0.85rem; padding: 8px 15px; background: #fff; color: var(--primary-color); border: 1px solid var(--primary-color);" onclick="copyMyProfileLink()"><i class="fas fa-share-alt"></i></button>
+                </div>
+           
             <!-- Stats -->
             <div style="display: flex; justify-content: space-evenly; margin-top: 25px; padding: 20px 0; background: var(--bg-card); border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color);">
                 <div style="text-align: center;">
@@ -828,7 +859,26 @@
             <button class="btn btn-primary" id="btn-send-contact" style="width:100%; margin-top:10px;" onclick="sendContactMessage()">Send Message</button>
         </div>
     </div>
+<div id="report-post-modal" class="full-screen hidden" style="z-index:160; background:var(--bg-card);">
+        <div class="modal-header"><h3>Report Post</h3><button class="btn-icon" onclick="toggleModal('report-post-modal', false)"><i class="fas fa-times"></i></button></div>
+        <div class="modal-body">
+            <p style="color:var(--text-grey); margin-bottom:20px; font-size: 0.9rem;">Please select a reason for reporting this post. We will review it shortly.</p>
+            <input type="hidden" id="report-post-id">
+            
+            <select id="report-reason-select" style="background:var(--bg-body); color:var(--text-dark); border:none; padding:15px 20px; border-radius:20px; outline:none; margin-bottom:12px; font-family:inherit; font-size:0.95rem; width:100%;">
+                <option value="Spam">Spam</option>
+                <option value="Adult Content">Adult Content</option>
+                <option value="Harassment">Harassment</option>
+                <option value="Hate Speech">Hate Speech</option>
+                <option value="Violence">Violence</option>
+                <option value="Scam/Fraud">Scam / Fraud</option>
+                <option value="Other">Other</option>
+            </select>
 
+            <textarea id="report-additional-info" placeholder="Additional details (optional)..." style="height: 100px;"></textarea>
+            <button class="btn btn-danger" id="btn-submit-report-modal" style="width:100%; margin-top:10px;" onclick="submitPostReport()">Submit Report</button>
+        </div>
+    </div>
     <div id="change-pass-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
         <div class="modal-header"><h3>Change Password</h3><button class="btn-icon" onclick="toggleModal('change-pass-modal', false)"><i class="fas fa-times"></i></button></div>
         <div class="modal-body">
@@ -912,7 +962,8 @@
             <div style="display:flex; gap:10px; align-items:center;">
                 <div style="position:relative;">
                     <button class="btn-icon" onclick="toggleProfileMenu()"><i class="fas fa-ellipsis-v"></i></button>
-                    <div class="dropdown-menu" id="profile-dropdown-menu" style="right:0; top:40px; width:150px; z-index:1000;">
+                    <div class="dropdown-menu" id="profile-dropdown-menu" style="right:0; top:40px; width:160px; z-index:1000;">
+                        <div class="dropdown-item" onclick="handleCopyProfileLink()"><i class="fas fa-link" style="margin-right:8px;"></i>Copy Profile Link</div>
                         <div class="dropdown-item" onclick="handleProfileBlock()" style="color:var(--danger)"><i class="fas fa-ban" style="margin-right:8px;"></i>Block User</div>
                         <div class="dropdown-item" onclick="handleProfileReport()" style="color:var(--danger)"><i class="fas fa-flag" style="margin-right:8px;"></i>Report User</div>
                     </div>
@@ -1072,6 +1123,72 @@
     };
 
     let currentUser = null;
+    // ==========================================
+// GLOBAL SKELETON MANAGER
+// ==========================================
+window.SkeletonManager = {
+    feed: () => `
+        <div class="post-card is-skeleton" style="box-shadow:none; border:1px solid var(--border-color);">
+            <div class="post-header">
+                <div style="display:flex; align-items:center; width:100%; gap:10px;">
+                    <div class="skeleton sk-avatar"></div>
+                    <div style="flex:1;">
+                        <div class="skeleton sk-text title"></div>
+                        <div class="skeleton sk-text short"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="skeleton sk-text" style="width: 90%;"></div>
+            <div class="skeleton sk-text" style="width: 75%;"></div>
+            <div class="skeleton sk-media"></div>
+            <div class="post-actions" style="border-top:1px solid var(--border-color); padding-top:10px; display:flex; gap:15px;">
+                <div class="skeleton sk-action"></div>
+                <div class="skeleton sk-action"></div>
+            </div>
+        </div>`,
+    list: () => `
+        <div class="list-item is-skeleton" style="display:flex; align-items:center; padding:15px 25px; border-bottom:1px solid var(--border-color);">
+            <div class="skeleton sk-avatar"></div>
+            <div style="flex:1; margin-left:15px;">
+                <div class="skeleton sk-text title" style="margin-bottom:8px; width:60%;"></div>
+                <div class="skeleton sk-text short" style="margin-bottom:0; width:40%;"></div>
+            </div>
+        </div>`,
+    profile: () => `
+        <div class="is-skeleton" style="padding:20px; text-align:center;">
+            <div class="skeleton" style="width:100px; height:100px; border-radius:50%; margin:0 auto 15px;"></div>
+            <div class="skeleton sk-text title" style="margin:0 auto 10px; height:20px;"></div>
+            <div class="skeleton sk-text short" style="margin:0 auto 10px;"></div>
+            <div style="display:flex; gap:10px; justify-content:center; margin-top:15px;">
+                <div class="skeleton sk-action" style="width:120px; height:35px; border-radius:20px;"></div>
+                <div class="skeleton sk-action" style="width:40px; height:35px; border-radius:20px;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-evenly; margin-top:25px; padding:20px 0; border-top:1px solid var(--border-color);">
+                <div class="skeleton" style="width:60px; height:45px; border-radius:8px;"></div>
+                <div class="skeleton" style="width:60px; height:45px; border-radius:8px;"></div>
+                <div class="skeleton" style="width:60px; height:45px; border-radius:8px;"></div>
+            </div>
+        </div>`,
+    grid: () => `<div class="skeleton is-skeleton" style="width:100%; aspect-ratio:1; border-radius:10px;"></div>`,
+    chat: () => `
+        <div class="is-skeleton" style="display:flex; flex-direction:column; gap:15px; padding:20px;">
+            <div class="skeleton" style="width:65%; height:55px; border-radius:18px; border-bottom-left-radius:4px; align-self:flex-start;"></div>
+            <div class="skeleton" style="width:50%; height:45px; border-radius:18px; border-bottom-right-radius:4px; align-self:flex-end;"></div>
+            <div class="skeleton" style="width:75%; height:70px; border-radius:18px; border-bottom-left-radius:4px; align-self:flex-start;"></div>
+        </div>`,
+    
+    show: (containerId, type, count = 1) => {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        let html = '';
+        for(let i=0; i<count; i++) html += window.SkeletonManager[type]();
+        container.innerHTML = html;
+    },
+    remove: (containerId) => {
+        const container = document.getElementById(containerId);
+        if (container) container.querySelectorAll('.is-skeleton').forEach(el => el.remove());
+    }
+};
     let myCustomId = null; 
     window.currentProfileUid = null;
     window.myDpUrl = null;
@@ -1723,8 +1840,27 @@ getEl('back-chat').onclick = () => {
                 const myProfileNameEl = getEl('my-profile-name');
                 if(myProfileNameEl) {
                     myProfileNameEl.innerHTML = `${d.name} ${d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:1rem"></i>' : ''}`;
+                    
                 }
             } 
+// --- Auto-open Shared Post & Profile Link ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedPostId = urlParams.get('postId');
+        const sharedProfileId = urlParams.get('profileId');
+        
+        if (sharedPostId) {
+            setTimeout(() => {
+                openSinglePost(sharedPostId);
+                // URL ক্লিন করা
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }, 1000); 
+        } else if (sharedProfileId) {
+            setTimeout(() => {
+                loadProfileById(sharedProfileId);
+                // URL ক্লিন করা
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }, 1000);
+        }
         });
 
         onValue(ref(db, `follows/${currentUser.uid}`), snap => {
@@ -1758,7 +1894,7 @@ getEl('back-chat').onclick = () => {
             if(!isRequestsTabActive) getEl('req-dot').classList.add('show');
         });
 
-        loadProfileUI(); loadContacts(); loadRequests(); loadUserNotifications(); loadCalls(); loadBlockedUsers(); loadFeed(); loadStories();
+        loadProfileUI(); loadContacts(); loadRequests(); loadUserNotifications(); loadCalls(); loadBlockedUsers(); loadFeed(); loadStories(); 
         
         document.querySelectorAll('.nav-item[data-tab]').forEach(t => {
             t.onclick = () => {
@@ -2276,8 +2412,37 @@ getEl('back-chat').onclick = () => {
             const snap = await get(ref(db, `follows/${targetUid}/${currentUser.uid}`));
             if(snap.exists()) {
                 const tsNow = Date.now();
-                await update(ref(db), {[`contacts/${currentUser.uid}/${targetUid}/lastTs`]: tsNow,[`contacts/${targetUid}/${currentUser.uid}/lastTs`]: tsNow
+                await update(ref(db), {
+                    [`contacts/${currentUser.uid}/${targetUid}/lastTs`]: tsNow,
+                    [`contacts/${targetUid}/${currentUser.uid}/lastTs`]: tsNow
                 });
+            }
+
+            // ==========================================
+            // NEW: Remove from Suggested Users List dynamically
+            // ==========================================
+            const suggestContainer = getEl('suggestions-list-container');
+            if (suggestContainer) {
+                // সাজেস্ট লিস্টের ভেতর এই ইউজারের ফলো বাটনটা খুঁজবে
+                const btnInSuggest = suggestContainer.querySelector(`.follow-btn[data-uid="${targetUid}"]`);
+                if (btnInSuggest) {
+                    const listItem = btnInSuggest.closest('.list-item');
+                    if (listItem) {
+                        // স্মুথ অ্যানিমেশন দিয়ে হাইড করা
+                        listItem.style.transition = 'opacity 0.3s ease, transform 0.3s ease, margin 0.3s ease, height 0.3s ease';
+                        listItem.style.opacity = '0';
+                        listItem.style.transform = 'translateX(-50px)';
+                        
+                        // অ্যানিমেশন শেষ হওয়ার পর DOM থেকে রিমুভ করা
+                        setTimeout(() => {
+                            listItem.remove();
+                            // যদি লিস্ট একদম খালি হয়ে যায় তবে মেসেজ দেখাবে
+                            if (suggestContainer.children.length === 0) {
+                                suggestContainer.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new suggestions right now.</p>';
+                            }
+                        }, 300);
+                    }
+                }
             }
         }
     };
@@ -2317,6 +2482,7 @@ getEl('back-chat').onclick = () => {
     };
 
     window.loadMyProfileTab = async () => {
+      window.SkeletonManager.show('my-profile-grid', 'grid', 6); // ৬টি
         const s = await get(ref(db, `users/${currentUser.uid}`)); 
         const d = s.val();
         if(d) {
@@ -2469,6 +2635,7 @@ getEl('back-chat').onclick = () => {
     let chatListeners = []; // রিয়েল-টাইম প্রিভিউয়ের ইভেন্ট ক্লিন করার জন্য
 
     function loadContacts() {
+      window.SkeletonManager.show('contacts-list-container', 'list', 6);
         if(unsubContacts) unsubContacts();
         
         unsubContacts = onValue(ref(db, `contacts/${currentUser.uid}`), async snap => {
@@ -2737,6 +2904,7 @@ getEl('back-chat').onclick = () => {
         } else { toggleClass('friend-actions', 'hidden', true); toggleClass('group-actions', 'hidden', false); }
 
    const msgList = getEl('messages-list'); 
+       window.SkeletonManager.show('messages-list', 'chat', 1); // Chat bubble skeleton
         if (unsubMessages) { unsubMessages(); unsubMessages = null; }
 
         unsubMessages = onValue(ref(db, `messages/${currentChatId}`), snapshot => {
@@ -3054,6 +3222,7 @@ getEl('back-chat').onclick = () => {
 
         const snap = await get(ref(db, 'posts'));
         const grid = getEl('fp-profile-grid');
+        window.SkeletonManager.show('fp-profile-grid', 'grid', 6); // গ্রিড
         grid.innerHTML = '';
         let postCount = 0;
         const posts =[];
@@ -3107,6 +3276,7 @@ getEl('back-chat').onclick = () => {
 
     let unsubRequests;
     function loadRequests() {
+      window.SkeletonManager.show('requests-list-container', 'list', 3);
         if(unsubRequests) unsubRequests();
         unsubRequests = onValue(ref(db, `followers/${currentUser.uid}`), async snap => {
             const div = getEl('requests-list-container'); div.innerHTML = '';
@@ -3149,6 +3319,7 @@ getEl('back-chat').onclick = () => {
 
     let unsubNotifAdded, unsubNotifRemoved;
     function loadUserNotifications() {
+      window.SkeletonManager.show('user-notifications-list', 'list', 5);
         const div = getEl('user-notifications-list'); 
         div.innerHTML = '<p id="no-notifs-msg" style="text-align:center; color:var(--text-grey); padding:15px;">Loading...</p>';
         
@@ -3241,26 +3412,114 @@ getEl('back-chat').onclick = () => {
         await remove(ref(db, `user_notifications/${currentUser.uid}/${id}`));
     };
 
-    function loadSuggestions() {
-        get(ref(db, 'users')).then(snap => {
-            const div = getEl('suggestions-list-container'); div.innerHTML = ''; let count = 0;
-            snap.forEach(c => {
-                if(count >= 20) return; const u = c.val(); const uid = c.key;
-                if(uid === currentUser.uid) return; if(myFollowing[uid]) return; if(isBlocked(uid)) return;
+    async function loadSuggestions() {
+      window.SkeletonManager.show('suggestions-list-container', 'list', 3);
+        const div = getEl('suggestions-list-container');
+        div.innerHTML = '<p style="text-align:center; color:var(--text-grey); padding:15px;"><i class="fas fa-spinner fa-spin"></i> Finding friends for you...</p>';
+
+        try {
+            // ১. নিজের ডাটা বের করা (Address মেলানোর জন্য)
+            const mySnap = await get(ref(db, `users/${currentUser.uid}`));
+            const myData = mySnap.val() || {};
+            const myAddress = (myData.address || '').toLowerCase().trim();
+
+            // ২. ডাটাবেস থেকে লাস্ট ১০০ জন ইউজার আনা (যাতে অ্যাপ স্লো না হয়)
+            const usersSnap = await get(query(ref(db, 'users'), limitToLast(100)));
+            if (!usersSnap.exists()) {
+                div.innerHTML = '<p style="text-align:center; color:var(--text-grey); padding:15px;">No suggestions right now.</p>';
+                return;
+            }
+
+            // ৩. কে কে অনলাইনে আছে তার স্ট্যাটাস আনা
+            const statusSnap = await get(ref(db, 'status'));
+            const statuses = statusSnap.val() || {};
+
+            let potentialUsers = [];
+
+            usersSnap.forEach(c => {
+                const uid = c.key;
+                const u = c.val();
+
+                // বেসিক ফিল্টার (নিজেকে, ফলো করা ইউজারকে এবং ব্লক করা ইউজারকে বাদ দেওয়া)
+                if(uid === currentUser.uid) return;
+                if(myFollowing[uid]) return;
+                if(isBlocked(uid)) return;
+
+                // ==========================================
+                // Scoring Algorithm (পয়েন্ট সিস্টেম)
+                // ==========================================
+                let score = 0;
+
+                // ফিচার ১: Active Users First (অনলাইনে থাকলে ৫০ পয়েন্ট)
+                const userStatus = statuses[uid];
+                if (userStatus && userStatus.state === 'online') {
+                    score += 50; 
+                } else if (userStatus && userStatus.lastSeen) {
+                    const diffHours = (Date.now() - userStatus.lastSeen) / (1000 * 60 * 60);
+                    if (diffHours < 24) score += 20; // ২৪ ঘণ্টার মধ্যে এক্টিভ থাকলে ২০ পয়েন্ট
+                }
+
+                // ফিচার ২: Nearby / Same Address (একই এলাকার হলে ৩০ পয়েন্ট)
+                if (myAddress && u.address && u.address.toLowerCase().trim().includes(myAddress)) {
+                    score += 30;
+                }
+
+                // ভেরিফাইড ইউজারদের জন্য বোনাস পয়েন্ট (Optional)
+                if (u.isVerified) score += 10;
+
+                // ফিচার ৩: Random Discovery (লিস্ট যেন সবসময় এক না থাকে, তাই ০-১৫ র‍্যান্ডম পয়েন্ট)
+                score += Math.floor(Math.random() * 15);
+
+                potentialUsers.push({ uid, user: u, score });
+            });
+
+            // ৪. যার পয়েন্ট সবচেয়ে বেশি, তাকে ওপরে রাখা (Sort by highest score)
+            potentialUsers.sort((a, b) => b.score - a.score);
+            
+            // ৫. টপ ১৫ জনকে বেছে নেওয়া
+            const topSuggestions = potentialUsers.slice(0, 15);
+
+            div.innerHTML = '';
+            if (topSuggestions.length === 0) {
+                div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new suggestions right now.</p>';
+                return;
+            }
+
+            // ৬. UI তে শো করানো
+            topSuggestions.forEach(item => {
+                const u = item.user;
+                const uid = item.uid;
                 const verifiedHtml = u.isVerified ? '<i class="fas fa-check-circle verified-badge"></i>' : '';
+                
+                // ইউজার কেন সাজেস্ট করা হলো তার রিজন ট্যাগ (Reason Tag)
+                let reasonHtml = '';
+                if (item.score >= 50) {
+                    reasonHtml = '<span style="font-size:0.7rem; color:var(--success); font-weight:500;"><i class="fas fa-circle" style="font-size:7px; margin-right:3px;"></i> Active Now</span>';
+                } else if (myAddress && u.address && u.address.toLowerCase().trim().includes(myAddress)) {
+                    reasonHtml = '<span style="font-size:0.7rem; color:var(--primary-color); font-weight:500;"><i class="fas fa-map-marker-alt"></i> Near you</span>';
+                } else {
+                    reasonHtml = '<span style="font-size:0.7rem; color:var(--text-grey);">Suggested for you</span>';
+                }
+
                 div.innerHTML += `
                 <div class="list-item">
                     <div style="display:flex; flex:1; align-items:center; cursor:pointer;" onclick="loadProfileById('${uid}')">
                         <img src="${u.dpUrl}" class="avatar" loading="lazy">
-                        <div class="item-info"><div class="item-name">${u.name} ${verifiedHtml}</div></div>
+                        <div class="item-info">
+                            <div class="item-name">${u.name} ${verifiedHtml}</div>
+                            ${reasonHtml}
+                        </div>
                     </div>
                     <button class="follow-btn" data-uid="${uid}" data-type="list" onclick="event.stopPropagation(); toggleFollow('${uid}')" style="border:none; cursor:pointer; font-weight:600; padding:6px 15px; border-radius:20px; transition:0.2s;"></button>
                 </div>`;
-                count++;
             });
-            if(count === 0) div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new suggestions right now.</p>';
+
             window.updateAllFollowButtons();
-        });
+
+        } catch(error) {
+            console.error("Error loading suggestions:", error);
+            div.innerHTML = '<p style="text-align:center; color:var(--danger); font-size:0.9rem; padding:15px;">Failed to load suggestions.</p>';
+        }
     }
 
     window.filterFriends = () => renderLocalSearch(myFriends.filter(f => f.name.toLowerCase().includes(getEl('local-search-input').value.toLowerCase())));
@@ -3354,7 +3613,8 @@ getEl('back-chat').onclick = () => {
    window.populateNativeAd = (adEl, postCount) => {
         
         // লজিক: বিজোড় ৫-এর গুণিতক হলে Adsterra (৫, ১৫, ২৫...), জোড় হলে Monetag (১০, ২০, ৩০...)
-        const isAdsterra = (postCount / 5) % 2 !== 0; 
+        // প্রতি ১০ বারের মধ্যে ৮ বার Adsterra এবং ২ বার Monetag আসবে
+const isAdsterra = Math.random() < 0.8; 
 
         if (isAdsterra) {
             // ----------------------------------------------------
@@ -3512,7 +3772,8 @@ getEl('back-chat').onclick = () => {
                     </div>
                     <div class="header-actions" style="position:relative;">
                         <div class="action-btn" onclick="togglePostMenu(event)" style="box-shadow:none; width:30px; height:30px; background:transparent;"><i class="fas fa-ellipsis-v" style="color:var(--text-grey)"></i></div>
-                        <div class="dropdown-menu" style="right:0; top:35px; width:190px; z-index:100;">
+                      <div class="dropdown-menu" style="right:0; top:35px; width:190px; z-index:100;">
+                            <div class="dropdown-item" onclick="copyPostLink('${post.id}')"><i class="fas fa-link" style="width:20px;"></i> Copy Link</div>
                             ${isOwner ? `
                             <div class="dropdown-item" onclick="openEditPostModal('${post.id}')"><i class="fas fa-edit" style="width:20px;"></i> Edit Caption</div>
                             <div class="dropdown-item" onclick="togglePostVisibility('${post.id}', '${post.visibility}')"><i class="fas fa-${post.visibility === 'public' ? 'lock' : 'globe'}" style="width:20px;"></i> ${post.visibility === 'public' ? 'Make Private' : 'Make Public'}</div>
@@ -3613,51 +3874,62 @@ getEl('back-chat').onclick = () => {
     }, { rootMargin: '300px' });
 
     window.triggerRenderSorted = () => {
-        if(isRenderingFeed) return;
-        isRenderingFeed = true;
+    if(isRenderingFeed) return;
+    isRenderingFeed = true;
 
-        requestAnimationFrame(() => {
-            const div = getEl('feed-list-container');
-            
-            div.querySelectorAll('.sponsored-ad, .scroll-trigger').forEach(el => el.remove());
+    requestAnimationFrame(() => {
+        const div = getEl('feed-list-container');
+        
+        // শুধু Scroll Trigger রিমুভ করব, Ad রিমুভ করব না
+        div.querySelectorAll('.scroll-trigger').forEach(el => el.remove());
+        window.SkeletonManager.remove('feed-list-container'); // ডেটা আসলে স্কেলিটন রিমুভ
+        const sorted = Object.values(feedPosts).sort((a,b) => b.score - a.score);
+        const postsToRender = sorted.slice(0, currentlyDisplayedCount);
 
-            const sorted = Object.values(feedPosts).sort((a,b) => b.score - a.score);
-            const postsToRender = sorted.slice(0, currentlyDisplayedCount);
-
-            postsToRender.forEach((item, index) => {
+        postsToRender.forEach((item, index) => {
+            // যদি পোস্টটি আগে থেকে ফিডে না থাকে, তবেই অ্যাপেন্ড করব
+            if (!div.contains(item.el)) {
                 div.appendChild(item.el); 
-
-                if ((index + 1) % 5 === 0) {
-                    let adEl = document.createElement('div');
-                    adEl.className = 'post-card sponsored-ad';
-                    
-                    window.populateNativeAd(adEl, index + 1); 
-                    
-                    div.appendChild(adEl);
-                }
-            });
-
-            if(currentlyDisplayedCount < sorted.length) {
-                let trigger = document.createElement('div');
-                trigger.className = 'scroll-trigger';
-                trigger.style.height = '10px';
-                trigger.style.width = '100%';
-                trigger.innerHTML = '<div style="text-align:center; color:var(--text-grey); font-size:0.85rem;"><i class="fas fa-spinner fa-spin"></i> Loading more...</div>';
-                div.appendChild(trigger);
-                infiniteScrollObserver.observe(trigger);
             }
 
-            window.updateAllFollowButtons();
-            observePosts();
-            isRenderingFeed = false;
+            // Ad বসানোর লজিক (একবার তৈরি হলে আর দ্বিতীয়বার তৈরি হবে না)
+            if ((index + 1) % 3 === 0) {
+                if (!item.adEl) {
+                    // Ad আগে থেকে না থাকলে নতুন করে বানাবো
+                    let adEl = document.createElement('div');
+                    adEl.className = 'post-card sponsored-ad';
+                    window.populateNativeAd(adEl, index + 1); 
+                    item.adEl = adEl; // মেমোরিতে সেভ করে রাখলাম
+                    div.appendChild(item.adEl);
+                } else if (!div.contains(item.adEl)) {
+                    // Ad আগে থেকে থাকলে শুধু শো করাবো, নতুন করে লোড হবে না
+                    div.appendChild(item.adEl);
+                }
+            }
         });
-    };
+
+        if(currentlyDisplayedCount < sorted.length) {
+            let trigger = document.createElement('div');
+            trigger.className = 'scroll-trigger';
+            trigger.style.height = '20px';
+            trigger.style.width = '100%';
+            trigger.innerHTML = '<div style="text-align:center; color:var(--text-grey); font-size:0.85rem; padding: 10px;"><i class="fas fa-spinner fa-spin"></i> Loading more...</div>';
+            div.appendChild(trigger);
+            infiniteScrollObserver.observe(trigger);
+        }
+
+        window.updateAllFollowButtons();
+        observePosts();
+        isRenderingFeed = false;
+    });
+};
 
     function loadFeed() {
-        const div = getEl('feed-list-container');
-        div.innerHTML = '';
+    const div = getEl('feed-list-container');
+    // ডেটা আসার আগে ৩টি Feed Skeleton দেখাবে
+    window.SkeletonManager.show('feed-list-container', 'feed', 3);
         feedPosts = {};
-        currentlyDisplayedCount = 5; 
+        currentlyDisplayedCount = 3; 
         
         const postsRef = query(ref(db, 'posts'), limitToLast(60));
         
@@ -3777,7 +4049,46 @@ getEl('back-chat').onclick = () => {
 
     window.deletePost = async (postId) => { if(confirm("Delete this post?")) { await remove(ref(db, `posts/${postId}`)); showToast("Post deleted"); toggleModal('single-post-modal', false); } };
     window.togglePostVisibility = async (postId, currentVis) => { const newVis = currentVis === 'public' ? 'private' : 'public'; await update(ref(db, `posts/${postId}`), { visibility: newVis }); showToast(newVis === 'private' ? "Post is now Private" : "Post is now Public"); };
-    window.reportPost = async (postId) => { if(confirm("Report this post?")) { await push(ref(db, 'admin/reports'), { reporterUid: currentUser.uid, postId: postId, reason: "Post Report", timestamp: serverTimestamp() }); showToast("Report submitted."); } };
+    // --- 1. Copy Post Link Logic ---
+    window.copyPostLink = (postId) => {
+        const link = window.location.origin + window.location.pathname + '?postId=' + postId;
+        copyToClipboard(link);
+    };
+
+    // --- 2. Advanced Report Modal Logic ---
+    window.reportPost = (postId) => {
+        document.getElementById('report-post-id').value = postId;
+        document.getElementById('report-reason-select').value = 'Spam'; // Reset default
+        document.getElementById('report-additional-info').value = ''; // Reset details
+        toggleModal('report-post-modal', true);
+    };
+
+    window.submitPostReport = async () => {
+        const postId = document.getElementById('report-post-id').value;
+        const reason = document.getElementById('report-reason-select').value;
+        const details = document.getElementById('report-additional-info').value.trim();
+        const fullReason = details ? `${reason} - ${details}` : reason;
+
+        const btn = document.getElementById('btn-submit-report-modal');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        btn.disabled = true;
+
+        try {
+            await push(ref(db, 'admin/reports'), { 
+                reporterUid: currentUser.uid, 
+                postId: postId, 
+                reason: fullReason, 
+                timestamp: serverTimestamp() 
+            });
+            showToast("Report submitted successfully.");
+            toggleModal('report-post-modal', false);
+        } catch(e) { 
+            alert("Error submitting report."); 
+        } finally {
+            btn.innerHTML = 'Submit Report';
+            btn.disabled = false;
+        }
+    };
 
     let userCache = {};
     const getUserCached = async (uid) => {
@@ -3807,7 +4118,7 @@ getEl('back-chat').onclick = () => {
         cancelCommentReply();
         toggleModal('comments-modal', true);
         const div = getEl('comments-list-container');
-        
+        window.SkeletonManager.show('comments-list-container', 'list', 4);
         onValue(ref(db, `posts/${postId}/comments`), async snap => {
             if(activeCommentPostId !== postId) return;
             div.innerHTML = '';
@@ -3999,6 +4310,7 @@ getEl('back-chat').onclick = () => {
         toggleModal('single-post-modal', true);
         
         const container = getEl('single-post-container');
+        window.SkeletonManager.show('single-post-container', 'feed', 1);
         container.innerHTML = buildPostHtml(post, user);
         window.updateAllFollowButtons();
 
@@ -4275,7 +4587,22 @@ getEl('back-chat').onclick = () => {
             `;
         }
     };
+// --- Copy Friend's Profile Link ---
+    window.handleCopyProfileLink = () => {
+        toggleProfileMenu(); // থ্রি-ডট মেনু ক্লোজ করা
+        if(window.currentProfileUid) {
+            const link = window.location.origin + window.location.pathname + '?profileId=' + window.currentProfileUid;
+            copyToClipboard(link);
+        }
+    };
 
+    // --- Copy My Own Profile Link ---
+    window.copyMyProfileLink = () => {
+        if(currentUser && currentUser.uid) {
+            const link = window.location.origin + window.location.pathname + '?profileId=' + currentUser.uid;
+            copyToClipboard(link);
+        }
+    };
     window.openStoryViewersList = async (storyId) => {
         pauseStory(); 
         getEl('follow-list-title').innerText = 'Story Viewers';
