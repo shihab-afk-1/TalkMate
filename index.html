@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- OneSignal Web SDK -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TalkMate - Pro</title>
@@ -1087,7 +1090,12 @@ body.dark-mode .skeleton {
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
     import { getDatabase, ref, set, get, onValue, push, child, update, serverTimestamp, onChildAdded, onChildChanged, onChildRemoved, onDisconnect, remove, off, query, limitToLast, orderByChild, endBefore } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
-
+     // --- OneSignal Imports ---
+import { initializeOneSignal } from './js/onesignal-init.js';
+import { 
+    notifyNewMessage, notifyPostLike, notifyPostComment, 
+    notifyNewFollower, notifyIncomingCall 
+} from './js/notification.js';
     const firebaseConfig = {
       apiKey: "AIzaSyCjZV3yPpdVQ151o7tWcZFNARDnZQsKSVA",
       authDomain: "sm-chats-2026.firebaseapp.com",
@@ -1791,11 +1799,12 @@ getEl('back-chat').onclick = () => {
         // হিস্ট্রি থেকে বের হয়ে যাওয়ার জন্য ২ স্টেপ পেছনে যাওয়া হচ্ছে
         history.go(-2); 
     };
-
+     
     onAuthStateChanged(auth, async (user) => {
         if (user) {
             currentUser = user; 
             window.currentUser = user; 
+            initializeOneSignal(user);
             toggleClass('auth-screen', 'hidden', true);
             try {
                 const s = await get(ref(db, `users/${user.uid}`));
@@ -2408,6 +2417,8 @@ getEl('back-chat').onclick = () => {
                 fromUid: currentUser.uid,
                 ts: serverTimestamp()
             });
+            // --- Send Push Notification ---
+            notifyNewFollower(targetUid, currentUser.displayName || "Someone", currentUser.uid);
 
             const snap = await get(ref(db, `follows/${targetUid}/${currentUser.uid}`));
             if(snap.exists()) {
@@ -3039,6 +3050,11 @@ getEl('back-chat').onclick = () => {
         if(txt || pendingImageUrl) { 
             const tsNow = Date.now();
             await push(ref(db, `messages/${currentChatId}`), { from: currentUser.uid, txt: txt, img: pendingImageUrl || null, ts: serverTimestamp(), seen: false }); 
+            // --- Send Push Notification ---
+if (!isGroupChat && currentChatUser) {
+    let msgText = txt ? txt : (pendingImageUrl ? "📷 Sent an image" : "📨 Sent a message"); 
+    notifyNewMessage(currentChatUser.uid, currentUser.displayName || "Someone", msgText, currentChatId);
+}
             const updates = {};
             if(!isGroupChat) { updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; }
             if(Object.keys(updates).length > 0) update(ref(db), updates);
@@ -4043,6 +4059,8 @@ const isAdsterra = Math.random() < 0.8;
                     postId: postId,
                     ts: serverTimestamp()
                 });
+                // --- Send Push Notification ---
+                notifyPostLike(postOwnerUid, currentUser.displayName || "Someone", postId);
             }
         }
     };
@@ -4234,6 +4252,8 @@ const isAdsterra = Math.random() < 0.8;
                         text: txt,
                         ts: serverTimestamp()
                     });
+                    // --- Send Push Notification ---
+                    notifyPostComment(ownerUid, currentUser.displayName || "Someone", txt, activeCommentPostId);
                 }
             });
 
@@ -4410,6 +4430,9 @@ const isAdsterra = Math.random() < 0.8;
             const offer = await peerConnection.createOffer(); await peerConnection.setLocalDescription(offer);
             await set(callRef, { offer: { sdp: offer.sdp, type: offer.type }, caller: currentUser.uid, type });
             await set(ref(db, `users/${targetUid}/incomingCall`), { callId: currentCallId, caller: currentUser.uid, type });
+            // --- Send Push Notification ---
+notifyIncomingCall(targetUid, currentUser.displayName || "Someone", type);
+
             playTone(); isInCall = true;
 
             callTimeoutTimer = setTimeout(() => { if(currentCallId) { alert("No Answer"); hangup(); } }, 30000); 
