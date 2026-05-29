@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>No Internet - TalkMate</title>
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; color: #1f1f1f; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; }
+        .container { padding: 30px; background: white; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); max-width: 80%; }
+        h1 { color: #00BCD4; margin-bottom: 10px; }
+        p { color: #8a8a8a; margin-bottom: 20px; }
+        .btn { background: #00BCD4; color: white; border: none; padding: 12px 25px; border-radius: 30px; font-size: 1rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>You're Offline</h1>
+        <p>Please check your internet connection to continue using TalkMate.</p>
+        <button class="btn" onclick="window.location.reload()">Try Again</button>
+    </div>
+</body>
+</html>
