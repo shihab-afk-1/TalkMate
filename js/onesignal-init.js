@@ -4,13 +4,13 @@ export function initializeOneSignal(currentUser) {
     window.OneSignalDeferred = window.OneSignalDeferred || [];
     OneSignalDeferred.push(async function(OneSignal) {
         await OneSignal.init({
-            appId: "YOUR_ONESIGNAL_APP_ID_HERE", // <-- এখানে আপনার OneSignal App ID দিন
-            safari_web_id: "web.onesignal.auto.xxxxxx", // <-- (Optional) Safari ID
-            notifyButton: { enable: false }, // আমরা কাস্টম Prompt দেখাবো
+            appId: "7d310531-7d95-43ce-9d22-f79ec00629dc", // আপনার আসল App ID
+            safari_web_id: "web.onesignal.auto.1cc5c601-0ab1-487a-96d1-0b685be1e018", // আপনার Safari ID
+            notifyButton: { enable: false }, // আমরা নিচের Slidedown প্রম্পট ব্যবহার করব, তাই এটা false
             allowLocalhostAsSecureOrigin: true,
         });
 
-        // Show Modern Slidedown Prompt
+        // Show Modern Slidedown Prompt (সুন্দর পারমিশন পপআপ)
         OneSignal.Slidedown.promptPush();
 
         // ----------------------------------------------------
@@ -29,13 +29,13 @@ export function initializeOneSignal(currentUser) {
             }
         }
 
-        // Check current status
+        // Check current status (ইউজার আগে থেকেই পারমিশন দিয়ে রাখলে সেভ হবে)
         const isOptedIn = OneSignal.User.PushSubscription.optedIn;
         if (isOptedIn) {
             saveSubscriptionToFirebase();
         }
 
-        // Listen for future subscription changes
+        // Listen for future subscription changes (নতুন পারমিশন দিলে সেভ হবে)
         OneSignal.User.PushSubscription.addEventListener("change", (event) => {
             if (event.current.optedIn) {
                 saveSubscriptionToFirebase();
@@ -43,12 +43,11 @@ export function initializeOneSignal(currentUser) {
         });
 
         // ----------------------------------------------------
-        // Handle Notification Click (Foreground)
+        // Handle Notification Click 
         // ----------------------------------------------------
         OneSignal.Notifications.addEventListener('click', (event) => {
             const notificationData = event.notification.additionalData;
             if(notificationData) {
-                // এখানে আপনি আপনার অ্যাপের নির্দিষ্ট পেজে রিডাইরেক্ট করতে পারেন
                 console.log("Notification Clicked Data:", notificationData);
             }
         });
