@@ -7,7 +7,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TalkMate - Pro</title>
-    
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#00BCD4">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
     <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -89,6 +92,7 @@
         }
 
         .hidden { display: none !important; }
+        #pwa-install-modal:not(.hidden) { display: flex !important; }
         .full-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: var(--bg-card); overflow-y: auto;}
         .btn { border: none; padding: 12px 24px; border-radius: 30px; cursor: pointer; font-weight: 600; transition: 0.2s; font-size: 0.95rem; }
         .btn-primary { background: var(--primary-color); color: white; box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3); }
@@ -1084,7 +1088,30 @@ body.dark-mode .skeleton {
     </div>
 
 </div>
+<!-- PWA Install Modal (Modern Social App Style) -->
+    <div id="pwa-install-modal" class="full-screen hidden" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); flex-direction:column; justify-content:flex-end; align-items:center; z-index:99999;">
+        <div style="background:var(--bg-card); width:100%; max-width:414px; border-top-left-radius:30px; border-top-right-radius:30px; padding:30px 20px; text-align:center; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: fadeInUp 0.4s ease-out;">
+            <img src="/icons/icon-192x192.png" style="width:70px; height:70px; border-radius:18px; margin-bottom:15px; box-shadow: 0 5px 15px rgba(0,188,212,0.3);">
+            <h2 style="color:var(--text-dark); margin-bottom:5px;">Install TalkMate</h2>
+            <p style="color:var(--text-grey); font-size:0.9rem; margin-bottom:25px;">Add to your home screen for a fast, full-screen native app experience.</p>
+            <div style="display:flex; gap:15px; width:100%;">
+                <button class="btn" style="flex:1; background:var(--border-color); color:var(--text-dark);" onclick="dismissInstallPWA()">Not Now</button>
+                <button class="btn btn-primary" style="flex:2;" onclick="installPWA()">Install App</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- PWA Update Modal -->
+    <div id="pwa-update-modal" class="hidden" style="position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--bg-card); border:2px solid var(--primary-color); border-radius:20px; padding:15px 20px; box-shadow:0 10px 30px rgba(0,0,0,0.2); z-index:99999; display:flex; align-items:center; gap:15px;">
+        <div style="flex:1;">
+            <div style="font-weight:600; font-size:0.9rem;">Update Available</div>
+            <div style="font-size:0.75rem; color:var(--text-grey);">A new version of TalkMate is ready.</div>
+        </div>
+        <button class="btn btn-primary" style="padding:8px 15px; font-size:0.8rem;" onclick="updatePWA()">Update</button>
+    </div>
+    
+    <script src="/pwa/pwa-setup.js"></script>
+    
 <!-- FIREBASE & LOGIC -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
