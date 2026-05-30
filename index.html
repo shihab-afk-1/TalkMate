@@ -3071,33 +3071,7 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
     } // <--- এটি openChat ফাংশনের শেষের ব্র্যাকেট
 
 
-    getEl('send-msg-btn').onclick = async () => {
-        if(!isGroupChat && isBlocked(currentChatUser.uid)) return alert("You blocked this user.");
-        const inp = getEl('msg-input'); const txt = inp.value.trim();
-        
-        if(txt || pendingImageUrl) { 
-            const tsNow = Date.now();
-            await push(ref(db, `messages/${currentChatId}`), { from: currentUser.uid, txt: txt, img: pendingImageUrl || null, ts: serverTimestamp(), seen: false }); 
-// --- Send Rich Push Notification ---
-if (!isGroupChat && currentChatUser) {
-    // ইউজারের নাম (যাতে ভেরিফাইড ব্যাজ না আসে তাই ক্লিন করা হয়েছে)
-    let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
     
-    // ফাংশনে: টার্গেট আইডি, আমার নাম, আমার আইডি, আমার ছবি, চ্যাট আইডি পাঠানো হচ্ছে
-    notifyNewMessage(currentChatUser.uid, myName, currentUser.uid, window.myDpUrl, currentChatId);
-}
-            const updates = {};
-            if(!isGroupChat) { updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; }
-            if(Object.keys(updates).length > 0) update(ref(db), updates);
-            inp.value = ''; clearImagePreview(); 
-            
-            // মেসেজ সেন্ড করার সাথে সাথেই টাইপিং ইন্ডিকেটর রিমুভ হবে
-            if(!isGroupChat && currentChatId) {
-                set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
-                if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
-            }
-        }
-    };
 
     function addLongPressListener(el, msgId, txt, isMe) {
         let timer;
@@ -3180,27 +3154,52 @@ if (!isGroupChat && currentChatUser) {
     window.clearImagePreview = () => { pendingImageUrl = null; getEl('image-preview-wrapper').style.display = 'none'; getEl('img-preview-tag').src = ''; };
 
     function isBlocked(uid) { return blockedUsers.includes(uid); }
-// Message Send Button Logic
-    getEl('send-msg-btn').onclick = async () => {
-        if(!isGroupChat && isBlocked(currentChatUser.uid)) return alert("You blocked this user.");
-        const inp = getEl('msg-input'); const txt = inp.value.trim();
-        
-        if(txt || pendingImageUrl) { 
-            const tsNow = Date.now();
-            await push(ref(db, `messages/${currentChatId}`), { from: currentUser.uid, txt: txt, img: pendingImageUrl || null, ts: serverTimestamp(), seen: false }); 
-            const updates = {};
-            if(!isGroupChat) { updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; }
-            if(Object.keys(updates).length > 0) update(ref(db), updates);
-            inp.value = ''; clearImagePreview(); 
-            
-            // মেসেজ সেন্ড করার সাথে সাথেই টাইপিং ইন্ডিকেটর রিমুভ করা হচ্ছে
-            if(!isGroupChat && currentChatId) {
-                set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
-                if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
-            }
-        }
-    };
 
+// --- Message Send Button Logic (Fixed) ---
+getEl('send-msg-btn').onclick = async () => {
+    if(!isGroupChat && isBlocked(currentChatUser.uid)) return alert("You blocked this user.");
+    
+    const inp = getEl('msg-input'); 
+    const txt = inp.value.trim();
+    
+    if(txt || pendingImageUrl) { 
+        const tsNow = Date.now();
+        
+        // ১. ডাটাবেসে মেসেজ সেভ করা
+        await push(ref(db, `messages/${currentChatId}`), { 
+            from: currentUser.uid, 
+            txt: txt, 
+            img: pendingImageUrl || null, 
+            ts: serverTimestamp(), 
+            seen: false 
+        }); 
+
+        // ২. নোটিফিকেশন পাঠানো (নতুন কোড)
+        if (!isGroupChat && currentChatUser) {
+            let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
+            notifyNewMessage(currentChatUser.uid, myName, currentUser.uid, window.myDpUrl, currentChatId);
+        }
+
+        // ৩. কন্ট্যাক্ট লিস্টে লাস্ট মেসেজের টাইম আপডেট করা
+        const updates = {};
+        if(!isGroupChat) { 
+            updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; 
+            updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; 
+        }
+        if(Object.keys(updates).length > 0) update(ref(db), updates);
+        
+        // ৪. ইনপুট বক্স এবং ইমেজ প্রিভিউ ক্লিয়ার করা
+        inp.value = ''; 
+        clearImagePreview(); 
+        
+        // ৫. টাইপিং ইন্ডিকেটর রিমুভ করা
+        if(!isGroupChat && currentChatId) {
+            set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
+            if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+        }
+    }
+};
+  
     getEl('btn-group-options').onclick = () => { const menu = getEl('group-dropdown'); menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; };
     getEl('btn-leave-group').onclick = async () => { if(confirm("Leave this group?")) { await remove(ref(db, `contacts/${currentUser.uid}/${currentChatUser.uid}`)); showToast("Left group"); toggleModal('chat-interface', false); } };
     
