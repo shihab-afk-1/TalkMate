@@ -1121,7 +1121,7 @@ body.dark-mode .skeleton {
 import { initializeOneSignal } from './js/onesignal-init.js';
 import { 
     notifyNewMessage, notifyPostLike, notifyPostComment, 
-    notifyNewFollower, notifyIncomingCall 
+    notifyNewFollower, notifyIncomingCall, notifyMissedCall 
 } from './js/notification.js';
     const firebaseConfig = {
       apiKey: "AIzaSyCjZV3yPpdVQ151o7tWcZFNARDnZQsKSVA",
@@ -2444,8 +2444,9 @@ getEl('back-chat').onclick = () => {
                 fromUid: currentUser.uid,
                 ts: serverTimestamp()
             });
-            // --- Send Push Notification ---
-            notifyNewFollower(targetUid, currentUser.displayName || "Someone", currentUser.uid);
+// --- Send Rich Push Notification ---
+let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
+notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
 
             const snap = await get(ref(db, `follows/${targetUid}/${currentUser.uid}`));
             if(snap.exists()) {
@@ -3077,10 +3078,13 @@ getEl('back-chat').onclick = () => {
         if(txt || pendingImageUrl) { 
             const tsNow = Date.now();
             await push(ref(db, `messages/${currentChatId}`), { from: currentUser.uid, txt: txt, img: pendingImageUrl || null, ts: serverTimestamp(), seen: false }); 
-            // --- Send Push Notification ---
+// --- Send Rich Push Notification ---
 if (!isGroupChat && currentChatUser) {
-    let msgText = txt ? txt : (pendingImageUrl ? "📷 Sent an image" : "📨 Sent a message"); 
-    notifyNewMessage(currentChatUser.uid, currentUser.displayName || "Someone", msgText, currentChatId);
+    // ইউজারের নাম (যাতে ভেরিফাইড ব্যাজ না আসে তাই ক্লিন করা হয়েছে)
+    let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
+    
+    // ফাংশনে: টার্গেট আইডি, আমার নাম, আমার আইডি, আমার ছবি, চ্যাট আইডি পাঠানো হচ্ছে
+    notifyNewMessage(currentChatUser.uid, myName, currentUser.uid, window.myDpUrl, currentChatId);
 }
             const updates = {};
             if(!isGroupChat) { updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; }
@@ -4086,8 +4090,18 @@ const isAdsterra = Math.random() < 0.8;
                     postId: postId,
                     ts: serverTimestamp()
                 });
-                // --- Send Push Notification ---
-                notifyPostLike(postOwnerUid, currentUser.displayName || "Someone", postId);
+// --- Send Rich Push Notification ---
+let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
+
+// পোস্টের ছবি আছে কি না সেটা বের করছি (যাতে নোটিফিকেশনে পোস্টের ছবি দেখানো যায়)
+let postImage = null;
+get(ref(db, `posts/${postId}/img`)).then(snap => {
+    if (snap.exists() && snap.val()) {
+        postImage = snap.val().split(',')[0]; // প্রথম ছবিটি নেবো
+    }
+    // ফাংশন কল
+    notifyPostLike(postOwnerUid, myName, currentUser.uid, window.myDpUrl, postId, postImage);
+});
             }
         }
     };
@@ -4279,8 +4293,9 @@ const isAdsterra = Math.random() < 0.8;
                         text: txt,
                         ts: serverTimestamp()
                     });
-                    // --- Send Push Notification ---
-                    notifyPostComment(ownerUid, currentUser.displayName || "Someone", txt, activeCommentPostId);
+// --- Send Rich Push Notification ---
+let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
+notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeCommentPostId);
                 }
             });
 
@@ -4457,12 +4472,20 @@ const isAdsterra = Math.random() < 0.8;
             const offer = await peerConnection.createOffer(); await peerConnection.setLocalDescription(offer);
             await set(callRef, { offer: { sdp: offer.sdp, type: offer.type }, caller: currentUser.uid, type });
             await set(ref(db, `users/${targetUid}/incomingCall`), { callId: currentCallId, caller: currentUser.uid, type });
-            // --- Send Push Notification ---
-notifyIncomingCall(targetUid, currentUser.displayName || "Someone", type);
+// --- Send Incoming Call Notification ---
+            let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
+            notifyIncomingCall(targetUid, myName, currentUser.uid, window.myDpUrl, type, currentCallId);
 
-            playTone(); isInCall = true;
-
-            callTimeoutTimer = setTimeout(() => { if(currentCallId) { alert("No Answer"); hangup(); } }, 30000); 
+            // --- Missed Call Logic ---
+            // যদি ৩০ সেকেন্ডের মধ্যে কল না ধরে, তবে কল কেটে যাবে এবং মিসড কল নোটিফিকেশন যাবে
+            callTimeoutTimer = setTimeout(() => { 
+                if(currentCallId) { 
+                    alert("No Answer"); 
+                    // মিসড কল নোটিফিকেশন পাঠানো হচ্ছে
+                    notifyMissedCall(targetUid, myName, currentUser.uid, window.myDpUrl);
+                    hangup(); 
+                } 
+            }, 30000);
             onValue(child(callRef, 'busy'), (snapshot) => { if(snapshot.val()) { alert("User is busy now"); hangup(); } });
             onValue(child(callRef, 'answer'), async (snapshot) => { const data = snapshot.val(); if (data && !peerConnection.currentRemoteDescription) { if(callTimeoutTimer) clearTimeout(callTimeoutTimer); stopTone(); await peerConnection.setRemoteDescription(new RTCSessionDescription(data)); processIceQueue(); } });
             onChildAdded(child(callRef, 'calleeCand'), (snapshot) => { if(snapshot.val()) handleRemoteCandidate(snapshot.val()); });
