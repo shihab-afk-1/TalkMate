@@ -1,21 +1,19 @@
-// pwa/service-worker.js
-const CACHE_NAME = 'talkmate-cache-v3'; // ভার্সন চেইঞ্জ করলাম
+const CACHE_NAME = 'talkmate-cache-v4';
 const ASSETS_TO_CACHE = [
     '/offline/offline.html',
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png'
 ];
 
+// অটোমেটিক ইন্সটল এবং আপডেট
 self.addEventListener('install', (event) => {
+    self.skipWaiting(); // কোনো পারমিশন ছাড়াই আপডেট নিয়ে নেবে
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[PWA] Caching Assets...');
             return Promise.allSettled(
-                ASSETS_TO_CACHE.map(url => 
-                    fetch(url).then(response => {
-                        if (response.ok) return cache.put(url, response);
-                    })
-                )
+                ASSETS_TO_CACHE.map(url => fetch(url).then(response => {
+                    if (response.ok) return cache.put(url, response);
+                }))
             );
         })
     );
@@ -33,7 +31,7 @@ self.addEventListener('activate', (event) => {
             );
         })
     );
-    self.clients.claim();
+    self.clients.claim(); // সাথে সাথে নতুন আপডেট চালু করবে
 });
 
 self.addEventListener('fetch', (event) => {
@@ -43,12 +41,5 @@ self.addEventListener('fetch', (event) => {
                 return caches.match('/offline/offline.html');
             })
         );
-    }
-});
-
-// নতুন আপডেট জোর করে চালু করার কমান্ড
-self.addEventListener('message', (event) => {
-    if (event.data && event.data.type === 'SKIP_WAITING') {
-        self.skipWaiting();
     }
 });
