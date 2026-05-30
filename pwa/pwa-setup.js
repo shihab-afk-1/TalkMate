@@ -1,20 +1,20 @@
+// pwa/pwa-setup.js
 let deferredPrompt;
+let waitingWorker; // নতুন আপডেট আসা ওয়ার্কার স্টোর করার জন্য
 
-// 1. Listen for Install Prompt Event
+// 1. Install Prompt Logic
 window.addEventListener('beforeinstallprompt', (e) => {
-    // Prevent the mini-infobar from appearing on mobile
     e.preventDefault();
-    // Stash the event so it can be triggered later.
     deferredPrompt = e;
     
-    // Show our custom modern Install UI
-    const installModal = document.getElementById('pwa-install-modal');
-    if (installModal) {
-        installModal.classList.remove('hidden');
-    }
+    setTimeout(() => {
+        const installModal = document.getElementById('pwa-install-modal');
+        if (installModal) {
+            installModal.classList.remove('hidden');
+        }
+    }, 3000);
 });
 
-// 2. Install Button Click Handler
 window.installPWA = async () => {
     const installModal = document.getElementById('pwa-install-modal');
     if (installModal) installModal.classList.add('hidden');
@@ -22,7 +22,7 @@ window.installPWA = async () => {
     if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        console.log(`[PWA] User installation outcome: ${outcome}`);
+        console.log(`[PWA] Install outcome: ${outcome}`);
         deferredPrompt = null;
     }
 };
@@ -32,31 +32,51 @@ window.dismissInstallPWA = () => {
     if (installModal) installModal.classList.add('hidden');
 };
 
-// 3. Register Service Worker and Handle Updates
+// 2. Service Worker Registration & Update Logic
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/OneSignalSDKWorker.js').then((registration) => {
-            console.log('[PWA] ServiceWorker registered with scope:', registration.scope);
+            console.log('[PWA] ServiceWorker registered');
 
-            // Update Available Logic
+            // যদি আগে থেকেই কোনো আপডেট অপেক্ষায় থাকে
+            if (registration.waiting) {
+                waitingWorker = registration.waiting;
+                showUpdateModal();
+            }
+
             registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
                 newWorker.addEventListener('statechange', () => {
                     if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // New update available! Show Update UI
-                        const updateModal = document.getElementById('pwa-update-modal');
-                        if (updateModal) updateModal.classList.remove('hidden');
+                        waitingWorker = newWorker;
+                        showUpdateModal();
                     }
                 });
             });
-        }).catch((err) => {
-            console.error('[PWA] ServiceWorker registration failed:', err);
+        }).catch((err) => console.log('[PWA] SW Error:', err));
+
+        // যখন Service Worker আপডেট হয়ে যাবে, তখন শুধু একবার পেজ রিলোড হবে
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!refreshing) {
+                refreshing = true;
+                window.location.reload();
+            }
         });
     });
 }
 
-// 4. Update Button Click Handler
+function showUpdateModal() {
+    const updateModal = document.getElementById('pwa-update-modal');
+    if (updateModal) updateModal.classList.remove('hidden');
+}
+
+// 3. Update Button Click Logic
 window.updatePWA = () => {
-    // Reload page to apply new service worker updates
-    window.location.reload();
+    if (waitingWorker) {
+        // Service Worker-কে কমান্ড পাঠানো হচ্ছে আপডেট নিয়ে নেওয়ার জন্য
+        waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+    } else {
+        window.location.reload();
+    }
 };
