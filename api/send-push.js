@@ -12,6 +12,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Target Subscription IDs required' });
     }
 
+    // Basic Payload
     const payload = {
         app_id: ONESIGNAL_APP_ID,
         include_subscription_ids: targetIds,
@@ -19,18 +20,26 @@ export default async function handler(req, res) {
         contents: { en: message },
         url: url || "https://talkmate-two.vercel.app",
         data: data || {},
-        
-        // Branding & Rich Media
-        chrome_web_icon: icon || "https://talkmate-two.vercel.app/icons/icon-192x192.png", // Sender profile pic or TalkMate Logo
-        chrome_web_badge: "https://talkmate-two.vercel.app/icons/maskable-icon.png", // Small app icon
-        chrome_web_image: largeImage || null, // Post thumbnail
-        
-        // Action Buttons
-        web_buttons: buttons || [],
-        
-        // Priority (10 is high priority for Calls/Messages)
         priority: 10
     };
+
+    // Safely add branding and rich media if they exist
+    if (icon) {
+        payload.chrome_web_icon = icon;
+    } else {
+        payload.chrome_web_icon = "https://talkmate-two.vercel.app/icons/icon-192x192.png";
+    }
+
+    payload.chrome_web_badge = "https://talkmate-two.vercel.app/icons/maskable-icon.png";
+
+    if (largeImage) {
+        payload.chrome_web_image = largeImage;
+    }
+
+    // Safely add buttons only if array has items
+    if (buttons && buttons.length > 0) {
+        payload.web_buttons = buttons;
+    }
 
     try {
         const response = await fetch('https://onesignal.com/api/v1/notifications', {
@@ -43,9 +52,16 @@ export default async function handler(req, res) {
         });
 
         const result = await response.json();
+        
+        // Return error if OneSignal rejects the payload
+        if (result.errors) {
+            console.error("OneSignal Payload Error:", result.errors);
+            return res.status(400).json({ success: false, error: result.errors });
+        }
+
         res.status(200).json({ success: true, result });
     } catch (error) {
-        console.error("Push Error:", error);
+        console.error("Push API Error:", error);
         res.status(500).json({ success: false, error: error.message });
     }
 }
