@@ -1,12 +1,11 @@
-// pwa/pwa-setup.js
 let deferredPrompt;
-let waitingWorker; // নতুন আপডেট আসা ওয়ার্কার স্টোর করার জন্য
 
-// 1. Install Prompt Logic
+// 1. Listen for Install Prompt Event
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     
+    // পেজ লোড হওয়ার ৩ সেকেন্ড পর শুধু Install পপআপ আসবে
     setTimeout(() => {
         const installModal = document.getElementById('pwa-install-modal');
         if (installModal) {
@@ -32,57 +31,14 @@ window.dismissInstallPWA = () => {
     if (installModal) installModal.classList.add('hidden');
 };
 
-// 2. Service Worker Registration & Update Logic
+// 2. Simple Service Worker Registration (No Update Popup Logic)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/OneSignalSDKWorker.js').then((registration) => {
-            console.log('[PWA] ServiceWorker registered');
-
-            // যদি আগে থেকেই কোনো আপডেট অপেক্ষায় থাকে
-            if (registration.waiting) {
-                waitingWorker = registration.waiting;
-                showUpdateModal();
-            }
-
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        waitingWorker = newWorker;
-                        showUpdateModal();
-                    }
-                });
-            });
+        navigator.serviceWorker.register('/OneSignalSDKWorker.js')
+        .then((registration) => {
+            console.log('[PWA] ServiceWorker registered seamlessly.');
+            // ব্যাকগ্রাউন্ডে অটোমেটিকভাবে আপডেট চেক করবে
+            registration.update();
         }).catch((err) => console.log('[PWA] SW Error:', err));
-
-        // যখন Service Worker আপডেট হয়ে যাবে, তখন শুধু একবার পেজ রিলোড হবে
-        let refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', () => {
-            if (!refreshing) {
-                refreshing = true;
-                window.location.reload();
-            }
-        });
     });
 }
-
-function showUpdateModal() {
-    const updateModal = document.getElementById('pwa-update-modal');
-    if (updateModal) updateModal.classList.remove('hidden');
-}
-
-window.updatePWA = () => {
-    // সাথে সাথে পপআপটি লুকিয়ে ফেলবে
-    const updateModal = document.getElementById('pwa-update-modal');
-    if (updateModal) updateModal.classList.add('hidden');
-    
-    // Service Worker কে আপডেট হওয়ার কমান্ড পাঠাবে
-    if (waitingWorker) {
-        waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-    }
-    
-    // আধা সেকেন্ড পর পেজটি হার্ড-রিলোড করবে
-    setTimeout(() => {
-        window.location.reload(true);
-    }, 500);
-};
