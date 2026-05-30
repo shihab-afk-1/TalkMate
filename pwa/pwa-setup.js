@@ -71,12 +71,18 @@ function showUpdateModal() {
     if (updateModal) updateModal.classList.remove('hidden');
 }
 
-// 3. Update Button Click Logic
 window.updatePWA = () => {
+    // সাথে সাথে পপআপটি লুকিয়ে ফেলবে
+    const updateModal = document.getElementById('pwa-update-modal');
+    if (updateModal) updateModal.classList.add('hidden');
+    
+    // Service Worker কে আপডেট হওয়ার কমান্ড পাঠাবে
     if (waitingWorker) {
-        // Service Worker-কে কমান্ড পাঠানো হচ্ছে আপডেট নিয়ে নেওয়ার জন্য
         waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-    } else {
-        window.location.reload();
     }
+    
+    // আধা সেকেন্ড পর পেজটি হার্ড-রিলোড করবে
+    setTimeout(() => {
+        window.location.reload(true);
+    }, 500);
 };
