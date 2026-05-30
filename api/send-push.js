@@ -1,12 +1,10 @@
-// Vercel Serverless Function for Secure OneSignal API Calls
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { targetIds, title, message, url, data } = req.body;
+    const { targetIds, title, message, url, data, icon, largeImage, buttons } = req.body;
 
-    // আপনার OneSignal Credentials (Vercel Environment Variables থেকে আসবে)
     const ONESIGNAL_APP_ID = process.env.ONESIGNAL_APP_ID;
     const ONESIGNAL_REST_API_KEY = process.env.ONESIGNAL_REST_API_KEY;
 
@@ -16,11 +14,22 @@ export default async function handler(req, res) {
 
     const payload = {
         app_id: ONESIGNAL_APP_ID,
-        include_subscription_ids: targetIds, // OneSignal Player IDs
+        include_subscription_ids: targetIds,
         headings: { en: title },
         contents: { en: message },
-        url: url || "https://talkmate-two.vercel.app", // Click URL
-        data: data || {}, // Custom data mapping
+        url: url || "https://talkmate-two.vercel.app",
+        data: data || {},
+        
+        // Branding & Rich Media
+        chrome_web_icon: icon || "https://talkmate-two.vercel.app/icons/icon-192x192.png", // Sender profile pic or TalkMate Logo
+        chrome_web_badge: "https://talkmate-two.vercel.app/icons/maskable-icon.png", // Small app icon
+        chrome_web_image: largeImage || null, // Post thumbnail
+        
+        // Action Buttons
+        web_buttons: buttons || [],
+        
+        // Priority (10 is high priority for Calls/Messages)
+        priority: 10
     };
 
     try {
