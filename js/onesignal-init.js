@@ -42,13 +42,43 @@ export function initializeOneSignal(currentUser) {
             }
         });
 
-        // ----------------------------------------------------
-        // Handle Notification Click 
+        // -// ----------------------------------------------------
+        // Handle Notification Click & Action Buttons
         // ----------------------------------------------------
         OneSignal.Notifications.addEventListener('click', (event) => {
             const notificationData = event.notification.additionalData;
-            if(notificationData) {
-                console.log("Notification Clicked Data:", notificationData);
+            const actionId = event.result.actionId; // Which button was clicked
+            
+            console.log("Notification Clicked! Action ID:", actionId, "Data:", notificationData);
+
+            if (notificationData) {
+                let redirectUrl = "https://talkmate-two.vercel.app";
+
+                // Handling Specific Button Actions
+                if (actionId === "reply") {
+                    redirectUrl = `${redirectUrl}/?chatId=${notificationData.chatId}`;
+                } else if (actionId === "mark_read") {
+                    // Just close notification, no redirect needed
+                    return; 
+                } else if (actionId === "accept") {
+                    redirectUrl = `${redirectUrl}/?callId=${notificationData.callId}&action=accept`;
+                } else if (actionId === "decline") {
+                    // User declined, send logic to Firebase if needed, no redirect
+                    return;
+                } else if (actionId === "view_post") {
+                    redirectUrl = `${redirectUrl}/?postId=${notificationData.postId}`;
+                } else if (actionId === "view_profile") {
+                    redirectUrl = `${redirectUrl}/?profileId=${notificationData.profileId}`;
+                } else {
+                    // Default click (no button clicked)
+                    if (notificationData.chatId) redirectUrl = `${redirectUrl}/?chatId=${notificationData.chatId}`;
+                    else if (notificationData.postId) redirectUrl = `${redirectUrl}/?postId=${notificationData.postId}`;
+                    else if (notificationData.profileId) redirectUrl = `${redirectUrl}/?profileId=${notificationData.profileId}`;
+                    else if (notificationData.callId) redirectUrl = `${redirectUrl}/?callId=${notificationData.callId}`;
+                }
+
+                // Open URL in app
+                window.open(redirectUrl, "_self");
             }
         });
     });
