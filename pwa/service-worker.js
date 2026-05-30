@@ -1,31 +1,32 @@
 // pwa/service-worker.js
-const CACHE_NAME = 'talkmate-cache-v1';
+const CACHE_NAME = 'talkmate-cache-v3'; // ভার্সন চেইঞ্জ করলাম
 const ASSETS_TO_CACHE = [
     '/offline/offline.html',
-    // আপনার লোগোগুলো ক্যাশ করে রাখবেন
     '/icons/icon-192x192.png',
     '/icons/icon-512x512.png'
 ];
 
-// Install Event - Caching Assets
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[PWA] Caching Offline Assets');
-            return cache.addAll(ASSETS_TO_CACHE);
+            console.log('[PWA] Caching Assets...');
+            return Promise.allSettled(
+                ASSETS_TO_CACHE.map(url => 
+                    fetch(url).then(response => {
+                        if (response.ok) return cache.put(url, response);
+                    })
+                )
+            );
         })
     );
-    self.skipWaiting(); // Force update
 });
 
-// Activate Event - Cleaning old caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((cacheNames) => {
             return Promise.all(
                 cacheNames.map((cacheName) => {
                     if (cacheName !== CACHE_NAME) {
-                        console.log('[PWA] Clearing Old Cache');
                         return caches.delete(cacheName);
                     }
                 })
@@ -35,7 +36,6 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch Event - Serve offline page if no internet
 self.addEventListener('fetch', (event) => {
     if (event.request.mode === 'navigate') {
         event.respondWith(
@@ -43,5 +43,12 @@ self.addEventListener('fetch', (event) => {
                 return caches.match('/offline/offline.html');
             })
         );
+    }
+});
+
+// নতুন আপডেট জোর করে চালু করার কমান্ড
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
     }
 });
