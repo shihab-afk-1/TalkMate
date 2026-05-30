@@ -1,5 +1,4 @@
-// Function to trigger Vercel Backend API
-export async function sendPushNotification(targetOneSignalIds, title, message, clickUrl, customData) {
+export async function sendPushNotification(targetOneSignalIds, title, message, clickUrl, customData, icon, largeImage, buttons) {
     if (!targetOneSignalIds || targetOneSignalIds.length === 0) return;
 
     try {
@@ -11,7 +10,10 @@ export async function sendPushNotification(targetOneSignalIds, title, message, c
                 title: title,
                 message: message,
                 url: clickUrl,
-                data: customData
+                data: customData,
+                icon: icon,
+                largeImage: largeImage,
+                buttons: buttons
             })
         });
         const data = await response.json();
