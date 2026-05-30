@@ -13,12 +13,17 @@ async function getUserOneSignalId(uid) {
 
 // Helper: Save to Firebase notifications/{uid}/{notificationId}
 async function saveNotificationToFirebase(targetUid, type, title, message, senderId, actionUrl, image) {
-    const db = getDatabase();
-    await push(ref(db, `notifications/${targetUid}`), {
-        type, title, message, senderId, targetId: targetUid,
-        actionUrl, image: image || DEFAULT_LOGO,
-        read: false, timestamp: serverTimestamp()
-    });
+    try {
+        const db = getDatabase();
+        await push(ref(db, `notifications/${targetUid}`), {
+            type, title, message, senderId, targetId: targetUid,
+            actionUrl, image: image || DEFAULT_LOGO,
+            read: false, timestamp: serverTimestamp()
+        });
+    } catch (error) {
+        console.error("Firebase notification save error (Ignored):", error);
+        // ফায়ারবেস এরর দিলেও পুশ নোটিফিকেশন পাঠানো যেন বন্ধ না হয়, তাই try-catch দেওয়া হলো।
+    }
 }
 
 // 1. New Message
