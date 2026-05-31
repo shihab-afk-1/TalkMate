@@ -525,7 +525,7 @@ body.dark-mode .skeleton {
                 <i class="fas fa-spinner fa-spin"></i> Refreshing Profile...
             </div>
             <div style="display: flex; justify-content: flex-end; padding: 15px 20px; position:relative;">
-            <button class="btn-icon" onclick="toggleMyProfileMenu()"><i class="fas fa-ellipsis-v"></i></button>
+            <button class="btn-icon" onclick="toggleMyProfileMenu(event)"><i class="fas fa-ellipsis-v"></i></button>
             <div class="dropdown-menu" id="my-profile-dropdown" style="right:20px; top:45px; width:220px; z-index:100;">
                 <div class="dropdown-item" id="btn-toggle-pro" onclick="toggleProfessionalMode()"><i class="fas fa-briefcase" style="width:20px;"></i> Switch to Professional Mode</div>
                 <div class="dropdown-item hidden" id="btn-monetization" onclick="openMonetizationHub()"><i class="fas fa-dollar-sign" style="width:20px;"></i> Monetization</div>
@@ -5151,11 +5151,28 @@ notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeComme
             }
         });
     };
-    // --- MY PROFILE 3-DOT MENU LOGIC ---
-    window.toggleMyProfileMenu = () => {
+// --- MY PROFILE 3-DOT MENU LOGIC ---
+    window.toggleMyProfileMenu = (e) => {
+        // ক্লিক ইভেন্টটিকে গ্লোবাল লিসেনার পর্যন্ত যেতে বাধা দেওয়া হলো
+        if(e) e.stopPropagation(); 
+        
         const menu = getEl('my-profile-dropdown');
-        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        const isAlreadyOpen = (menu.style.display === 'block');
+        
+        // আগে অন্য সব খোলা মেনু বন্ধ করে নিচ্ছি
+        document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+        
+        // এখন এই মেনুটির অবস্থা পরিবর্তন করছি
+        menu.style.display = isAlreadyOpen ? 'none' : 'block';
     };
+
+    // মেনুর ভেতরে ক্লিক করলে যেন বন্ধ না হয়ে যায়
+    const myProfileDropdown = getEl('my-profile-dropdown');
+    if(myProfileDropdown) {
+        myProfileDropdown.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
 
     // মেনু বাইরে ক্লিক করলে হাইড হবে
     document.addEventListener('click', (e) => { 
