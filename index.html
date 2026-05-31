@@ -5238,12 +5238,12 @@ notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeComme
             
             let isEligible = true;
             
-            if(followersCount >= 100) {
+            if(followersCount >= 1) {
                 getEl('el-followers-icon').className = "fas fa-check-circle";
                 getEl('el-followers-icon').style.color = "var(--success)";
             } else { isEligible = false; }
             
-            if(totalViews >= 10000) {
+            if(totalViews >= 10) {
                 getEl('el-views-icon').className = "fas fa-check-circle";
                 getEl('el-views-icon').style.color = "var(--success)";
             } else { isEligible = false; }
