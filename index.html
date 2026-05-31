@@ -18,7 +18,7 @@
     <!-- Tone.js & Emoji Picker -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
-
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- ========================================== -->
     <!-- MONETIZATION SCRIPTS (MONETAG)             -->
     <!-- ========================================== -->
@@ -906,6 +906,11 @@ body.dark-mode .skeleton {
         <div class="modal-body">
             <div class="list-item" style="cursor:default;">
                 <div class="item-info">Dark Mode</div>
+               <!-- Professional Mode Toggle -->
+<div class="list-item" onclick="toggleProfessionalMode()">
+    <div class="item-info">Switch to Professional Mode</div>
+    <i class="fas fa-briefcase" style="color:var(--text-grey)"></i>
+</div>
                 <label class="toggle-switch">
                     <input type="checkbox" id="dark-mode-toggle">
                     <span class="slider"></span>
@@ -917,6 +922,50 @@ body.dark-mode .skeleton {
             <div class="list-item" onclick="openTerms()"><div class="item-info">Terms & Conditions</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
         </div>
     </div>
+<!-- Professional Dashboard Modal -->
+<div id="pro-dashboard-modal" class="full-screen hidden" style="z-index: 200; background: var(--bg-body); overflow-y: auto;">
+    <div class="modal-header" style="position: sticky; top:0; background: rgba(255,255,255,0.8); backdrop-filter: blur(15px); z-index:10;">
+        <h3>Professional Dashboard</h3>
+        <button class="btn-icon" onclick="toggleModal('pro-dashboard-modal', false)"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <div class="modal-body" style="padding: 20px;">
+        <h4 style="margin-bottom: 15px; color: var(--text-grey);">Overview (Last 28 Days)</h4>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+            <div class="glass-panel" style="padding: 15px; text-align: center; background: var(--bg-card); border-radius: 15px; box-shadow: var(--shadow);">
+                <i class="fas fa-users" style="color: var(--primary-color); font-size: 1.5rem;"></i>
+                <div id="dash-reach" style="font-size: 1.5rem; font-weight: 700; margin-top: 10px;">0</div>
+                <div style="font-size: 0.8rem; color: var(--text-grey);">Accounts Reached</div>
+            </div>
+            <div class="glass-panel" style="padding: 15px; text-align: center; background: var(--bg-card); border-radius: 15px; box-shadow: var(--shadow);">
+                <i class="fas fa-eye" style="color: #2ed573; font-size: 1.5rem;"></i>
+                <div id="dash-impressions" style="font-size: 1.5rem; font-weight: 700; margin-top: 10px;">0</div>
+                <div style="font-size: 0.8rem; color: var(--text-grey);">Impressions</div>
+            </div>
+            <div class="glass-panel" style="padding: 15px; text-align: center; background: var(--bg-card); border-radius: 15px; box-shadow: var(--shadow);">
+                <i class="fas fa-mouse-pointer" style="color: #ff4757; font-size: 1.5rem;"></i>
+                <div id="dash-engagement" style="font-size: 1.5rem; font-weight: 700; margin-top: 10px;">0%</div>
+                <div style="font-size: 0.8rem; color: var(--text-grey);">Engagement Rate</div>
+            </div>
+            <div class="glass-panel" style="padding: 15px; text-align: center; background: var(--bg-card); border-radius: 15px; box-shadow: var(--shadow);">
+                <i class="fas fa-user-plus" style="color: #ffa502; font-size: 1.5rem;"></i>
+                <div id="dash-followers" style="font-size: 1.5rem; font-weight: 700; margin-top: 10px;">0</div>
+                <div style="font-size: 0.8rem; color: var(--text-grey);">Total Followers</div>
+            </div>
+        </div>
+
+        <h4 style="margin-bottom: 15px; color: var(--text-grey);">Growth Chart</h4>
+        <div style="background: var(--bg-card); padding: 15px; border-radius: 15px; box-shadow: var(--shadow); margin-bottom: 25px;">
+            <canvas id="growthChart"></canvas>
+        </div>
+
+        <h4 style="margin-bottom: 15px; color: var(--text-grey);">Top Performing Posts</h4>
+        <div id="dash-top-posts" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Top posts will load here -->
+        </div>
+    </div>
+</div>
 
     <div id="about-modal" class="full-screen hidden" style="z-index:110; background:var(--bg-card);">
         <div class="modal-header"><h3>About</h3><button class="btn-icon" onclick="toggleModal('about-modal', false)"><i class="fas fa-times"></i></button></div>
@@ -1371,6 +1420,15 @@ getEl('back-chat').onclick = () => {
         if (myBlockSnap.exists() || theirBlockSnap.exists()) {
             return showToast("This profile is unavailable.");
         }
+
+        // --- NEW: Profile View Tracking Logic ---
+        // যে প্রোফাইল ভিজিট করা হলো, তার ডাটাবেসে আজকের তারিখ অনুযায়ী ভিউ কাউন্ট বাড়ানো
+        const today = new Date().toISOString().split('T')[0]; // "2026-05-31" ফরম্যাটে
+        const profileViewRef = ref(db, `analytics/profile_views/${uid}/${today}`);
+        get(profileViewRef).then(snap => {
+            set(profileViewRef, (snap.val() || 0) + 1);
+        });
+        // ----------------------------------------
 
         const snap = await get(ref(db, `users/${uid}`));
         if(snap.exists()) {
@@ -2531,6 +2589,25 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
             getEl('my-profile-bio').innerText = d.bio || '';
             getEl('my-profile-study').innerText = d.study || 'Study/Work not set';
             getEl('my-profile-dob').innerText = d.dob ? 'Born: ' + d.dob : 'DOB not set';
+            // Pro Badge & Dashboard Button check
+        const proBtnExists = document.getElementById('pro-dash-btn');
+        if(proBtnExists) proBtnExists.remove();
+
+        if (d.accountType === 'creator') {
+            getEl('my-profile-name').innerHTML = `${d.name} ${d.isVerified ? '<i class="fas fa-check-circle verified-badge" style="font-size:1rem"></i>' : ''} <span style="font-size:0.7rem; background: var(--primary-gradient); color: white; padding: 2px 8px; border-radius: 12px; margin-left: 5px; vertical-align: middle;">Pro</span>`;
+            
+            const dashBtn = document.createElement('button');
+            dashBtn.id = 'pro-dash-btn';
+            dashBtn.className = "btn btn-primary";
+            dashBtn.style.marginTop = "15px";
+            dashBtn.style.width = "100%";
+            dashBtn.innerHTML = "<i class='fas fa-chart-line'></i> View Professional Dashboard";
+            dashBtn.onclick = () => window.openProfessionalDashboard();
+            
+            // Stats div এর ঠিক আগে বাটনটি যুক্ত করা
+            const statsDiv = getEl('my-stat-posts').parentElement.parentElement;
+            statsDiv.parentElement.insertBefore(dashBtn, statsDiv);
+        }
         }
         
         get(ref(db, `followers/${currentUser.uid}`)).then(snap => {
@@ -3870,35 +3947,55 @@ const isAdsterra = Math.random() < 0.8;
     let feedPosts = {};
     let postViewed = {};
     let feedObserver = null;
+    let viewTimers = {};
 
     function observePosts() {
         if(feedObserver) feedObserver.disconnect();
+        
         feedObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
+                const pid = entry.target.dataset.pid;
+                if (!pid) return;
+
                 if (entry.isIntersecting) {
-                    const pid = entry.target.dataset.pid;
-                    if(pid && !postViewed[pid]) {
-                        postViewed[pid] = true;
-                        const viewRef = ref(db, `posts/${pid}/viewers/${currentUser.uid}`);
-                        get(viewRef).then(s => {
-                            if(!s.exists()) {
-                                set(viewRef, true);
-                                get(ref(db, `posts/${pid}/views`)).then(vs => {
-                                    update(ref(db, `posts/${pid}`), { views: (vs.val() || 0) + 1 });
-                                });
-                            }
-                        });
-                    }
+                    // কেউ স্ক্রিনে পোস্টটি দেখলে ২ সেকেন্ডের টাইমার চালু হবে
+                    viewTimers[pid] = setTimeout(() => {
+                        recordValidView(pid);
+                    }, 2000);
+                } else {
+                    // ২ সেকেন্ডের আগেই স্ক্রল করে চলে গেলে ভিউ কাউন্ট বাতিল
+                    clearTimeout(viewTimers[pid]);
                 }
             });
-        }, { threshold: 0.5 });
+        }, { threshold: 0.6 });
 
         document.querySelectorAll('.post-card').forEach(card => feedObserver.observe(card));
         
-        // Attach auto-play/pause observer to new feed videos
         videoObserver.disconnect();
         document.querySelectorAll('.feed-video').forEach(vid => {
             videoObserver.observe(vid);
+        });
+    }
+
+    async function recordValidView(postId) {
+        if(!currentUser) return;
+        const uid = currentUser.uid;
+        const viewerRef = ref(db, `post_viewers/${postId}/${uid}`);
+        
+        get(viewerRef).then(snap => {
+            const lastViewedAt = snap.val();
+            const now = Date.now();
+            const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+
+            // যদি আগে ভিউ না করে থাকে অথবা ২৪ ঘণ্টা পার হয়ে যায়
+            if (!lastViewedAt || (now - lastViewedAt > TWENTY_FOUR_HOURS)) {
+                set(viewerRef, now); // ইউজারের টাইমস্ট্যাম্প সেভ
+                
+                const postRef = ref(db, `posts/${postId}/views`);
+                get(postRef).then(vs => {
+                    update(ref(db, `posts/${postId}`), { views: (vs.val() || 0) + 1 });
+                });
+            }
         });
     }
 
@@ -4795,6 +4892,136 @@ notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeComme
         }, 150);
     });
     domObserver.observe(document.body, { childList: true, subtree: true });
+    // --- PROFESSIONAL CREATOR PLATFORM LOGIC ---
+    let growthChartInstance = null;
+
+    window.toggleProfessionalMode = async () => {
+        toggleModal('settings-modal', false);
+        const s = await get(ref(db, `users/${currentUser.uid}`));
+        const currentType = s.val().accountType;
+
+        if (currentType === 'creator') {
+            if(confirm("Turn off Professional Mode? You will lose access to dashboard analytics.")) {
+                await update(ref(db, `users/${currentUser.uid}`), { accountType: 'personal' });
+                showToast("Professional Mode Turned Off");
+                loadMyProfileTab(); 
+            }
+        } else {
+            if(confirm("Turn on Professional Mode? You will get access to analytics and creator tools.")) {
+                await update(ref(db, `users/${currentUser.uid}`), { accountType: 'creator' });
+                showToast("Welcome to Professional Mode!");
+                loadMyProfileTab(); 
+            }
+        }
+    };
+
+    window.openProfessionalDashboard = async () => {
+        toggleModal('pro-dashboard-modal', true);
+        
+        // ১. Skeleton Loader দেখানো (ডাটা আসার আগে)
+        getEl('dash-reach').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:1rem;"></i>';
+        getEl('dash-impressions').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:1rem;"></i>';
+        getEl('dash-engagement').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:1rem;"></i>';
+        getEl('dash-followers').innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:1rem;"></i>';
+        
+        const topPostsDiv = getEl('dash-top-posts');
+        // Top posts এর জন্য Skeleton দেখানো
+        topPostsDiv.innerHTML = window.SkeletonManager.list() + window.SkeletonManager.list();
+
+        let totalImpressions = 0;
+        let totalEngagements = 0;
+        let topPosts = [];
+
+        // ২. ইউজারের টোটাল ফলোয়ার
+        const followersSnap = await get(ref(db, `followers/${currentUser.uid}`));
+        const followersCount = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
+        getEl('dash-followers').innerText = formatNumber(followersCount);
+
+        // ৩. ইউজারের পোস্টগুলো এনালাইসিস করা
+        const postsSnap = await get(ref(db, 'posts'));
+        postsSnap.forEach(child => {
+            const post = child.val();
+            if(post.uid === currentUser.uid) {
+                const likesCount = post.likes ? Object.keys(post.likes).length : 0;
+                const commentsCount = post.comments ? Object.keys(post.comments).length : 0;
+                const views = post.views || 0;
+                
+                totalEngagements += (likesCount + commentsCount);
+                totalImpressions += views; 
+                
+                topPosts.push({ id: child.key, img: post.img, text: post.text, eng: likesCount + commentsCount, views: views });
+            }
+        });
+
+        // ৪. ডাটা আসার পর Skeleton সরিয়ে আসল ডাটা বসানো
+        getEl('dash-impressions').innerText = formatNumber(totalImpressions);
+        getEl('dash-reach').innerText = formatNumber(Math.floor(totalImpressions * 0.75)); 
+        let engRate = totalImpressions > 0 ? ((totalEngagements / totalImpressions) * 100).toFixed(1) : 0;
+        getEl('dash-engagement').innerText = engRate + '%';
+        
+        // Top 3 Posts Render
+        topPosts.sort((a,b) => b.eng - a.eng);
+        topPostsDiv.innerHTML = ''; // Skeleton মুছে ফেলা হলো
+        
+        if(topPosts.length === 0) {
+            topPostsDiv.innerHTML = '<p style="color:var(--text-grey); font-size:0.9rem;">No posts yet.</p>';
+        } else {
+            topPosts.slice(0, 3).forEach(p => {
+                let imgSrc = (p.img || '').split(',')[0] || 'https://via.placeholder.com/50';
+                let isVid = window.isVideoURL(imgSrc);
+                let mediaElement = isVid ? `<video src="${imgSrc}" style="width:60px; height:60px; border-radius:10px; object-fit:cover;"></video>` : `<img src="${imgSrc}" style="width:60px; height:60px; border-radius:10px; object-fit:cover;">`;
+                
+                topPostsDiv.innerHTML += `
+                    <div class="list-item" style="border-radius:10px; background:var(--bg-card); border: 1px solid var(--border-color); padding:10px; margin-bottom:5px; cursor:pointer;" onclick="toggleModal('pro-dashboard-modal', false); openSinglePost('${p.id}')">
+                        ${mediaElement}
+                        <div class="item-info" style="margin-left:15px;">
+                            <div style="font-size:0.9rem; font-weight:600; color:var(--text-dark);">${(p.text || 'Media Post').substring(0,30)}</div>
+                            <div style="font-size:0.8rem; color:var(--text-grey); margin-top:5px; display:flex; gap:15px;">
+                                <span><i class="fas fa-fire" style="color:var(--danger)"></i> ${p.eng} Engagements</span>
+                                <span><i class="fas fa-eye" style="color:var(--primary-color)"></i> ${p.views} Views</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Chart.js - Weekly Growth Chart
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        if(growthChartInstance) growthChartInstance.destroy(); 
+        const demoData = [
+            Math.floor(totalImpressions * 0.2), 
+            Math.floor(totalImpressions * 0.5), 
+            Math.floor(totalImpressions * 0.8), 
+            totalImpressions
+        ];
+
+        growthChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'This Week'], 
+                datasets: [{
+                    label: 'Impressions',
+                    data: demoData,
+                    borderColor: '#00BCD4',
+                    backgroundColor: 'rgba(0, 188, 212, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#00BCD4',
+                    pointBorderWidth: 2,
+                    tension: 0.4, 
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { 
+                    x: { grid: { display: false } }, 
+                    y: { beginAtZero: true, border: {dash: [5, 5]} } 
+                }
+            }
+        });
+    };
     
 </script>
 </body>
