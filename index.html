@@ -524,9 +524,14 @@ body.dark-mode .skeleton {
             <div id="ptr-tab-profile" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
                 <i class="fas fa-spinner fa-spin"></i> Refreshing Profile...
             </div>
-            <div style="display: flex; justify-content: flex-end; padding: 15px 20px;">
-                <button class="btn-icon" onclick="openMenu()"><i class="fas fa-bars"></i></button>
+            <div style="display: flex; justify-content: flex-end; padding: 15px 20px; position:relative;">
+            <button class="btn-icon" onclick="toggleMyProfileMenu()"><i class="fas fa-ellipsis-v"></i></button>
+            <div class="dropdown-menu" id="my-profile-dropdown" style="right:20px; top:45px; width:220px; z-index:100;">
+                <div class="dropdown-item" id="btn-toggle-pro" onclick="toggleProfessionalMode()"><i class="fas fa-briefcase" style="width:20px;"></i> Switch to Professional Mode</div>
+                <div class="dropdown-item hidden" id="btn-monetization" onclick="openMonetizationHub()"><i class="fas fa-dollar-sign" style="width:20px;"></i> Monetization</div>
+                <div class="dropdown-item" onclick="copyMyProfileLink()"><i class="fas fa-link" style="width:20px;"></i> Copy Profile Link</div>
             </div>
+        </div>
             
             <div style="text-align: center; padding: 0 20px;">
                 <img id="my-profile-img" src="" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--primary-color); padding: 3px; box-shadow: 0 5px 15px rgba(0,188,212,0.2);" loading="lazy">
@@ -912,15 +917,114 @@ body.dark-mode .skeleton {
                     <span class="slider"></span>
                 </label>
             </div>
-          <!-- Professional Mode Toggle -->
-<div class="list-item" onclick="toggleProfessionalMode()">
-    <div class="item-info">Switch to Professional Mode</div>
-    <i class="fas fa-briefcase" style="color:var(--text-grey)"></i>
-</div>
+   
             <div class="list-item" onclick="openChangePassword()"><div class="item-info">Change Password</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
             <div class="list-item" onclick="openContactUs()"><div class="item-info">Contact Us</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
             <div class="list-item" onclick="openAbout()"><div class="item-info">About</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
             <div class="list-item" onclick="openTerms()"><div class="item-info">Terms & Conditions</div><i class="fas fa-chevron-right" style="color:var(--text-grey)"></i></div>
+        </div>
+    </div
+    <!-- Monetization Hub Modal -->
+    <div id="monetization-modal" class="full-screen hidden" style="z-index: 210; background: var(--bg-body); overflow-y: auto;">
+        <div class="modal-header" style="position: sticky; top:0; background: rgba(255,255,255,0.8); backdrop-filter: blur(15px); z-index:10;">
+            <h3>Monetization</h3>
+            <button class="btn-icon" onclick="toggleModal('monetization-modal', false)"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div class="modal-body" style="padding: 20px;">
+            
+            <!-- STEP 1: Eligibility Check / Apply Section -->
+            <div id="monetization-apply-section" class="hidden">
+                <div style="text-align:center; margin-bottom:20px;">
+                    <div style="width:80px; height:80px; border-radius:50%; background:var(--primary-gradient); color:white; display:flex; align-items:center; justify-content:center; font-size:2.5rem; margin:0 auto 15px; box-shadow:0 10px 20px rgba(0,188,212,0.3);"><i class="fas fa-gem"></i></div>
+                    <h2 style="color:var(--text-dark);">Creator Monetization</h2>
+                    <p style="color:var(--text-grey); font-size:0.9rem;">Earn money from your content.</p>
+                </div>
+                
+                <h4 style="margin-bottom:15px;">Eligibility Criteria</h4>
+                
+                <div class="list-item" style="background:var(--bg-card); border-radius:15px; margin-bottom:10px; border:none; box-shadow:var(--shadow);">
+                    <div class="item-info">
+                        <div style="font-weight:600; font-size:0.9rem;">100 Followers</div>
+                        <div id="el-followers-text" style="font-size:0.8rem; color:var(--text-grey);">Current: 0</div>
+                    </div>
+                    <i id="el-followers-icon" class="fas fa-times-circle" style="color:var(--danger); font-size:1.2rem;"></i>
+                </div>
+                
+                <div class="list-item" style="background:var(--bg-card); border-radius:15px; margin-bottom:10px; border:none; box-shadow:var(--shadow);">
+                    <div class="item-info">
+                        <div style="font-weight:600; font-size:0.9rem;">10,000 Views (Last 28 Days)</div>
+                        <div id="el-views-text" style="font-size:0.8rem; color:var(--text-grey);">Current: 0</div>
+                    </div>
+                    <i id="el-views-icon" class="fas fa-times-circle" style="color:var(--danger); font-size:1.2rem;"></i>
+                </div>
+                
+                <div class="list-item" style="background:var(--bg-card); border-radius:15px; margin-bottom:20px; border:none; box-shadow:var(--shadow);">
+                    <div class="item-info">
+                        <div style="font-weight:600; font-size:0.9rem;">No Policy Violations</div>
+                        <div style="font-size:0.8rem; color:var(--success);">Account is safe</div>
+                    </div>
+                    <i class="fas fa-check-circle" style="color:var(--success); font-size:1.2rem;"></i>
+                </div>
+                
+                <button id="btn-apply-monetization" class="btn btn-primary" style="width:100%; opacity:0.5; pointer-events:none;" onclick="submitMonetizationApplication()">Apply for Monetization</button>
+            </div>
+
+            <!-- STEP 2: Pending Review -->
+            <div id="monetization-pending-section" class="hidden" style="text-align:center; padding: 40px 20px;">
+                <i class="fas fa-clock" style="font-size:5rem; color:#f1c40f; margin-bottom:20px;"></i>
+                <h2 style="color:var(--text-dark);">Under Review</h2>
+                <p style="color:var(--text-grey); margin-top:10px;">Your application is currently being reviewed by our team. This may take a few days.</p>
+            </div>
+
+            <!-- STEP 3: Dashboard & Withdraw (Approved) -->
+            <div id="monetization-dashboard-section" class="hidden">
+                
+                <div style="background:var(--primary-gradient); color:white; border-radius:20px; padding:25px; box-shadow:0 10px 30px rgba(0,188,212,0.3); text-align:center; margin-bottom:20px;">
+                    <div style="font-size:0.9rem; opacity:0.9;">Current Balance</div>
+                    <div id="mon-balance" style="font-size:2.5rem; font-weight:700; margin:5px 0;">৳0.00</div>
+                    <div style="display:flex; justify-content:space-between; margin-top:15px; font-size:0.85rem; background:rgba(0,0,0,0.1); padding:10px; border-radius:10px;">
+                        <span>Total Earned: <span id="mon-total-earned">৳0.00</span></span>
+                        <span>RPM: <span id="mon-rpm">৳5</span></span>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                    <div class="glass-panel" style="padding: 15px; text-align: center; background: var(--bg-card); border-radius: 15px; box-shadow: var(--shadow);">
+                        <i class="fas fa-play-circle" style="color: #ff4757; font-size: 1.5rem;"></i>
+                        <div id="mon-monetized-views" style="font-size: 1.2rem; font-weight: 700; margin-top: 10px;">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-grey);">Monetized Views</div>
+                    </div>
+                    <div class="glass-panel" style="padding: 15px; text-align: center; background: var(--bg-card); border-radius: 15px; box-shadow: var(--shadow);">
+                        <i class="fas fa-calendar-day" style="color: #2ed573; font-size: 1.5rem;"></i>
+                        <div id="mon-today-earn" style="font-size: 1.2rem; font-weight: 700; margin-top: 10px;">৳0.00</div>
+                        <div style="font-size: 0.75rem; color: var(--text-grey);">Today's Earnings</div>
+                    </div>
+                </div>
+
+                <!-- Withdraw System -->
+                <h4 style="margin-bottom: 10px; color: var(--text-dark);">Withdraw Funds</h4>
+                <div style="background:var(--bg-card); padding:20px; border-radius:15px; box-shadow:var(--shadow); margin-bottom:20px;">
+                    <p style="font-size:0.8rem; color:var(--text-grey); margin-bottom:15px;">Minimum withdraw amount is ৳100.</p>
+                    
+                    <select id="withdraw-method" style="background:var(--bg-body); border:none; padding:12px; border-radius:10px; width:100%; margin-bottom:10px; outline:none;">
+                        <option value="bkash">bKash</option>
+                        <option value="nagad">Nagad</option>
+                        <option value="rocket">Rocket</option>
+                    </select>
+                    
+                    <input type="number" id="withdraw-amount" placeholder="Amount (৳)" style="background:var(--bg-body); padding:12px; border-radius:10px; border:none; width:100%; margin-bottom:10px;">
+                    <input type="text" id="withdraw-number" placeholder="Account Number" style="background:var(--bg-body); padding:12px; border-radius:10px; border:none; width:100%; margin-bottom:15px;">
+                    
+                    <button class="btn btn-primary" style="width:100%;" onclick="submitWithdrawRequest()">Withdraw Now</button>
+                </div>
+
+                <h4 style="margin-bottom: 10px; color: var(--text-dark);">Withdraw History</h4>
+                <div id="withdraw-history-list" style="display:flex; flex-direction:column; gap:10px;">
+                    <!-- Withdrawals load here -->
+                </div>
+
+            </div>
         </div>
     </div>
 <!-- Professional Dashboard Modal -->
@@ -3996,6 +4100,30 @@ const isAdsterra = Math.random() < 0.8;
                 get(postRef).then(vs => {
                     update(ref(db, `posts/${postId}`), { views: (vs.val() || 0) + 1 });
                 });
+                // --- NEW: MONETIZATION EARNING LOGIC ---
+                // যে পোস্টের ভিউ হচ্ছে, তার মালিক (Owner) কে বের করা
+                get(ref(db, `posts/${postId}/uid`)).then(ownerSnap => {
+                    const ownerUid = ownerSnap.val();
+                    if(ownerUid) {
+                        // চেক করা Owner এর মনিটাইজেশন Approved কিনা
+                        get(ref(db, `monetization/${ownerUid}`)).then(monSnap => {
+                            const monData = monSnap.val();
+                            if(monData && monData.status === 'approved') {
+                                const rpm = monData.rpm || 5; // প্রতি ১০০০ ভিউয়ে ৫ টাকা
+                                const earnPerView = rpm / 1000; // ১ ভিউয়ে ০.০০৫ টাকা
+                                
+                                // ডাটাবেসে টাকা অ্যাড করা
+                                update(ref(db, `monetization/${ownerUid}`), {
+                                    balance: (monData.balance || 0) + earnPerView,
+                                    totalEarnings: (monData.totalEarnings || 0) + earnPerView,
+                                    monetizedViews: (monData.monetizedViews || 0) + 1,
+                                    todayEarnings: (monData.todayEarnings || 0) + earnPerView
+                                });
+                            }
+                        });
+                    }
+                });
+                // ---------------------------------------
             }
         });
     }
@@ -5021,6 +5149,198 @@ notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeComme
                     y: { beginAtZero: true, border: {dash: [5, 5]} } 
                 }
             }
+        });
+    };
+    // --- MY PROFILE 3-DOT MENU LOGIC ---
+    window.toggleMyProfileMenu = () => {
+        const menu = getEl('my-profile-dropdown');
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    };
+
+    // মেনু বাইরে ক্লিক করলে হাইড হবে
+    document.addEventListener('click', (e) => { 
+        if(!e.target.closest('#tab-profile .btn-icon') && !e.target.closest('#my-profile-dropdown')) {
+            const menu = getEl('my-profile-dropdown');
+            if(menu) menu.style.display = 'none';
+        }
+    });
+
+    // Profile Load হওয়ার সময় মেনু বাটন আপডেট করা
+    const originalLoadMyProfileTab = window.loadMyProfileTab;
+    window.loadMyProfileTab = async () => {
+        await originalLoadMyProfileTab(); // আগের কাজগুলো করবে
+        
+        const s = await get(ref(db, `users/${currentUser.uid}`)); 
+        const d = s.val();
+        if(d) {
+            // Pro Mode চেক করে মেনু টেক্সট বদলানো
+            const proBtn = getEl('btn-toggle-pro');
+            const monBtn = getEl('btn-monetization');
+            
+            if (d.accountType === 'creator') {
+                proBtn.innerHTML = '<i class="fas fa-user" style="width:20px;"></i> Switch to Personal';
+                monBtn.classList.remove('hidden'); // মনিটাইজেশন অপশন ভিজিবল হবে
+            } else {
+                proBtn.innerHTML = '<i class="fas fa-briefcase" style="width:20px;"></i> Switch to Pro Mode';
+                monBtn.classList.add('hidden');
+            }
+        }
+    };
+    // --- MONETIZATION SYSTEM LOGIC ---
+    window.openMonetizationHub = async () => {
+        toggleMyProfileMenu();
+        toggleModal('monetization-modal', true);
+        
+        // সেকশন হাইড করা
+        getEl('monetization-apply-section').classList.add('hidden');
+        getEl('monetization-pending-section').classList.add('hidden');
+        getEl('monetization-dashboard-section').classList.add('hidden');
+
+        // ডাটাবেস থেকে ইউজারের মনিটাইজেশন স্ট্যাটাস আনা
+        const monSnap = await get(ref(db, `monetization/${currentUser.uid}`));
+        let monData = monSnap.val();
+        
+        if (!monData || monData.status === 'none' || monData.status === 'rejected') {
+            // Eligibility Check
+            getEl('monetization-apply-section').classList.remove('hidden');
+            
+            const followersSnap = await get(ref(db, `followers/${currentUser.uid}`));
+            const followersCount = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
+            
+            let totalViews = 0;
+            const postsSnap = await get(ref(db, 'posts'));
+            postsSnap.forEach(child => {
+                if(child.val().uid === currentUser.uid) {
+                    totalViews += (child.val().views || 0);
+                }
+            });
+
+            // UI Update for Apply
+            getEl('el-followers-text').innerText = `Current: ${followersCount}`;
+            getEl('el-views-text').innerText = `Current: ${formatNumber(totalViews)}`;
+            
+            let isEligible = true;
+            
+            if(followersCount >= 100) {
+                getEl('el-followers-icon').className = "fas fa-check-circle";
+                getEl('el-followers-icon').style.color = "var(--success)";
+            } else { isEligible = false; }
+            
+            if(totalViews >= 10000) {
+                getEl('el-views-icon').className = "fas fa-check-circle";
+                getEl('el-views-icon').style.color = "var(--success)";
+            } else { isEligible = false; }
+
+            const applyBtn = getEl('btn-apply-monetization');
+            if(isEligible) {
+                applyBtn.style.opacity = '1';
+                applyBtn.style.pointerEvents = 'auto';
+                if(monData && monData.status === 'rejected') {
+                    applyBtn.innerText = "Re-Apply for Monetization";
+                }
+            }
+
+        } else if (monData.status === 'pending') {
+            getEl('monetization-pending-section').classList.remove('hidden');
+        } else if (monData.status === 'approved') {
+            // Dashboard
+            getEl('monetization-dashboard-section').classList.remove('hidden');
+            
+            getEl('mon-balance').innerText = `৳${parseFloat(monData.balance || 0).toFixed(2)}`;
+            getEl('mon-total-earned').innerText = `৳${parseFloat(monData.totalEarnings || 0).toFixed(2)}`;
+            getEl('mon-rpm').innerText = `৳${monData.rpm || 5}`;
+            getEl('mon-monetized-views').innerText = formatNumber(monData.monetizedViews || 0);
+            getEl('mon-today-earn').innerText = `৳${parseFloat(monData.todayEarnings || 0).toFixed(2)}`;
+            
+            loadWithdrawHistory();
+        }
+    };
+
+    window.submitMonetizationApplication = async () => {
+        const btn = getEl('btn-apply-monetization');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
+        
+        await set(ref(db, `monetization/${currentUser.uid}`), {
+            status: 'pending',
+            appliedAt: serverTimestamp(),
+            balance: 0,
+            totalEarnings: 0,
+            monetizedViews: 0,
+            rpm: 5 // Default: 5 Taka per 1000 Views
+        });
+        
+        showToast("Application Submitted!");
+        openMonetizationHub(); // রিলোড
+    };
+    // --- WITHDRAW SYSTEM ---
+    window.submitWithdrawRequest = async () => {
+        const method = getEl('withdraw-method').value;
+        const amount = parseFloat(getEl('withdraw-amount').value);
+        const number = getEl('withdraw-number').value.trim();
+        
+        if(!amount || !number) return alert("Please fill all fields.");
+        if(amount < 100) return alert("Minimum withdraw is ৳100.");
+        
+        const monSnap = await get(ref(db, `monetization/${currentUser.uid}`));
+        const monData = monSnap.val();
+        
+        if(monData.balance < amount) return alert("Insufficient balance.");
+        
+        const btn = getEl('withdraw-amount').nextElementSibling.nextElementSibling;
+        btn.innerText = "Processing...";
+        btn.disabled = true;
+        
+        // ১. ব্যালেন্স থেকে টাকা কাটা
+        await update(ref(db, `monetization/${currentUser.uid}`), {
+            balance: monData.balance - amount
+        });
+        
+        // ২. রিকোয়েস্ট তৈরি করা
+        await push(ref(db, `withdrawals/${currentUser.uid}`), {
+            method: method,
+            amount: amount,
+            number: number,
+            status: 'pending',
+            ts: serverTimestamp()
+        });
+        
+        showToast("Withdraw Request Sent Successfully!");
+        btn.innerText = "Withdraw Now";
+        btn.disabled = false;
+        
+        getEl('withdraw-amount').value = '';
+        getEl('withdraw-number').value = '';
+        openMonetizationHub(); // ড্যাশবোর্ড রিলোড
+    };
+
+    window.loadWithdrawHistory = () => {
+        const div = getEl('withdraw-history-list');
+        div.innerHTML = '<div style="text-align:center;"><i class="fas fa-spinner fa-spin"></i></div>';
+        
+        onValue(ref(db, `withdrawals/${currentUser.uid}`), snap => {
+            div.innerHTML = '';
+            if(!snap.exists()) {
+                div.innerHTML = '<p style="color:var(--text-grey); font-size:0.85rem;">No history found.</p>';
+                return;
+            }
+            
+            let arr = [];
+            snap.forEach(c => arr.push(c.val()));
+            arr.reverse(); // সর্বশেষটা উপরে
+            
+            arr.forEach(w => {
+                let statusColor = w.status === 'pending' ? '#f1c40f' : (w.status === 'completed' ? 'var(--success)' : 'var(--danger)');
+                
+                div.innerHTML += `
+                    <div style="background:var(--bg-body); border-radius:10px; padding:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="font-weight:600; color:var(--text-dark);">৳${parseFloat(w.amount).toFixed(2)} - ${w.method.toUpperCase()}</div>
+                            <div style="font-size:0.75rem; color:var(--text-grey); margin-top:3px;">${new Date(w.ts).toLocaleDateString()} • ${w.number}</div>
+                        </div>
+                        <div style="background:${statusColor}; color:white; font-size:0.7rem; padding:3px 8px; border-radius:10px; font-weight:bold; text-transform:capitalize;">${w.status}</div>
+                    </div>
+                `;
+            });
         });
     };
     
