@@ -392,7 +392,26 @@ body.dark-mode .skeleton {
 .sk-text.title { height: 16px; width: 70%; margin-bottom: 12px; }
 .sk-media { width: 100%; aspect-ratio: 1; border-radius: 15px; margin-top: 10px; }
 .sk-action { width: 80px; height: 30px; border-radius: 15px; }
-  
+  /* Limit List / See More CSS */
+.limited-list:not(.expanded) > .list-item:nth-child(n+6) {
+    display: none !important;
+}
+.see-more-btn {
+    width: 100%; text-align: center; color: var(--primary-color);
+    background: transparent; border: none; padding: 10px;
+    font-weight: 600; cursor: pointer; display: none; font-size: 0.9rem;
+    transition: 0.2s;
+}
+.see-more-btn:active { transform: scale(0.95); }
+
+/* Only show "See More" button if list has more than 5 items */
+.limited-list.has-more:not(.expanded) + .see-more-btn {
+    display: block;
+}
+/* Show "Show Less" when expanded */
+.limited-list.expanded + .see-more-btn {
+    display: block;
+}
     </style>
 </head>
 <body>
@@ -505,19 +524,26 @@ body.dark-mode .skeleton {
         </div>
 
         <!-- Requests / Notifications Tab -->
-        <div id="tab-requests" class="view hidden">
-            <div id="ptr-tab-requests" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
-                <i class="fas fa-spinner fa-spin"></i> Refreshing Updates...
-            </div>
-            <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem;">Notifications</h4>
-            <div id="user-notifications-list"></div>
+<div id="tab-requests" class="view hidden">
+    <div id="ptr-tab-requests" style="text-align:center; padding:15px; color:var(--text-grey); font-size:0.9rem; display:none;">
+        <i class="fas fa-spinner fa-spin"></i> Refreshing Updates...
+    </div>
+    
+    <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem;">Notifications</h4>
+    <!-- Added "limited-list" class here -->
+    <div id="user-notifications-list" class="limited-list"></div>
+    <!-- Added See More Button -->
+    <button id="btn-more-notifs" class="see-more-btn" onclick="toggleExpand('user-notifications-list', 'btn-more-notifs')">See More</button>
 
-            <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem; margin-top:10px;">New Followers</h4>
-            <div id="requests-list-container"></div>
-            
-            <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem; margin-top:10px;">Suggested Users</h4>
-            <div id="suggestions-list-container"></div>
-        </div>
+    <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem; margin-top:10px;">New Followers</h4>
+    <!-- Added "limited-list" class here -->
+    <div id="requests-list-container" class="limited-list"></div>
+    <!-- Added See More Button -->
+    <button id="btn-more-followers" class="see-more-btn" onclick="toggleExpand('requests-list-container', 'btn-more-followers')">See More</button>
+    
+    <h4 style="padding:15px 25px 5px; margin:0; color:var(--text-dark); font-size:0.95rem; margin-top:10px;">Suggested Users</h4>
+    <div id="suggestions-list-container"></div>
+</div>
 
         <!-- My Profile Tab -->
         <div id="tab-profile" class="view hidden" style="background: var(--bg-body);">
@@ -1465,7 +1491,19 @@ window.SkeletonManager = {
     const servers = { iceServers:[ { urls:['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] } ] };
 
     const getEl = (id) => document.getElementById(id);
+    
     const toggleClass = (id, cls, force) => getEl(id).classList.toggle(cls, force);
+    window.toggleExpand = (listId, btnId) => {
+    const list = document.getElementById(listId);
+    const btn = document.getElementById(btnId);
+    if (list.classList.contains('expanded')) {
+        list.classList.remove('expanded');
+        btn.innerText = 'See More';
+    } else {
+        list.classList.add('expanded');
+        btn.innerText = 'Show Less';
+    }
+};
     window.toggleAuth = (m) => { toggleClass('login-form', 'hidden', m!=='login'); toggleClass('signup-form', 'hidden', m==='login'); };
     window.toggleModal = (id, show) => toggleClass(id, 'hidden', !show);
     window.openMenu = () => { getEl('side-menu').classList.add('open'); getEl('menu-overlay').classList.add('open'); };
@@ -3538,9 +3576,13 @@ getEl('send-msg-btn').onclick = async () => {
                         count++;
                     }
                 }
-                if(count === 0) div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new followers.</p>';
+                if(count === 0) div.innerHTML =
+                '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new followers.</p>';
                 else setupFollowerSwipes(); 
             } else { div.innerHTML = '<p style="text-align:center; color:var(--text-grey); font-size:0.9rem; padding:15px;">No new followers.</p>'; }
+            // Add this right after the if(count === 0) check inside loadRequests
+if (count > 5) div.classList.add('has-more');
+else div.classList.remove('has-more');
             window.updateAllFollowButtons();
         });
     }
@@ -3600,7 +3642,9 @@ getEl('send-msg-btn').onclick = async () => {
                 </div>`;
             
             div.insertBefore(elWrapper.firstElementChild, div.firstChild);
-            notifCount++;
+            notifCount++; // Existing code
+if (notifCount > 5) div.classList.add('has-more'); // New code
+else div.classList.remove('has-more'); // New code
             setupNotificationSwipes();
         });
 
@@ -3615,7 +3659,9 @@ getEl('send-msg-btn').onclick = async () => {
                 el.style.overflow = 'hidden';
                 setTimeout(() => {
                     el.remove();
-                    notifCount--;
+                    notifCount--; // Existing code
+if (notifCount > 5) div.classList.add('has-more'); // New code
+else div.classList.remove('has-more'); // New code
                     if(div.children.length === 0 || notifCount <= 0) {
                         div.innerHTML = '<p id="no-notifs-msg" style="text-align:center; color:var(--text-grey); padding:15px;">No notifications.</p>';
                     }
