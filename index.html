@@ -412,6 +412,28 @@ body.dark-mode .skeleton {
 .limited-list.expanded + .see-more-btn {
     display: block;
 }
+/* Responsive Ad Wrapper for Single Pages */
+.responsive-ad-wrapper {
+    margin: 15px auto;
+    padding: 10px;
+    background: var(--bg-card);
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    text-align: center;
+    width: 100%;
+    min-height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+.responsive-ad-wrapper::before {
+    content: "Advertisement";
+    position: absolute;
+    font-size: 0.65rem;
+    color: var(--text-grey);
+    top: 2px;
+}
     </style>
 </head>
 <body>
@@ -567,7 +589,10 @@ body.dark-mode .skeleton {
                 <p id="my-profile-study" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 5px; padding: 0 20px;">Study</p>
                 <p id="my-profile-dob" style="color: var(--text-grey); font-size: 0.85rem; margin-top: 5px; padding: 0 20px;">DOB</p>
                 
-                <button class="btn btn-primary" style="margin-top: 15px; border-radius: 20px; font-size: 0.85rem; padding: 8px 25px;" onclick="openEditProfile()">Edit Profile</button>
+              <!-- Flex Container for Side-by-Side Buttons -->
+<div id="profile-action-buttons" style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; padding: 0 20px;">
+    <button class="btn btn-primary" style="flex: 1; border-radius: 20px; font-size: 0.85rem; padding: 8px 15px;" onclick="openEditProfile()">Edit Profile</button>
+</div>
 
                 </div>
            
@@ -1300,8 +1325,7 @@ body.dark-mode .skeleton {
      // --- OneSignal Imports ---
 import { initializeOneSignal } from './js/onesignal-init.js';
 import { 
-    notifyNewMessage, notifyPostLike, notifyPostComment, 
-    notifyNewFollower, notifyIncomingCall, notifyMissedCall 
+    notifyNewMessage, notifyPostLike, notifyPostComment, notifyNewFollower, notifyIncomingCall, notifyMissedCall 
 } from './js/notification.js';
     const firebaseConfig = {
       apiKey: "AIzaSyCjZV3yPpdVQ151o7tWcZFNARDnZQsKSVA",
@@ -1586,7 +1610,15 @@ getEl('back-chat').onclick = () => {
     window.copyFriendId = () => { copyToClipboard(getEl('fp-id').innerText.replace('ID: ', '').trim()); };
     window.copyHostUrl = () => { copyToClipboard(getEl('imgbb-url-result').value); };
 
-    window.openPhotoHosting = () => { closeMenu(); toggleModal('photo-host-modal', true); };
+    window.openPhotoHosting = () => { 
+    closeMenu(); 
+    toggleModal('photo-host-modal', true); 
+    // অ্যাড বসানো
+    const modalBody = document.querySelector('#photo-host-modal .modal-body');
+    if (!modalBody.querySelector('.responsive-ad-wrapper')) {
+        window.injectBannerAd(modalBody);
+    }
+};
     window.uploadToImgBB = async () => {
         const fileInput = getEl('imgbb-file');
         if(!fileInput.files[0]) return alert("Please select an image");
@@ -1742,6 +1774,7 @@ getEl('back-chat').onclick = () => {
             });
             
             if (count === 0) container.innerHTML = '<p style="text-align:center; color:var(--text-grey);">No notifications yet.</p>';
+            window.injectBannerAd(containe);
         });
     };
 
@@ -1767,6 +1800,7 @@ getEl('back-chat').onclick = () => {
                     <h2 style="color:var(--text-dark);">Verified</h2>
                     <p style="color:var(--text-grey); margin-top:10px;">Your account has the premium blue tick.</p>
                 </div>`;
+                window.injectBannerAd(container);
             return;
         }
 
@@ -1777,6 +1811,7 @@ getEl('back-chat').onclick = () => {
                     <h2 style="color:var(--text-dark);">Under Review</h2>
                     <p style="color:var(--text-grey); margin-top:10px;">Your verification request is being processed.</p>
                 </div>`;
+                window.injectBannerAd(container);
             return;
         }
 
@@ -1826,7 +1861,7 @@ getEl('back-chat').onclick = () => {
                 </div>
             </div>
         `;
-
+window.injectBannerAd(container);
         document.querySelectorAll('.pay-tab').forEach(tab => {
             tab.onclick = (e) => {
                 document.querySelectorAll('.pay-tab').forEach(t => { t.style.background='var(--border-color)'; t.style.color='var(--text-dark)'; t.classList.remove('active'); });
@@ -1957,7 +1992,13 @@ getEl('back-chat').onclick = () => {
 
     getEl('btn-signup').onclick = async () => { try { await createUserWithEmailAndPassword(auth, getEl('signup-email').value, getEl('signup-pass').value); } catch(e) { alert(e.message); } };
     getEl('btn-login').onclick = async () => { try { await signInWithEmailAndPassword(auth, getEl('login-email').value, getEl('login-pass').value); } catch(e) { alert(e.message); } };
-    getEl('btn-logout').onclick = () => { if(currentUser) set(ref(db, `status/${currentUser.uid}`), { state: 'offline', lastSeen: serverTimestamp() }); signOut(auth); location.reload(); };
+    getEl('btn-logout').onclick = () => { 
+    if(confirm("Are you sure you want to logout?")) {
+        if(currentUser) set(ref(db, `status/${currentUser.uid}`), { state: 'offline', lastSeen: serverTimestamp() }); 
+        signOut(auth); 
+        location.reload(); 
+    }
+};
 
     getEl('btn-save-profile').onclick = async () => saveProfile('setup');
     getEl('btn-update-profile').onclick = async () => saveProfile('edit');
@@ -2055,7 +2096,77 @@ getEl('back-chat').onclick = () => {
         const connRef = ref(db, '.info/connected'); const statRef = ref(db, `status/${uid}`);
         onValue(connRef, (s) => { if(s.val()) onDisconnect(statRef).set({state:'offline', lastSeen: serverTimestamp()}).then(()=>set(statRef, {state:'online'})); });
     }
+// // Adsterra Safe Native Script Injector (No manual iframe)
+window.injectBannerAd = (targetContainer) => {
+    if (!targetContainer) return;
+    
+    // যদি আগে থেকেই Ad থাকে, তাহলে ডাবল Ad লোড হবে না
+    if (targetContainer.querySelector('.responsive-ad-wrapper')) {
+        return;
+    }
 
+    // ১. Ad-এর জন্য একটি কন্টেইনার তৈরি করা
+    const adWrapper = document.createElement('div');
+    adWrapper.className = 'responsive-ad-wrapper';
+    adWrapper.style.margin = '15px auto';
+    adWrapper.style.display = 'flex';
+    adWrapper.style.justifyContent = 'center';
+    adWrapper.style.alignItems = 'center';
+    adWrapper.style.minHeight = '60px'; // 50px ad + padding
+    adWrapper.style.overflow = 'hidden';
+
+    // কন্টেইনারটি কাঙ্ক্ষিত জায়গায় যুক্ত করা
+    targetContainer.appendChild(adWrapper);
+
+    // ২. Adsterra-এর অপশনগুলো গ্লোবালি সেট করা
+    window.atOptions = {
+        'key' : 'ea15283b31c4eae4bae3c26f61a4e553',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+    };
+
+    // ৩. Adsterra-এর মূল স্ক্রিপ্টটি ডাইনামিক্যালি তৈরি করা
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = "https://www.highperformanceformat.com/ea15283b31c4eae4bae3c26f61a4e553/invoke.js";
+    
+    // ৪. স্ক্রিপ্টটিকে ঠিক adWrapper-এর ভেতরে বসিয়ে দেওয়া
+    adWrapper.appendChild(script);
+};
+// নতুন 300x250 Adsterra Banner Ad ফাংশন
+window.injectBannerAd300x250 = (targetContainer) => {
+    if (!targetContainer) return;
+    if (targetContainer.querySelector('.responsive-ad-wrapper-250')) return;
+
+    const adWrapper = document.createElement('div');
+    adWrapper.className = 'responsive-ad-wrapper-250';
+    adWrapper.style.margin = '15px auto';
+    adWrapper.style.display = 'flex';
+    adWrapper.style.justifyContent = 'center';
+    adWrapper.style.alignItems = 'center';
+    adWrapper.style.minHeight = '250px';
+    adWrapper.style.overflow = 'hidden';
+
+    targetContainer.appendChild(adWrapper);
+
+    // ⚠️ নিচে 'YOUR_300x250_ADSTERRA_KEY_HERE' এর জায়গায় আপনার 300x250 অ্যাডের কোড দিন ⚠️
+    const adKey = '25f934f3394c00a15a24939fb746cb13'; 
+
+    const confScript = document.createElement('script');
+    confScript.type = 'text/javascript';
+    confScript.innerHTML = `atOptions = { 'key' : '${adKey}', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };`;
+    
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = `https://www.highperformanceformat.com/25f934f3394c00a15a24939fb746cb13/invoke.js`;
+
+    adWrapper.appendChild(confScript);
+    adWrapper.appendChild(script);
+};
     function initApp() {
         setupExitAd();
 
@@ -2138,7 +2249,9 @@ getEl('back-chat').onclick = () => {
                 if (t.dataset.tab === 'feed' && t.classList.contains('active')) {
                     const ptr = getEl('ptr-tab-feed');
                     if (ptr) ptr.style.display = 'block';
-                    setTimeout(() => { loadFeed(); loadStories(); if(ptr) ptr.style.display = 'none'; showToast("Feed refreshed!"); }, 800);
+                    setTimeout(() => {
+                      isRenderingFeed = false;
+                      loadFeed(); loadStories(); if(ptr) ptr.style.display = 'none'; showToast("Feed refreshed!"); }, 800);
                     return;
                 }
 
@@ -2742,14 +2855,22 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
             const dashBtn = document.createElement('button');
             dashBtn.id = 'pro-dash-btn';
             dashBtn.className = "btn btn-primary";
-            dashBtn.style.marginTop = "15px";
-            dashBtn.style.width = "100%";
-            dashBtn.innerHTML = "<i class='fas fa-chart-line'></i> View Professional Dashboard";
+            // বাটনের স্টাইল আপডেট করা হয়েছে যাতে পাশাপাশি সুন্দরভাবে বসে
+            dashBtn.style.flex = "1";
+            dashBtn.style.borderRadius = "20px";
+            dashBtn.style.fontSize = "0.85rem";
+            dashBtn.style.padding = "8px 10px";
+            dashBtn.style.background = "#fff"; // আলাদা বোঝানোর জন্য সাদা ব্যাকগ্রাউন্ড
+            dashBtn.style.color = "var(--primary-color)";
+            dashBtn.style.border = "1px solid var(--primary-color)";
+            dashBtn.innerHTML = "<i class='fas fa-chart-line'></i> Dashboard";
             dashBtn.onclick = () => window.openProfessionalDashboard();
             
-            // Stats div এর ঠিক আগে বাটনটি যুক্ত করা
-            const statsDiv = getEl('my-stat-posts').parentElement.parentElement;
-            statsDiv.parentElement.insertBefore(dashBtn, statsDiv);
+            // নতুন ফ্লেক্স কন্টেইনারের ভেতরে বাটনটি যুক্ত করা
+            const actionContainer = getEl('profile-action-buttons');
+            if(actionContainer) {
+                actionContainer.appendChild(dashBtn);
+            }
         }
         }
         
@@ -2813,11 +2934,34 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
         toggleModal('edit-profile-modal', true);
     };
 
-    window.openSettings = () => { closeMenu(); toggleModal('settings-modal', true); };
+    window.openSettings = () => { 
+    closeMenu(); 
+    toggleModal('settings-modal', true); 
+    // অ্যাড বসানো
+    const modalBody = document.querySelector('#settings-modal .modal-body');
+    if (!modalBody.querySelector('.responsive-ad-wrapper')) {
+        window.injectBannerAd(modalBody);
+    }
+};
     window.openAbout = () => { toggleModal('settings-modal', false); toggleModal('about-modal', true); };
     window.openTerms = () => { toggleModal('settings-modal', false); toggleModal('terms-modal', true); };
-    window.openSearchAddFriend = () => { closeMenu(); toggleModal('add-friend-modal', true); renderLocalSearch(myFriends); };
-    window.openCallHistory = () => { closeMenu(); toggleModal('call-history-modal', true); };
+    window.openSearchAddFriend = () => { 
+    closeMenu(); 
+    toggleModal('add-friend-modal', true); 
+    renderLocalSearch(myFriends); 
+    const modalBody = document.querySelector('#add-friend-modal .modal-body');
+    if (modalBody && !modalBody.querySelector('.responsive-ad-wrapper')) {
+        window.injectBannerAd(modalBody);
+    }
+};
+    window.openCallHistory = () => { 
+    closeMenu(); 
+    toggleModal('call-history-modal', true); 
+    const modalBody = document.querySelector('#call-history-modal .modal-body');
+    if (modalBody && !modalBody.querySelector('.responsive-ad-wrapper')) {
+        window.injectBannerAd(modalBody);
+    }
+};
 
     function loadBlockedUsers() {
         onValue(ref(db, `blocked/${currentUser.uid}`), snap => {
@@ -2827,6 +2971,7 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
                 get(ref(db, `users/${c.key}`)).then(u => { const user = u.val(); div.innerHTML += `<div class="list-item"><img src="${user.dpUrl}" class="avatar" loading="lazy"><div class="item-info">${user.name}</div><button class="btn btn-primary" style="padding:5px 15px; font-size:0.8rem;" onclick="unblockUser('${c.key}')">Unblock</button></div>`; });
             });
             if(snap.size === 0) div.innerHTML = '<p style="text-align:center; color:#999;">No blocked users</p>';
+            window.injectBannerAd(div);
         });
     }
 
@@ -2876,9 +3021,15 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
     };
 
     window.openNewGroup = () => {
-        closeMenu(); toggleModal('new-group-modal', true); const div = getEl('group-friend-list'); div.innerHTML = '';
-        myFriends.forEach(f => { div.innerHTML += `<div class="list-item"><input type="checkbox" class="friend-checkbox" value="${f.uid}"><img src="${f.dpUrl}" class="avatar" style="width:40px; height:40px;" loading="lazy"><div class="item-name">${f.name}</div></div>`; });
-    };
+    closeMenu(); toggleModal('new-group-modal', true); const div = getEl('group-friend-list'); div.innerHTML = '';
+    myFriends.forEach(f => { div.innerHTML += `<div class="list-item"><input type="checkbox" class="friend-checkbox" value="${f.uid}"><img src="${f.dpUrl}" class="avatar" style="width:40px; height:40px;" loading="lazy"><div class="item-name">${f.name}</div></div>`; });
+    
+    // Ad Injection
+    const modalBody = document.querySelector('#new-group-modal .modal-body');
+    if (modalBody && !modalBody.querySelector('.responsive-ad-wrapper')) {
+        window.injectBannerAd(modalBody);
+    }
+};
 
     window.createGroup = async () => {
         const name = getEl('group-name-input').value; const checks = document.querySelectorAll('.friend-checkbox:checked');
@@ -3890,39 +4041,44 @@ else div.classList.remove('has-more'); // New code
         // প্রতি ১০ বারের মধ্যে ৮ বার Adsterra এবং ২ বার Monetag আসবে
 const isAdsterra = Math.random() < 0.8; 
 
-        if (isAdsterra) {
-            // ----------------------------------------------------
-            // 1. ADSTERRA NATIVE BANNER
-            // ----------------------------------------------------
-            adEl.innerHTML = `
-                <div class="post-header" style="margin-bottom:10px;">
-                    <div class="post-user">
-                        <div style="width:40px; height:40px; border-radius:50%; background:var(--primary-gradient); display:flex; justify-content:center; align-items:center; color:white; font-size:1.2rem; box-shadow:0 4px 10px rgba(0,0,0,0.1);"><i class="fas fa-star"></i></div>
-                        <div>
-                            <div style="font-weight:600; color:var(--text-dark);">Sponsored</div>
-                            <div style="font-size:0.75rem; color:var(--text-grey);">Recommended for you</div>
-                        </div>
-                    </div>
+        // আপনার কোডের if (isAdsterra) এর ভেতরের অংশ রিপ্লেস করুন:
+if (isAdsterra) {
+    adEl.innerHTML = `
+        <div class="post-header" style="margin-bottom:10px;">
+            <div class="post-user">
+                <div style="width:40px; height:40px; border-radius:50%; background:var(--primary-gradient); display:flex; justify-content:center; align-items:center; color:white; font-size:1.2rem; box-shadow:0 4px 10px rgba(0,0,0,0.1);"><i class="fas fa-star"></i></div>
+                <div>
+                    <div style="font-weight:600; color:var(--text-dark);">Sponsored</div>
+                    <div style="font-size:0.75rem; color:var(--text-grey);">Recommended for you</div>
                 </div>
-                <div class="adsterra-native-ad-wrapper" style="width:100%; border-radius:15px; overflow:hidden; display:flex; justify-content:center; align-items:center; min-height: 100px; background: transparent;">
-                </div>
-            `;
+            </div>
+        </div>
+        <div class="adsterra-native-ad-wrapper" style="width:100%; border-radius:15px; overflow:hidden; display:flex; justify-content:center; align-items:center; min-height: 100px; background: transparent;">
+        </div>
+    `;
 
-            
-            const adWrapper = adEl.querySelector('.adsterra-native-ad-wrapper');
-            
-            const adContainer = document.createElement('div');
-            adContainer.id = 'container-e1b3e0253f17323525b99d80d50beab8'; // <-- আপনার নতুন আইডি
-            adWrapper.appendChild(adContainer);
+    // একাধিক Adsterra Native Banner Scripts এর Array
+    const adsterraUnits = [
+        { id: "xxx", src: "xx" },
+        // আপনার নতুন তৈরি করা Adsterra Native Banner ইউনিটগুলো নিচে দিন:
+        { id: "container-b84c786b66274e9811bb8609aa34bc97", src: "https://pl29569659.effectivecpmnetwork.com/b84c786b66274e9811bb8609aa34bc97/invoke.js" },
+        { id: "container-yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy", src: "https://pl29543240.effectivecpmnetwork.com/yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy/invoke.js" }
+    ];
 
-            const adScript = document.createElement('script');
-            adScript.async = true;
-            adScript.dataset.cfasync = "false";
-            adScript.src = "https://pl29543240.effectivecpmnetwork.com/e1b3e0253f17323525b99d80d50beab8/invoke.js"; 
-            adWrapper.appendChild(adScript);
-            
+    // রেন্ডমলি যেকোনো একটি Ad Unit সিলেক্ট করা (Rotation)
+    const randomUnit = adsterraUnits[Math.floor(Math.random() * adsterraUnits.length)];
 
-        } else {
+    const adWrapper = adEl.querySelector('.adsterra-native-ad-wrapper');
+    const adContainer = document.createElement('div');
+    adContainer.id = randomUnit.id; 
+    adWrapper.appendChild(adContainer);
+
+    const adScript = document.createElement('script');
+    adScript.async = true;
+    adScript.dataset.cfasync = "false";
+    adScript.src = randomUnit.src; 
+    adWrapper.appendChild(adScript);
+} else {
             // ----------------------------------------------------
             // 2. MONETAG DIRECT LINK (5 VARIATIONS WITH DIFFERENT LINKS)
             // ----------------------------------------------------
@@ -4198,29 +4354,43 @@ const isAdsterra = Math.random() < 0.8;
     requestAnimationFrame(() => {
         const div = getEl('feed-list-container');
         
-        // শুধু Scroll Trigger রিমুভ করব, Ad রিমুভ করব না
         div.querySelectorAll('.scroll-trigger').forEach(el => el.remove());
-        window.SkeletonManager.remove('feed-list-container'); // ডেটা আসলে স্কেলিটন রিমুভ
+        window.SkeletonManager.remove('feed-list-container'); 
+        
         const sorted = Object.values(feedPosts).sort((a,b) => b.score - a.score);
         const postsToRender = sorted.slice(0, currentlyDisplayedCount);
 
         postsToRender.forEach((item, index) => {
-            // যদি পোস্টটি আগে থেকে ফিডে না থাকে, তবেই অ্যাপেন্ড করব
             if (!div.contains(item.el)) {
                 div.appendChild(item.el); 
             }
 
-            // Ad বসানোর লজিক (একবার তৈরি হলে আর দ্বিতীয়বার তৈরি হবে না)
-            if ((index + 1) % 3 === 0) {
+            const postNum = index + 1; // পোস্টের নম্বর
+
+            // আপনার সিকোয়েন্স অনুযায়ী অ্যাড বসানোর লজিক
+            if ([3, 9, 14, 17, 21, 26, 31].includes(postNum)) {
                 if (!item.adEl) {
-                    // Ad আগে থেকে না থাকলে নতুন করে বানাবো
                     let adEl = document.createElement('div');
-                    adEl.className = 'post-card sponsored-ad';
-                    window.populateNativeAd(adEl, index + 1); 
-                    item.adEl = adEl; // মেমোরিতে সেভ করে রাখলাম
+                    
+                    if (postNum === 3 || postNum === 17 || postNum === 26) {
+                        // 300x50 Banner (মোট ৩ বার)
+                        adEl.style.padding = '0 15px'; adEl.style.marginBottom = '15px';
+                        window.injectBannerAd(adEl);
+                    } 
+                    else if (postNum === 14 || postNum === 21 || postNum === 31) {
+                        // 300x250 Banner (মোট ৩ বার)
+                        adEl.style.padding = '0 15px'; adEl.style.marginBottom = '15px';
+                        window.injectBannerAd300x250(adEl);
+                    } 
+                    else if (postNum === 9) {
+                        // Native Banner + Monetag (মোট ১ বার)
+                        adEl.className = 'post-card sponsored-ad';
+                        window.populateNativeAd(adEl, postNum);
+                    }
+                    
+                    item.adEl = adEl; 
                     div.appendChild(item.adEl);
                 } else if (!div.contains(item.adEl)) {
-                    // Ad আগে থেকে থাকলে শুধু শো করাবো, নতুন করে লোড হবে না
                     div.appendChild(item.adEl);
                 }
             }
@@ -4242,8 +4412,11 @@ const isAdsterra = Math.random() < 0.8;
     });
 };
 
+
     function loadFeed() {
+    isRenderingFeed = false; // লক রিলিজ করা হলো
     const div = getEl('feed-list-container');
+    div.innerHTML = ''; // আগের ডেটা ক্লিন করা হলো যাতে ক্ল্যাশ না হয়
     // ডেটা আসার আগে ৩টি Feed Skeleton দেখাবে
     window.SkeletonManager.show('feed-list-container', 'feed', 3);
         feedPosts = {};
@@ -4644,16 +4817,28 @@ notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeComme
         
         const container = getEl('single-post-container');
         window.SkeletonManager.show('single-post-container', 'feed', 1);
+        
+        // ধাপ ১: প্রথমবার পোস্ট লোড করা
         container.innerHTML = buildPostHtml(post, user);
         window.updateAllFollowButtons();
+        
+        // 👉 পরিবর্তন ১: প্রথমবার পোস্ট লোড হওয়ার পর Ad বসালাম
+        window.injectBannerAd(container);
 
+        // ধাপ ২: রিয়েল-টাইম লাইভ আপডেট লিসেনার
         onValue(ref(db, `posts/${postId}`), async (snap) => {
             if(getEl('single-post-modal').classList.contains('hidden')) return;
+            
             const updatedPost = { id: snap.key, ...snap.val() };
             if(!updatedPost) return;
             const u = (await get(ref(db, `users/${updatedPost.uid}`))).val();
+            
+            // রিয়েল-টাইম আপডেট আসার পর কন্টেন্ট নতুন করে রিফ্রেশ হলো
             container.innerHTML = buildPostHtml(updatedPost, u);
             window.updateAllFollowButtons();
+            
+            // 👉 পরিবর্তন ২: কন্টেন্ট রিফ্রেশ হওয়ার পর Ad মুছে যায়, তাই আবার Ad বসালাম
+            window.injectBannerAd(container);
         });
     };
 
