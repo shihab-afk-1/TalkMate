@@ -27,10 +27,10 @@ export default async function handler(req, res) {
     if (icon) {
         payload.chrome_web_icon = icon;
     } else {
-        payload.chrome_web_icon = "https://talkmate-two.vercel.app/icons/icon-192x192.png";
+        payload.chrome_web_icon = "https://i.ibb.co/84bCGgy5/Picsart-26-06-03-20-54-28-662.png";
     }
 
-    payload.chrome_web_badge = "https://talkmate-two.vercel.app/icons/maskable-icon.png";
+    payload.chrome_web_badge = "https://i.ibb.co/84bCGgy5/Picsart-26-06-03-20-54-28-662.png";
 
     if (largeImage) {
         payload.chrome_web_image = largeImage;
