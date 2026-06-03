@@ -21,8 +21,11 @@ export default async function handler(req, res) {
         url: url || "https://talkmate-two.vercel.app",
         data: data || {},
         priority: 10,
-        chrome_web_icon: icon || "https://i.ibb.co/84bCGgy5/Picsart-26-06-03-20-54-28-662.png",
-        chrome_web_badge: "https://i.ibb.co/84bCGgy5/Picsart-26-06-03-20-54-28-662.png"
+        // chrome_web_icon হলো নোটিফিকেশনের ডানপাশে/বামে দেখানো বড় আইকন
+        chrome_web_icon: icon || "https://talkmate-two.vercel.app/icons/icon-192x192.png", 
+        
+        // chrome_web_badge হলো স্ট্যাটাস বারের ছোট আইকন
+        chrome_web_badge: "https://talkmate-two.vercel.app/icons/badge-icon.png" 
     };
 
     if (largeImage) payload.chrome_web_image = largeImage;
