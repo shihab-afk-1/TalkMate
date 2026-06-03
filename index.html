@@ -434,6 +434,32 @@ body.dark-mode .skeleton {
     color: var(--text-grey);
     top: 2px;
 }
+/* --- Modern Bottom Sheet Share --- */
+@keyframes slideUpShare { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.share-bottom-sheet {
+    background: var(--bg-card); border-radius: 25px 25px 0 0; padding: 20px; 
+    animation: slideUpShare 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    max-height: 85vh; overflow-y: auto; width: 100%; max-width: 414px; margin: 0 auto; box-shadow: 0 -5px 25px rgba(0,0,0,0.15);
+}
+.horizontal-scroll-list {
+    display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; -ms-overflow-style: none;
+}
+.horizontal-scroll-list::-webkit-scrollbar { display: none; }
+
+.quick-share-item {
+    display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; flex-shrink: 0; width: 65px; text-align: center; position: relative;
+}
+.quick-share-avatar { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
+.quick-share-name { font-size: 0.75rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
+.sent-overlay {
+    position: absolute; top: 0; left: 0; width: 55px; height: 55px; background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%; display: flex; justify-content: center; align-items: center; color: var(--success); font-size: 1.5rem; display: none;
+}
+.ext-share-btn {
+    width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: white; cursor: pointer; transition: transform 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); flex-shrink: 0;
+}
+.ext-share-btn:active { transform: scale(0.9); }
+
     </style>
 </head>
 <body>
@@ -773,10 +799,11 @@ body.dark-mode .skeleton {
             
             <div style="display:flex; align-items:center; gap:10px; margin-top:15px; margin-bottom: 20px;">
                 <label style="font-size:0.9rem; font-weight:500;">Privacy:</label>
-                <select id="post-privacy" style="padding:8px 12px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-body); outline:none;">
-                    <option value="public">Public</option>
-                    <option value="private">Private (Only me)</option>
-                </select>
+               <select id="post-privacy" style="padding:8px 12px; border-radius:10px; border:1px solid var(--border-color); background:var(--bg-body); outline:none;">
+    <option value="public">Public</option>
+    <option value="private">Private (Only me)</option>
+    <option value="deeplink">Deep Link (Unlisted)</option> <!-- নতুন লাইন -->
+</select>
             </div>
             <button class="btn btn-primary" id="btn-submit-post" style="width:100%;" onclick="submitPost()">Post</button>
         </div>
@@ -809,7 +836,7 @@ body.dark-mode .skeleton {
     <div id="story-viewer" class="hidden">
         <div class="story-progress-bar-container" id="story-progress-container"></div>
         <div class="story-header-info">
-            <div style="display:flex; align-items:center; gap:10px;" onclick="if(currentStoryUser && currentStoryUser.uid !== currentUser.uid){closeStoryViewer(); loadProfileById(currentStoryUser.uid);}">
+            <div id="story-header-profile-link" style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                 <img id="sv-avatar" src="" style="width:35px; height:35px; border-radius:50%; border:2px solid white; object-fit:cover;">
                 <div style="line-height:1.2;">
                     <div id="sv-name" style="font-weight:600; font-size:0.95rem;">User Name</div>
@@ -823,14 +850,17 @@ body.dark-mode .skeleton {
         </div>
 
         <div id="story-media-container">
-            <img id="story-img" src="">
-            <video id="story-video" class="hidden" controls autoplay playsinline style="width: 100%; height: 100%; object-fit: contain; z-index: 11; position: relative;"></video>
-            <audio id="story-audio" hidden></audio>
-            <div class="story-caption" id="sv-caption"></div>
-            
-            <div class="story-nav-area story-nav-left" onclick="prevStory()" onmousedown="pauseStory()" onmouseup="resumeStory()" ontouchstart="pauseStory()" ontouchend="resumeStory()"></div>
-            <div class="story-nav-area story-nav-right" onclick="nextStory()" onmousedown="pauseStory()" onmouseup="resumeStory()" ontouchstart="pauseStory()" ontouchend="resumeStory()"></div>
-        </div>
+    <!-- নতুন Fullscreen Ad Container -->
+    <div id="story-ad-container" class="hidden" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:12;"></div>
+    
+    <img id="story-img" src="">
+    <video id="story-video" class="hidden" controls autoplay playsinline style="width: 100%; height: 100%; object-fit: contain; z-index: 11; position: relative;"></video>
+    <audio id="story-audio" hidden></audio>
+    <div class="story-caption" id="sv-caption"></div>
+    
+    <div class="story-nav-area story-nav-left" onclick="prevStory()" onmousedown="pauseStory()" onmouseup="resumeStory()" ontouchstart="pauseStory()" ontouchend="resumeStory()"></div>
+    <div class="story-nav-area story-nav-right" onclick="nextStory()" onmousedown="pauseStory()" onmouseup="resumeStory()" ontouchstart="pauseStory()" ontouchend="resumeStory()"></div>
+</div>
 
         <div id="sv-viewers-panel" class="story-viewers-panel hidden">
             <i class="fas fa-eye"></i> <span id="sv-views-count">0</span>
@@ -875,8 +905,66 @@ body.dark-mode .skeleton {
         </div>
     </div>
 
-    <div id="share-post-modal" class="full-screen hidden" style="z-index:130; background:var(--bg-card);">
-        <div class="modal-header"><h3>Share with Friends</h3><button class="btn-icon" onclick="toggleModal('share-post-modal', false)"><i class="fas fa-times"></i></button></div>
+   <!-- Modern Unified Share Modal -->
+<div id="share-post-modal" class="full-screen hidden" style="z-index:150; background:rgba(0,0,0,0.5); backdrop-filter:blur(3px); display:flex; flex-direction:column; justify-content:flex-end;">
+    <div class="share-bottom-sheet">
+        <div style="width: 40px; height: 5px; background: var(--border-color); border-radius: 5px; margin: 0 auto 15px;"></div>
+        
+        <h3 style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; color: var(--text-dark);">
+            Share Post <button class="btn-icon" onclick="toggleModal('share-post-modal', false)"><i class="fas fa-times"></i></button>
+        </h3>
+        
+        <input type="hidden" id="active-share-post-id">
+        <input type="text" id="share-optional-msg" placeholder="Write a message (optional)..." style="background: var(--bg-body); padding: 12px 20px; border-radius: 15px; width: 100%; border: none; margin-bottom: 15px; font-size: 0.9rem;">
+        
+        <!-- Search Field -->
+        <div class="chat-input-pill" style="margin-bottom: 15px; background: var(--bg-body);">
+            <i class="fas fa-search" style="color:var(--text-grey); margin-left:10px;"></i>
+            <input type="text" id="share-search-input" placeholder="Search friends & groups..." onkeyup="filterShareFriends()">
+        </div>
+        
+        <!-- Quick Internal Share -->
+        <h4 style="font-size: 0.85rem; color: var(--text-grey); margin-bottom: 10px;">Send in TalkMate</h4>
+        <div id="share-quick-list" class="horizontal-scroll-list" style="min-height: 90px;">
+            <!-- Avatars injected via JS -->
+        </div>
+
+        <!-- External Apps Share -->
+        <div id="external-share-section">
+            <h4 style="font-size: 0.85rem; color: var(--text-grey); margin-top: 15px; margin-bottom: 10px;">Share Outside</h4>
+            <div class="horizontal-scroll-list">
+                <div class="quick-share-item" onclick="handleLinkCopy()">
+                    <div class="ext-share-btn" style="background: #34495e;"><i class="fas fa-link"></i></div>
+                    <span class="quick-share-name">Copy Link</span>
+                </div>
+                <div class="quick-share-item" onclick="shareExternal('whatsapp')">
+                    <div class="ext-share-btn" style="background: #25D366;"><i class="fab fa-whatsapp"></i></div>
+                    <span class="quick-share-name">WhatsApp</span>
+                </div>
+                <div class="quick-share-item" onclick="shareExternal('messenger')">
+                    <div class="ext-share-btn" style="background: linear-gradient(45deg, #00C6FF, #0072FF);"><i class="fab fa-facebook-messenger"></i></div>
+                    <span class="quick-share-name">Messenger</span>
+                </div>
+                <div class="quick-share-item" onclick="shareExternal('facebook')">
+                    <div class="ext-share-btn" style="background: #1877F2;"><i class="fab fa-facebook-f"></i></div>
+                    <span class="quick-share-name">Facebook</span>
+                </div>
+                <div class="quick-share-item" onclick="shareExternal('twitter')">
+                    <div class="ext-share-btn" style="background: #000000;"><i class="fa-brands fa-x-twitter"></i></div>
+                    <span class="quick-share-name">X</span>
+                </div>
+                <div class="quick-share-item" onclick="shareExternal('telegram')">
+                    <div class="ext-share-btn" style="background: #0088cc;"><i class="fab fa-telegram-plane"></i></div>
+                    <span class="quick-share-name">Telegram</span>
+                </div>
+                <div class="quick-share-item" onclick="nativeDeviceShare()">
+                    <div class="ext-share-btn" style="background: var(--primary-color);"><i class="fas fa-share-nodes"></i></div>
+                    <span class="quick-share-name">More</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
         <div class="modal-body" id="share-friends-list" style="padding:0; overflow-y:auto;"></div>
     </div>
 
@@ -1349,12 +1437,14 @@ import {
             const snap = await get(ref(db, `users/${user.uid}`));
             if (!snap.exists()) {
                 await set(ref(db, `users/${user.uid}`), {
-                    name: user.displayName || 'Google User',
-                    email: user.email,
-                    dpUrl: user.photoURL || emojiToSVG(user.displayName ? user.displayName.charAt(0) : 'U'),
-                    userId: generateUniqueId(),
-                    bio: '', address: '', study: '', dob: ''
-                });
+    name: user.displayName || 'Google User',
+    email: user.email,
+    dpUrl: user.photoURL || emojiToSVG(user.displayName ? user.displayName.charAt(0) : 'U'),
+    userId: generateUniqueId(),
+    bio: '', address: '', study: '', dob: '',
+    createdAt: serverTimestamp(),
+    createdDate: new Date().toLocaleString() // এডমিন প্যানেলের জন্য
+});
             }
         } catch(e) {
             alert(e.message);
@@ -1476,7 +1566,19 @@ window.SkeletonManager = {
     let replyingToCommentId = null;
     let commentLongPressTimer;
     let isCommentScrolling = false;
+  let storiesViewedCounter = 0; // স্টোরি কাউন্ট করার জন্য
+let isShowingStoryAd = false; // বর্তমানে অ্যাড চলছে কিনা
+let storyAdTimer = null; // অ্যাডের টাইমার
 
+// Analytics Tracking Function
+window.trackStoryAnalytics = (type) => {
+    if (!currentUser) return;
+    const dateStr = new Date().toISOString().split('T')[0];
+    const refPath = ref(db, `analytics/stories/${dateStr}/${type}`);
+    get(refPath).then(snap => {
+        set(refPath, (snap.val() || 0) + 1);
+    });
+};
     // Video Auto-Play/Pause Observer
     const videoObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -2020,7 +2122,14 @@ window.injectBannerAd(container);
         if (photoUrl) dpUrl = photoUrl; else if (emoji) dpUrl = emojiToSVG(emoji); else if (!dpUrl || mode === 'setup') dpUrl = emojiToSVG(name.charAt(0)); 
 
         const userId = existing.userId || generateUniqueId();
-        await update(ref(db, `users/${currentUser.uid}`), { name, bio, address, study, dob, userId, dpUrl, email: currentUser.email });
+let updateData = { name, bio, address, study, dob, userId, dpUrl, email: currentUser.email };
+
+if (mode === 'setup') {
+    updateData.createdAt = serverTimestamp();
+    updateData.createdDate = new Date().toLocaleString(); // এডমিন প্যানেলের জন্য
+}
+
+await update(ref(db, `users/${currentUser.uid}`), updateData);
         
         if(mode === 'setup') { setupPresence(currentUser.uid); toggleClass('profile-setup', 'hidden', true); toggleClass('auth-screen', 'hidden', true); toggleClass('main-app', 'hidden', false); initApp(); } 
         else { showToast("Profile Updated!"); toggleModal('edit-profile-modal', false); loadProfileUI(); if(document.querySelector('.nav-item[data-tab="profile"]').classList.contains('active')) loadMyProfileTab(); }
@@ -2166,6 +2275,78 @@ window.injectBannerAd300x250 = (targetContainer) => {
 
     adWrapper.appendChild(confScript);
     adWrapper.appendChild(script);
+};
+window.injectStoryAd160x300 = (targetContainer) => {
+    if (!targetContainer) return;
+    targetContainer.innerHTML = ''; 
+
+    // Fullscreen Background Wrapper (স্টোরির মতো ফিল দেওয়ার জন্য)
+    const fullScreenWrapper = document.createElement('div');
+    fullScreenWrapper.style.width = '100%';
+    fullScreenWrapper.style.height = '100%';
+    fullScreenWrapper.style.background = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)'; // আকর্ষণীয় ব্লু গ্রেডিয়েন্ট
+    fullScreenWrapper.style.display = 'flex';
+    fullScreenWrapper.style.flexDirection = 'column';
+    fullScreenWrapper.style.justifyContent = 'center';
+    fullScreenWrapper.style.alignItems = 'center';
+    fullScreenWrapper.style.padding = '20px';
+    fullScreenWrapper.style.textAlign = 'center';
+
+    // অ্যাডের উপরের টেক্সট (Headline)
+    const headline = document.createElement('h2');
+    headline.style.color = 'white';
+    headline.style.marginBottom = '25px';
+    headline.style.fontSize = '1.5rem';
+    headline.style.fontWeight = '700';
+    headline.style.textShadow = '0 2px 10px rgba(0,0,0,0.5)';
+    headline.innerText = 'Check out this offer!';
+
+    // Adsterra 160x300 Banner Container
+    const adWrapper = document.createElement('div');
+    adWrapper.style.width = '160px';
+    adWrapper.style.height = '300px';
+    adWrapper.style.background = '#222';
+    adWrapper.style.borderRadius = '15px';
+    adWrapper.style.overflow = 'hidden';
+    adWrapper.style.boxShadow = '0 15px 35px rgba(0,0,0,0.5)';
+    adWrapper.style.border = '2px solid rgba(255,255,255,0.2)';
+
+    // ⚠️ আপনার 160x300 Adsterra Key এখানে দিন ⚠️
+    const adKey = '780c350700b6d0d7e867bc49c5ff21d0'; 
+    const confScript = document.createElement('script');
+    confScript.type = 'text/javascript';
+    confScript.innerHTML = `atOptions = { 'key' : '${adKey}', 'format' : 'iframe', 'height' : 300, 'width' : 160, 'params' : {} };`;
+
+    const script = document.createElement('script');
+    script.type = 'text/javascript';
+    script.async = true;
+    script.src = `https://www.highperformanceformat.com/780c350700b6d0d7e867bc49c5ff21d0/invoke.js`;
+
+    adWrapper.appendChild(confScript);
+    adWrapper.appendChild(script);
+
+    // Monetag Direct Link Button
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-primary';
+    btn.style.marginTop = '30px';
+    btn.style.padding = '12px 35px';
+    btn.style.borderRadius = '30px';
+    btn.style.fontSize = '1.1rem';
+    btn.style.fontWeight = '600';
+    btn.style.boxShadow = '0 8px 20px rgba(0,188,212,0.5)';
+    btn.innerHTML = 'Learn More <i class="fas fa-arrow-right" style="margin-left:8px;"></i>';
+    btn.onclick = () => {
+        trackStoryAnalytics('ad_clicks'); 
+        // ⚠️ আপনার Monetag Direct Link এখানে দিন ⚠️
+        window.open('YOUR_MONETAG_DIRECT_LINK_HERE', '_blank'); 
+    };
+
+    // সব কিছু ফুলস্ক্রিন কনটেইনারে যোগ করা হচ্ছে
+    fullScreenWrapper.appendChild(headline);
+    fullScreenWrapper.appendChild(adWrapper);
+    fullScreenWrapper.appendChild(btn);
+    
+    targetContainer.appendChild(fullScreenWrapper);
 };
     function initApp() {
         setupExitAd();
@@ -2453,7 +2634,12 @@ window.injectBannerAd300x250 = (targetContainer) => {
         const uid = currentStoryGroupIndex === -1 ? currentUser.uid : groupedStoryKeys[currentStoryGroupIndex];
         const data = allStories[uid];
         if (!data) return closeStoryViewer();
-        
+        // --- NEW: Story Profile Click Fix ---
+document.getElementById('story-header-profile-link').onclick = () => {
+    closeStoryViewer();
+    loadProfileById(uid);
+};
+// -----------------------------------
         const story = data.stories[currentStoryIndex];
         
         if (uid !== currentUser.uid && (!story.views || !story.views[currentUser.uid])) {
@@ -2546,14 +2732,14 @@ window.injectBannerAd300x250 = (targetContainer) => {
                 }
             };
             mediaElement.onended = () => {
-                nextStory();
+                nextStory(true);
             };
         } else {
             storyTimer = setInterval(() => {
                 if (!isStoryPaused) {
                     storyProgress += 2; 
                     if (bar) bar.style.width = storyProgress + '%';
-                    if (storyProgress >= 100) nextStory();
+                    if (storyProgress >= 100) nextStory(true);
                 }
             }, 100);
         }
@@ -2570,81 +2756,180 @@ window.injectBannerAd300x250 = (targetContainer) => {
         getEl('story-video').play().catch(()=>{});
         getEl('story-audio').play().catch(()=>{});
     };
+window.showStoryAd = () => {
+    isShowingStoryAd = true;
+    clearInterval(storyTimer);
+    pauseStory(); 
+    
+    trackStoryAnalytics('ad_impressions'); // ইম্প্রেশন ট্র্যাক
 
-    window.nextStory = () => {
-        const uid = currentStoryGroupIndex === -1 ? currentUser.uid : groupedStoryKeys[currentStoryGroupIndex];
-        const data = allStories[uid];
+    // Header পরিবর্তন: সুন্দর Sponsored 아이콘 ও নাম
+    getEl('sv-avatar').src = 'https://cdn-icons-png.flaticon.com/512/1997/1997928.png'; // প্রফেশনাল মেগাফোন/অ্যাড আইকন
+    getEl('sv-name').innerText = 'Sponsored';
+    getEl('sv-time').innerText = 'Advertisement';
+    
+    // নরমাল স্টোরির সব কিছু হাইড করা (এবং Delete বাটন হাইড করা)
+    getEl('story-img').classList.add('hidden');
+    getEl('story-video').classList.add('hidden');
+    getEl('sv-caption').innerText = '';
+    getEl('sv-reply-box').classList.add('hidden');
+    getEl('sv-viewers-panel').classList.add('hidden');
+    getEl('sv-delete-btn').classList.add('hidden'); // <--- Delete বাটন রিমুভ করা হলো
+    
+    // Ad এর জন্য ১টি প্রগ্রেস বার তৈরি
+    const progContainer = getEl('story-progress-container');
+    progContainer.innerHTML = `
+        <div class="story-progress-bar">
+            <div class="story-progress-fill" id="sv-ad-prog" style="width: 0%; background: var(--primary-color);"></div>
+        </div>`;
         
-        if (currentStoryIndex < data.stories.length - 1) {
-            currentStoryIndex++;
-            renderCurrentStory();
-        } else {
-            if (currentStoryGroupIndex === -1) {
-                if(groupedStoryKeys.length > 0) {
-                    currentStoryGroupIndex = 0;
-                    currentStoryIndex = 0;
-                    currentStoryUser = allStories[groupedStoryKeys[0]].user;
-                    renderCurrentStory();
-                } else {
-                    closeStoryViewer();
-                }
-            } else if (currentStoryGroupIndex !== -1 && currentStoryGroupIndex < groupedStoryKeys.length - 1) {
-                currentStoryGroupIndex++;
-                currentStoryIndex = 0;
-                currentStoryUser = allStories[groupedStoryKeys[currentStoryGroupIndex]].user;
-                renderCurrentStory();
-            } else {
-                closeStoryViewer();
-            }
-        }
-    };
+    // Ad Container শো করানো
+    const adContainer = getEl('story-ad-container');
+    adContainer.classList.remove('hidden');
+    window.injectStoryAd160x300(adContainer);
 
-    window.prevStory = () => {
-        if (currentStoryIndex > 0) {
-            currentStoryIndex--;
-            renderCurrentStory();
-        } else {
-            if (currentStoryGroupIndex > 0) {
-                currentStoryGroupIndex--;
-                const uid = groupedStoryKeys[currentStoryGroupIndex];
-                const data = allStories[uid];
-                currentStoryIndex = data.stories.length - 1; 
-                currentStoryUser = data.user;
-                renderCurrentStory();
-            } else if (currentStoryGroupIndex === 0) {
-                const myData = allStories[currentUser.uid];
-                if(myData && myData.stories.length > 0) {
-                    currentStoryGroupIndex = -1;
-                    currentStoryIndex = myData.stories.length - 1;
-                    currentStoryUser = myData.user;
-                    renderCurrentStory();
-                } else {
-                    storyProgress = 0; 
-                }
-            } else if (currentStoryGroupIndex === -1) {
-                storyProgress = 0; 
+    // টাইমার চালু করা (৫ সেকেন্ড)
+    storyProgress = 0;
+    const bar = getEl('sv-ad-prog');
+    storyTimer = setInterval(() => {
+        if (!isStoryPaused) {
+            storyProgress += 2; 
+            if (bar) bar.style.width = storyProgress + '%';
+            if (storyProgress >= 100) {
+                clearInterval(storyTimer);
+                window.nextStory(true); 
             }
         }
-    };
+    }, 100);
+};
+    window.nextStory = (isAutoNext = false) => {
+    // যদি বর্তমানে অ্যাড চলতে থাকে
+    if (isShowingStoryAd) {
+        if (!isAutoNext) trackStoryAnalytics('ad_skips'); // ইউজার নিজে স্কিপ করলে ট্র্যাক হবে
+        
+        isShowingStoryAd = false;
+        clearInterval(storyTimer);
+        getEl('story-ad-container').classList.add('hidden');
+        getEl('story-ad-container').innerHTML = '';
+        executeNormalNextStory(); // অ্যাডের পর আসল স্টোরিতে যাবে
+        return;
+    }
+
+    // নরমাল স্টোরি শেষ হলে কমপ্লিশন রেট ট্র্যাক
+    if (isAutoNext) trackStoryAnalytics('story_completions'); 
+    
+    trackStoryAnalytics('story_views'); // নরমাল ভিউ ট্র্যাক
+    storiesViewedCounter++; // স্টোরি কাউন্ট প্লাস
+    
+    // ৫টি স্টোরি দেখার পর অ্যাড দেখাবে
+    if (storiesViewedCounter >= 5) {
+        storiesViewedCounter = 0;
+        showStoryAd();
+        return;
+    }
+
+    executeNormalNextStory();
+};
+
+function executeNormalNextStory() {
+    const uid = currentStoryGroupIndex === -1 ? currentUser.uid : groupedStoryKeys[currentStoryGroupIndex];
+    const data = allStories[uid];
+    
+    if (currentStoryIndex < data.stories.length - 1) {
+        currentStoryIndex++;
+        renderCurrentStory();
+    } else {
+        if (currentStoryGroupIndex === -1) {
+            if(groupedStoryKeys.length > 0) {
+                currentStoryGroupIndex = 0;
+                currentStoryIndex = 0;
+                currentStoryUser = allStories[groupedStoryKeys[0]].user;
+                renderCurrentStory();
+            } else { closeStoryViewer(); }
+        } else if (currentStoryGroupIndex !== -1 && currentStoryGroupIndex < groupedStoryKeys.length - 1) {
+            currentStoryGroupIndex++;
+            currentStoryIndex = 0;
+            currentStoryUser = allStories[groupedStoryKeys[currentStoryGroupIndex]].user;
+            renderCurrentStory();
+        } else { closeStoryViewer(); }
+    }
+}
+
+window.prevStory = () => {
+    // যদি অ্যাড চলাকালীন ইউজার ব্যাক করতে চায়
+    if (isShowingStoryAd) {
+        trackStoryAnalytics('ad_skips');
+        isShowingStoryAd = false;
+        clearInterval(storyTimer);
+        getEl('story-ad-container').classList.add('hidden');
+        getEl('story-ad-container').innerHTML = '';
+        renderCurrentStory(); // আগের স্টোরিটি আবার লোড হবে
+        return;
+    }
+
+    if (currentStoryIndex > 0) {
+        currentStoryIndex--;
+        renderCurrentStory();
+    } else {
+        if (currentStoryGroupIndex > 0) {
+            currentStoryGroupIndex--;
+            const uid = groupedStoryKeys[currentStoryGroupIndex];
+            const data = allStories[uid];
+            currentStoryIndex = data.stories.length - 1; 
+            currentStoryUser = data.user;
+            renderCurrentStory();
+        } else if (currentStoryGroupIndex === 0) {
+            const myData = allStories[currentUser.uid];
+            if(myData && myData.stories.length > 0) {
+                currentStoryGroupIndex = -1;
+                currentStoryIndex = myData.stories.length - 1;
+                currentStoryUser = myData.user;
+                renderCurrentStory();
+            } else { storyProgress = 0; }
+        } else if (currentStoryGroupIndex === -1) { storyProgress = 0; }
+    }
+};
 
     window.closeStoryViewer = () => {
-        clearInterval(storyTimer);
-        const viewer = getEl('story-viewer');
+    // ১. Ad Story ভেরিয়েবলগুলো রিসেট করা
+    if (typeof isShowingStoryAd !== 'undefined') isShowingStoryAd = false;
+    if (typeof storiesViewedCounter !== 'undefined') storiesViewedCounter = 0;
+    
+    // ২. Ad Container হাইড ও ক্লিয়ার করা
+    const adContainer = getEl('story-ad-container');
+    if(adContainer) {
+        adContainer.classList.add('hidden');
+        adContainer.innerHTML = '';
+    }
+
+    // ৩. স্টোরির টাইমার বন্ধ করা
+    clearInterval(storyTimer);
+
+    // ৪. স্টোরি ভিউয়ার হাইড করা (অ্যানিমেশনসহ)
+    const viewer = getEl('story-viewer');
+    if(viewer) {
         viewer.classList.remove('show');
         setTimeout(() => viewer.classList.add('hidden'), 300);
-        
-        const svVideo = getEl('story-video');
+    }
+    
+    // ৫. ভিডিও স্টপ করা
+    const svVideo = getEl('story-video');
+    if(svVideo) {
         svVideo.pause();
         svVideo.src = '';
         svVideo.ontimeupdate = null;
         svVideo.onended = null;
-        
-        const svAudio = getEl('story-audio');
+    }
+    
+    // ৬. অডিও স্টপ করা
+    const svAudio = getEl('story-audio');
+    if(svAudio) {
         svAudio.pause();
         svAudio.src = '';
         svAudio.ontimeupdate = null;
         svAudio.onended = null;
-    };
+    }
+};
 
     let storyStartY = 0;
     const storyViewerEl = getEl('story-viewer');
@@ -3644,9 +3929,16 @@ getEl('send-msg-btn').onclick = async () => {
         let postCount = 0;
         const posts =[];
         snap.forEach(c => { 
-            if(c.val().uid === uid && c.val().img && (c.val().visibility === 'public' || myFollowing[uid] || uid === currentUser.uid)) {
-                posts.push({id: c.key, ...c.val()});
-            }
+            const postVis = c.val().visibility;
+const isPostOwner = (uid === currentUser.uid);
+
+// অন্যের প্রোফাইলে শুধু Public পোস্ট দেখাবে। Private বা Deeplink দেখাবে না।
+// নিজের প্রোফাইল হলে সব পোস্ট দেখাবে।
+if (c.val().uid === uid && c.val().img) {
+    if (isPostOwner || postVis === 'public') {
+        posts.push({id: c.key, ...c.val()});
+    }
+}
         });
         posts.sort((a,b) => b.ts - a.ts);
         posts.forEach((post, index) => {
@@ -4019,7 +4311,16 @@ else div.classList.remove('has-more'); // New code
         if(!txt && !imgUrl) return alert("Write something or add a photo/video.");
 
         const btn = getEl('btn-submit-post'); btn.disabled = true; btn.innerText = "Posting...";
-        await push(ref(db, 'posts'), { uid: currentUser.uid, text: txt, img: imgUrl || null, visibility: visibility, location: location || null, views: 0, ts: serverTimestamp() });
+        await push(ref(db, 'posts'), { 
+    uid: currentUser.uid, 
+    text: txt, 
+    img: imgUrl || null, 
+    visibility: visibility, 
+    location: location || null, 
+    views: 0, 
+    ts: serverTimestamp(),
+    createdDate: new Date().toLocaleString() // এডমিন প্যানেলের জন্য
+});
         
         getEl('post-caption').value = ''; getEl('post-img-url').value = ''; getEl('post-location').value = ''; getEl('post-preview-img').classList.add('hidden');
         btn.disabled = false; btn.innerText = "Post";
@@ -4173,7 +4474,7 @@ if (isAdsterra) {
         let likesCount = post.likes ? Object.keys(post.likes).length : 0;
         let isLiked = post.likes && post.likes[currentUser.uid];
         let commentsCount = post.comments ? Object.keys(post.comments).length : 0;
-        
+        let sharesCount = post.shareCount || 0;
         let viewsHtml = `<div style="font-size:0.8rem; font-weight:600; color:var(--text-dark); margin-bottom:5px;">${formatNumber(post.views || 0)} views</div>`;
 
         let captionHtml = '';
@@ -4189,6 +4490,12 @@ if (isAdsterra) {
             locationHtml = `<div style="font-size:0.75rem; color:var(--primary-color); margin-top:2px;"><i class="fas fa-map-marker-alt"></i> ${post.location}</div>`;
         }
 
+        // --- NEW: Privacy Icon Logic ---
+        let visIcon = 'globe-americas'; // Default Public
+        if(post.visibility === 'private') visIcon = 'lock';
+        else if(post.visibility === 'deeplink') visIcon = 'link';
+        // -------------------------------
+
         return `
             <div class="post-card" data-pid="${post.id}">
                 <div class="post-header">
@@ -4196,7 +4503,7 @@ if (isAdsterra) {
                       <img src="${user.dpUrl}" data-suid="${post.uid}" style="width:40px; height:40px; border-radius:50%; object-fit:cover;" loading="lazy">
                         <div>
                             <div style="font-weight:600; color:var(--text-dark); display:flex; align-items:center;">${user.name} ${verifiedHtml} ${followBtnHtml}</div>
-                            <div style="font-size:0.75rem; color:var(--text-grey);">${getFriendlyDate(post.ts)} <i class="fas fa-${post.visibility === 'public' ? 'globe-americas' : 'lock'}"></i></div>
+                            <div style="font-size:0.75rem; color:var(--text-grey);">${getFriendlyDate(post.ts)} <i class="fas fa-${visIcon}" title="Privacy: ${post.visibility || 'public'}"></i></div>
                             ${locationHtml}
                         </div>
                     </div>
@@ -4206,7 +4513,9 @@ if (isAdsterra) {
                             <div class="dropdown-item" onclick="copyPostLink('${post.id}')"><i class="fas fa-link" style="width:20px;"></i> Copy Link</div>
                             ${isOwner ? `
                             <div class="dropdown-item" onclick="openEditPostModal('${post.id}')"><i class="fas fa-edit" style="width:20px;"></i> Edit Caption</div>
-                            <div class="dropdown-item" onclick="togglePostVisibility('${post.id}', '${post.visibility}')"><i class="fas fa-${post.visibility === 'public' ? 'lock' : 'globe'}" style="width:20px;"></i> ${post.visibility === 'public' ? 'Make Private' : 'Make Public'}</div>
+                            ${post.visibility !== 'public' ? `<div class="dropdown-item" onclick="changePostVisibility('${post.id}', 'public')"><i class="fas fa-globe-americas" style="width:20px;"></i> Make Public</div>` : ''}
+${post.visibility !== 'private' ? `<div class="dropdown-item" onclick="changePostVisibility('${post.id}', 'private')"><i class="fas fa-lock" style="width:20px;"></i> Make Private</div>` : ''}
+${post.visibility !== 'deeplink' ? `<div class="dropdown-item" onclick="changePostVisibility('${post.id}', 'deeplink')"><i class="fas fa-link" style="width:20px;"></i> Make Deep Link</div>` : ''}
                             <div class="dropdown-item" onclick="toggleCommentsVisibility('${post.id}', ${post.commentsDisabled ? 'true' : 'false'})"><i class="fas fa-comment-slash" style="width:20px;"></i> ${post.commentsDisabled ? 'Enable Comments' : 'Disable Comments'}</div>
                             <div class="dropdown-item" onclick="deletePost('${post.id}')" style="color:var(--danger)"><i class="fas fa-trash" style="width:20px;"></i> Delete Post</div>
                             ` : `
@@ -4232,8 +4541,9 @@ if (isAdsterra) {
                     </div>
                     ` : ''}
                     <div class="post-action" onclick="openSharePost('${post.id}')" style="font-size: 1.2rem; display:flex; align-items:center; gap:6px;">
-                        <i class="far fa-paper-plane"></i>
-                    </div>
+    <i class="far fa-paper-plane"></i>
+    <span style="font-size:0.95rem; font-weight:500;">${sharesCount > 0 ? formatNumber(sharesCount) : 'Share'}</span>
+</div>
                 </div>
 
                 ${viewsHtml}
@@ -4430,7 +4740,10 @@ if (isAdsterra) {
 
         unsubFeedAdded = onChildAdded(postsRef, async (snap) => {
             const post = { id: snap.key, ...snap.val() };
-            if(post.visibility === 'private' && post.uid !== currentUser.uid) return; 
+            // Private পোস্ট অন্য কেউ দেখতে পাবে না
+if (post.visibility === 'private' && post.uid !== currentUser.uid) return; 
+// Deep Link পোস্ট ফিডে একেবারেই শো করবে না (এমনকি নিজের ফিডেও না, শুধু প্রোফাইলে থাকবে)
+if (post.visibility === 'deeplink') return;
             
             if (isBlocked(post.uid)) return;
             const theirBlockSnap = await get(ref(db, `blocked/${post.uid}/${currentUser.uid}`));
@@ -4457,6 +4770,7 @@ if (isAdsterra) {
                     delete feedPosts[post.id];
                 }
                 return;
+                if (post.visibility === 'deeplink')return;
             }
 
             if(feedPosts[post.id]) {
@@ -4551,7 +4865,7 @@ get(ref(db, `posts/${postId}/img`)).then(snap => {
     };
 
     window.deletePost = async (postId) => { if(confirm("Delete this post?")) { await remove(ref(db, `posts/${postId}`)); showToast("Post deleted"); toggleModal('single-post-modal', false); } };
-    window.togglePostVisibility = async (postId, currentVis) => { const newVis = currentVis === 'public' ? 'private' : 'public'; await update(ref(db, `posts/${postId}`), { visibility: newVis }); showToast(newVis === 'private' ? "Post is now Private" : "Post is now Public"); };
+    window.changePostVisibility = async (postId, newVis) => {      await update(ref(db, `posts/${postId}`), { visibility: newVis });      let msg = "Post is now Public 🌍";     if (newVis === 'private') msg = "Post is now Private 🔒";     else if (newVis === 'deeplink') msg = "Post is now Deep Link 🔗";     showToast(msg);  };
     // --- 1. Copy Post Link Logic ---
     window.copyPostLink = (postId) => {
         const link = window.location.origin + window.location.pathname + '?postId=' + postId;
@@ -4748,60 +5062,168 @@ notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeComme
         }
     };
 
-    window.openSharePost = async (postId) => {
-        const listDiv = getEl('share-friends-list');
-        listDiv.innerHTML = '<p style="text-align:center; color:var(--text-grey); padding: 20px;">Loading...</p>';
-        toggleModal('share-post-modal', true);
-        
-        const pSnap = await get(ref(db, `posts/${postId}`));
-        const postData = pSnap.val();
-        if(!postData) {
-            toggleModal('share-post-modal', false);
-            return showToast("Post not found");
-        }
-        
-        listDiv.innerHTML = '';
-        if(myFriends.length === 0) {
-            listDiv.innerHTML = '<p style="text-align:center; color:var(--text-grey); padding: 20px;">No friends to share with.</p>';
-            return;
-        }
-        
-        myFriends.forEach(f => {
-            const item = document.createElement('div');
-            item.className = 'list-item';
-            item.innerHTML = `
-                <img src="${f.dpUrl}" class="avatar" loading="lazy">
-                <div class="item-info"><div class="item-name">${f.name}</div></div>
-                <button class="btn btn-primary" style="padding:6px 15px; font-size:0.8rem; border-radius:20px;" onclick="sharePostToUser('${postId}', '${f.uid}', this, '${(postData.text || '').replace(/'/g, "\\'")}', '${(postData.img || '').split(',')[0]}')">Send</button>
-            `;
-            listDiv.appendChild(item);
-        });
-    };
+    // --- UNIFIED SHARE SYSTEM LOGIC ---
 
-    window.sharePostToUser = async (postId, targetUid, btnElem, postText, postImg) => {
-        btnElem.innerText = 'Sent';
-        btnElem.disabled = true;
-        btnElem.style.background = 'var(--success)';
-        
-        let chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
-        
-        await push(ref(db, `messages/${chatId}`), {
-            from: currentUser.uid,
-            txt: "Check out this post!",
-            postId: postId,
-            postPreviewText: postText,
-            postPreviewImg: postImg,
-            ts: serverTimestamp(),
-            seen: false
-        });
-        
-        const tsNow = Date.now();
-        await update(ref(db), {
-            [`contacts/${currentUser.uid}/${targetUid}/lastTs`]: tsNow,
-            [`contacts/${targetUid}/${currentUser.uid}/lastTs`]: tsNow
-        });
-        showToast("Post shared!");
-    };
+// ১. পোস্ট খোলার সময় শেয়ার কাউন্ট UI-তে দেখানো
+// (আপনার buildPostHtml ফাংশনে যেখানে Share বাটন আছে সেখানে এটা আপডেট করুন)
+// <span style="font-size:0.95rem; font-weight:500;">${post.shareCount > 0 ? formatNumber(post.shareCount) : 'Share'}</span>
+
+window.openSharePost = async (postId) => {
+    const pSnap = await get(ref(db, `posts/${postId}`));
+    const postData = pSnap.val();
+    if(!postData) return showToast("Post not found");
+    
+    getEl('active-share-post-id').value = postId;
+    getEl('share-optional-msg').value = '';
+    getEl('share-search-input').value = '';
+    
+    // Privacy Check for External Sharing
+    const isOwner = postData.uid === currentUser.uid;
+    const extSection = getEl('external-share-section');
+    if (postData.visibility === 'private' && !isOwner) {
+        extSection.style.display = 'none'; // প্রাইভেট হলে বাইরের অ্যাপে শেয়ার হাইড
+    } else {
+        extSection.style.display = 'block';
+    }
+
+    // Populate Quick Share (Friends & Recent Groups)
+    populateQuickShare(postData);
+    
+    toggleModal('share-post-modal', true);
+};
+
+function populateQuickShare(postData) {
+    const listDiv = getEl('share-quick-list');
+    listDiv.innerHTML = '';
+    
+    if(myFriends.length === 0) {
+        listDiv.innerHTML = '<p style="color:var(--text-grey); font-size:0.85rem;">No connections found.</p>';
+        return;
+    }
+
+    // ফ্রেন্ড লিস্ট রেন্ডার
+    myFriends.forEach(f => {
+        const itemHtml = `
+            <div class="quick-share-item share-user-item" data-name="${f.name.toLowerCase()}" onclick="quickSendInternal('${f.uid}', this, '${(postData.text || '').replace(/'/g, "\\'")}', '${(postData.img || '').split(',')[0]}')">
+                <div style="position:relative;">
+                    <img src="${f.dpUrl}" class="quick-share-avatar">
+                    <div class="sent-overlay"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <span class="quick-share-name">${f.name.split(' ')[0]}</span>
+            </div>
+        `;
+        listDiv.insertAdjacentHTML('beforeend', itemHtml);
+    });
+}
+
+window.filterShareFriends = () => {
+    const query = getEl('share-search-input').value.toLowerCase();
+    document.querySelectorAll('.share-user-item').forEach(el => {
+        if (el.dataset.name.includes(query)) el.style.display = 'flex';
+        else el.style.display = 'none';
+    });
+};
+
+window.quickSendInternal = async (targetUid, element, postText, postImg) => {
+    const postId = getEl('active-share-post-id').value;
+    const optionalMsg = getEl('share-optional-msg').value.trim();
+    
+    // Show Sent Animation
+    const overlay = element.querySelector('.sent-overlay');
+    overlay.style.display = 'flex';
+    element.style.pointerEvents = 'none'; // Prevent double click
+
+    let chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+    
+    let textToSend = optionalMsg ? optionalMsg : "Check out this post!";
+    
+    await push(ref(db, `messages/${chatId}`), {
+        from: currentUser.uid,
+        txt: textToSend,
+        postId: postId,
+        postPreviewText: postText,
+        postPreviewImg: postImg,
+        ts: serverTimestamp(),
+        seen: false
+    });
+    
+    const tsNow = Date.now();
+    await update(ref(db), {
+        [`contacts/${currentUser.uid}/${targetUid}/lastTs`]: tsNow,
+        [`contacts/${targetUid}/${currentUser.uid}/lastTs`]: tsNow
+    });
+    
+    trackShareAnalytics(postId, 'internal');
+    showToast("Sent to chat!");
+};
+
+// --- EXTERNAL SHARE LOGIC ---
+
+window.handleLinkCopy = () => {
+    const postId = getEl('active-share-post-id').value;
+    const link = window.location.origin + window.location.pathname + '?postId=' + postId;
+    copyToClipboard(link);
+    trackShareAnalytics(postId, 'link_copy');
+    toggleModal('share-post-modal', false);
+};
+
+window.shareExternal = (platform) => {
+    const postId = getEl('active-share-post-id').value;
+    const url = encodeURIComponent(window.location.origin + window.location.pathname + '?postId=' + postId);
+    const text = encodeURIComponent("Check out this awesome post on TalkMate: ");
+    
+    let shareUrl = '';
+    if(platform === 'whatsapp') shareUrl = `https://wa.me/?text=${text}${url}`;
+    if(platform === 'facebook') shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    if(platform === 'messenger') shareUrl = `fb-messenger://share/?link=${url}`;
+    if(platform === 'twitter') shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=Check out this post!`;
+    if(platform === 'telegram') shareUrl = `https://t.me/share/url?url=${url}&text=Check out this post!`;
+    
+    trackShareAnalytics(postId, 'external');
+    toggleModal('share-post-modal', false);
+    
+    if(shareUrl) window.open(shareUrl, '_blank');
+};
+
+window.nativeDeviceShare = () => {
+    const postId = getEl('active-share-post-id').value;
+    const url = window.location.origin + window.location.pathname + '?postId=' + postId;
+    
+    let rawText = window.currentSharePostText || "Check out this amazing post!";
+    if (rawText.length > 80) rawText = rawText.substring(0, 80) + "...";
+    
+    if(navigator.share) {
+        navigator.share({
+            title: 'TalkMate', // অ্যাপের নাম
+            text: `TalkMate | ${rawText}`, // অ্যাপের নাম ও ক্যাপশন
+            url: postUrl // পোস্টের লিংক
+        }).then(() => {
+            trackShareAnalytics(postId, 'native_share');
+            toggleModal('share-post-modal', false);
+        }).catch(err => console.log('Share canceled', err));
+    } else {
+        handleLinkCopy(); // Fallback
+    }
+};
+
+// --- ANALYTICS TRACKING ---
+async function trackShareAnalytics(postId, type) {
+    if(!postId) return;
+    
+    // Update total share count on post
+    const postRef = ref(db, `posts/${postId}/shareCount`);
+    get(postRef).then(snap => {
+        let currentCount = snap.val() || 0;
+        set(postRef, currentCount + 1);
+    });
+    
+    // Save to daily analytics
+    const dateStr = new Date().toISOString().split('T')[0];
+    const analyticsRef = ref(db, `analytics/shares/${dateStr}/${type}`);
+    get(analyticsRef).then(snap => {
+        set(analyticsRef, (snap.val() || 0) + 1);
+    });
+}
 
     window.openSinglePost = async (postId) => {
         if(!postId) return;
@@ -4809,6 +5231,18 @@ notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeComme
         const post = pSnap.val();
         if(!post) return showToast("Post not found");
         post.id = postId;
+        // --- NEW SECURITY FIX ---
+const isPostOwner = (post.uid === currentUser.uid);
+
+// ১. Private Post Security
+if (post.visibility === 'private' && !isPostOwner) {
+    toggleModal('single-post-modal', false);
+    return showToast("⚠️ This post is private and cannot be viewed.");
+}
+
+// ২. Deep Link Post: লিংক দিয়ে ঢুকলে দেখতে পাবে, তাই এখানে ব্লক করার দরকার নেই।
+// তবে আপনি চাইলে Deep Link পোস্টের উপরে একটি ব্যাজ দেখাতে পারেন।
+// ------------------------
 
         const uSnap = await get(ref(db, `users/${post.uid}`));
         const user = uSnap.val();
