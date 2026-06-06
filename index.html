@@ -1673,10 +1673,10 @@ body.dark-mode .mention-tag {
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
     import { getDatabase, ref, set, get, onValue, push, child, update, serverTimestamp, onChildAdded, onChildChanged, onChildRemoved, onDisconnect, remove, off, query, limitToLast, orderByChild, endBefore } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
      // --- OneSignal Imports ---
-import { initializeOneSignal } from './js/onesignal-init.js';
-import { 
-    notifyNewMessage, notifyPostLike, notifyPostComment, notifyNewFollower, notifyIncomingCall, notifyMissedCall 
-} from './js/notification.js';
+//import { initializeOneSignal } from './js/onesignal-init.js';
+//import { 
+    //notifyNewMessage, notifyPostLike, notifyPostComment, notifyNewFollower, notifyIncomingCall, notifyMissedCall 
+//} from './js/notification.js';
     const firebaseConfig = {
       apiKey: "AIzaSyCjZV3yPpdVQ151o7tWcZFNARDnZQsKSVA",
       authDomain: "sm-chats-2026.firebaseapp.com",
@@ -2492,7 +2492,7 @@ await update(ref(db, `users/${currentUser.uid}`), updateData);
         if (user) {
             currentUser = user; 
             window.currentUser = user; 
-            initializeOneSignal(user);
+            //initializeOneSignal(user);
             toggleClass('auth-screen', 'hidden', true);
             try {
                 const s = await get(ref(db, `users/${user.uid}`));
@@ -3355,7 +3355,7 @@ window.prevStory = () => {
             });
 // --- Send Rich Push Notification ---
 let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
-notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
+//notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
 
             const snap = await get(ref(db, `follows/${targetUid}/${currentUser.uid}`));
             if(snap.exists()) {
@@ -3766,7 +3766,11 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
                 const updateMessagePreview = () => {
                     // টাইপিং চললে মেসেজ প্রিভিউ হাইড থাকবে
                     if (!isGrp && previewEl.innerText.includes('Typing')) return;
-                    if (!currentLastMsg) return;
+                    
+                    if (!currentLastMsg) {
+                        previewEl.innerText = isGrp ? 'Tap to chat' : 'Active now';
+                        return;
+                    }
 
                     let prefix = currentLastMsg.from === currentUser.uid ? 'You: ' : '';
                     let tick = currentLastMsg.from === currentUser.uid 
@@ -3774,14 +3778,17 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
                         : '';
                     
                     let text = currentLastMsg.txt || '';
-if (currentLastMsg.isStory || currentLastMsg.postId) text = `🔗 Shared a link`;
-else if (currentLastMsg.img) {
-    text = window.isVideoURL(currentLastMsg.img) ? `🎥 send a Video` : `📷 send a Photo`;
-} else if (currentLastMsg.isCallLog) {
-    text = currentLastMsg.callStatus === 'missed' ? `📞 Missed call` : `📞 Call ended`;
-} else if (!text) {
-    text = `📎 Attachment`; // খালি মেসেজ হলে Voice message এর বদলে এটি দেখাবে
-}
+                    if(text) text = text.replace(/[\r\n]+/g, ' '); // লাইন ব্রেক রিমুভ করবে
+
+                    if (currentLastMsg.postId || currentLastMsg.isStory) {
+                        text = `🔗 Shared a link`;
+                    } else if (currentLastMsg.img) {
+                        text = window.isVideoURL(currentLastMsg.img) ? `🎥 Video` : `📷 Photo`;
+                    } else if (currentLastMsg.isCallLog) {
+                        text = currentLastMsg.callStatus === 'missed' ? `📞 Missed call` : `📞 Call ended`;
+                    } else if (!text) {
+                        text = `📎 Attachment`; 
+                    }
 
                     previewEl.innerHTML = `${tick}${prefix}${text}`;
                     
@@ -3803,7 +3810,6 @@ else if (currentLastMsg.img) {
                         timeEl.innerText = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
                     }
                 };
-
                 // টাইপিং লিসেনার
                 if(!isGrp) {
                     const tRef = ref(db, `typing/${chatId}/${id}`);
@@ -3814,16 +3820,23 @@ else if (currentLastMsg.img) {
                             updateMessagePreview();
                         }
                     });
-                    chatListeners.push(() => off(tRef, 'value', unsubTyping));
+                    chatListeners.push(() => unsubTyping());
                 }
-
                 // লাস্ট মেসেজ এবং Unread লিসেনার
                 const msgRef = query(ref(db, `messages/${chatId}`), limitToLast(30));
                 const unsubMsg = onValue(msgRef, mSnap => {
                     let unread = 0;
                     let lastM = null;
+                    
                     mSnap.forEach(c => {
                         const m = c.val();
+                        
+                        // 🛑 AUTO-HEAL: ফাকা গ্লিচ মেসেজ পেলে ডাটাবেস থেকে পার্মানেন্টলি ডিলিট করবে
+                        if (!m.txt && !m.img && !m.isCallLog && !m.postId && !m.isStory) {
+                            remove(ref(db, `messages/${chatId}/${c.key}`));
+                            return; // এই মেসেজটি স্কিপ করবে
+                        }
+                        
                         lastM = m;
                         if (m.from !== currentUser.uid && !m.seen) unread++;
                     });
@@ -3843,7 +3856,8 @@ else if (currentLastMsg.img) {
 
                     updateMessagePreview();
                 });
-                chatListeners.push(() => off(msgRef, 'value', unsubMsg));
+                
+                chatListeners.push(() => unsubMsg()); // Firebase v9 memory leak fix
             });
             
             // সোয়াইপ অপশন চালু করা
@@ -4075,9 +4089,9 @@ else if (currentLastMsg.img) {
                 ? 'background: rgba(0, 188, 212, 0.2); border: 1px solid var(--primary-color);' 
                 : 'background: var(--bg-card); border: 1px solid var(--border-color);';
 
-            html += `<div class="msg-reaction-badge" ${clickAction} style="position:absolute; bottom:-12px; right: 10px; padding:3px 8px; border-radius:12px; font-size:0.9rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer; z-index:5; display:flex; align-items:center; ${bgStyle}">
-                ${distinctEmojis}${displayCount}
-            </div>`; 
+            html += `<div class="msg-reaction-badge" ${clickAction} style="position:absolute; bottom:-10px; right: 10px; padding: 1px 5px; border-radius: 10px; font-size: 0.8rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer; z-index:5; display:flex; align-items:center; ${bgStyle}">
+    ${distinctEmojis}${displayCount}
+</div>`;
         }
         return html;
     };
@@ -4088,7 +4102,13 @@ else if (currentLastMsg.img) {
         if (skeleton) skeleton.remove(); // ডাটা আসার পর স্কেলিটন মুছে ফেলা
 
         const m = s.val(); 
-        const msgId = s.key;
+    const msgId = s.key;
+    
+    // Security Check: ডাটাবেসের পুরনো গ্লিচ হওয়া খালি মেসেজগুলো ইগনোর করবে
+    if (!m.txt && !m.img && !m.isCallLog && !m.postId && !m.isStory) return;
+    
+    // যদি মেসেজ হাইড করা থাকে
+    if (m.hiddenFor && m.hiddenFor[currentUser.uid] && !window.showHiddenMessages) return;
         
         // যদি মেসেজ হাইড করা থাকে
         if (m.hiddenFor && m.hiddenFor[currentUser.uid] && !window.showHiddenMessages) return;
@@ -4599,52 +4619,67 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// --- Message Send Button Logic (Fixed) ---
-getEl('send-msg-btn').onclick = async () => {
-    if(!isGroupChat && isBlocked(currentChatUser.uid)) return alert("You blocked this user.");
-    
-    const inp = getEl('msg-input'); 
-    const txt = inp.value.trim(); // সব স্পেস মুছে ফেলবে
-    
-    // STRICT CHECK: যদি টেক্সট এবং ছবি কোনোটাই না থাকে, তবে মেসেজ সেন্ড হবে না!
-    if(!txt && !pendingImageUrl) return; 
-    
-    // বাটনটিকে সাময়িক লক করা হলো (যাতে ডাবল ক্লিক না পড়ে)
+// --- Message Send Button Logic (Fixed & Bulletproof) ---
+getEl('send-msg-btn').onclick = async (e) => {
+    if (e) e.preventDefault();
     const btn = getEl('send-msg-btn');
-    btn.style.pointerEvents = 'none';
-    
-    const tsNow = Date.now();
-    
-    // ১. ডাটাবেসে মেসেজ সেভ করা
-    await push(ref(db, `messages/${currentChatId}`), { 
-        from: currentUser.uid, 
-        txt: txt, 
-        img: pendingImageUrl || null, 
-        ts: serverTimestamp(), 
-        seen: false 
-    }); 
+    if (btn.disabled) return; // ডাবল ক্লিক রোধ
 
-    // ২. কন্ট্যাক্ট লিস্টে লাস্ট মেসেজের টাইম আপডেট করা
-    const updates = {};
-    if(!isGroupChat) { 
-        updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; 
-        updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; 
-    }
-    if(Object.keys(updates).length > 0) update(ref(db), updates);
+    const inp = getEl('msg-input'); 
+    const txt = inp.value.trim();
+    const img = pendingImageUrl;
     
-    // ৩. ইনপুট বক্স এবং ইমেজ প্রিভিউ ক্লিয়ার করা
+    // STRICT CHECK: টেক্সট এবং ছবি না থাকলে সেন্ড হবে না
+    if(!txt && !img) return; 
+    
+    // সেন্ড করার আগেই বাটন লক ও ইনপুট ক্লিয়ার (যাতে ডাবল/খালি মেসেজ না যায়)
+    btn.disabled = true;
+    btn.style.pointerEvents = 'none';
     inp.value = ''; 
     clearImagePreview(); 
     
-    // ৪. টাইপিং ইন্ডিকেটর রিমুভ করা
-    if(!isGroupChat && currentChatId) {
-        set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
-        if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+    const tsNow = Date.now();
+    
+    try {
+        await push(ref(db, `messages/${currentChatId}`), { 
+            from: currentUser.uid, 
+            txt: txt, 
+            img: img || null, 
+            ts: serverTimestamp(), 
+            seen: false 
+        }); 
+
+        const updates = {};
+        if(!isGroupChat) { 
+            updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; 
+            updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; 
+        }
+        if(Object.keys(updates).length > 0) update(ref(db), updates);
+        
+        if(!isGroupChat && currentChatId) {
+            set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
+            if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+        }
+    } catch(error) {
+        console.error("Message send error:", error);
     }
     
-    // বাটনটি আবার আনলক করা হলো
-    setTimeout(() => { btn.style.pointerEvents = 'auto'; }, 500);
+    // আধা সেকেন্ড পর বাটন আনলক হবে
+    setTimeout(() => { 
+        btn.disabled = false;
+        btn.style.pointerEvents = 'auto'; 
+    }, 500);
 };
+
+// keypress এর বদলে keydown (মোবাইলের জন্য বেশি সিকিউর)
+getEl('msg-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        if (!getEl('send-msg-btn').disabled) {
+            getEl('send-msg-btn').click();
+        }
+    }
+});
 
 // এন্টার (Enter) বাটন চাপলে সেন্ড হওয়ার সিকিউর লজিক যুক্ত করা হলো
 getEl('msg-input').addEventListener('keypress', (e) => {
@@ -5727,7 +5762,7 @@ get(ref(db, `posts/${postId}/img`)).then(snap => {
         postImage = snap.val().split(',')[0]; // প্রথম ছবিটি নেবো
     }
     // ফাংশন কল
-    notifyPostLike(postOwnerUid, myName, currentUser.uid, window.myDpUrl, postId, postImage);
+    //notifyPostLike(postOwnerUid, myName, currentUser.uid, window.myDpUrl, postId, postImage);
 });
             }
         }
@@ -5937,7 +5972,7 @@ get(ref(db, `posts/${postId}/img`)).then(snap => {
             }
 // --- Send Rich Push Notification ---
 let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
-notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeCommentPostId);
+//notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeCommentPostId);
                 }
             });
 
@@ -6399,6 +6434,7 @@ if (post.visibility === 'private' && !isPostOwner) {
     getEl('btn-video-call').onclick = () => { if(!isBlocked(currentChatUser.uid)) startCall(currentChatUser.uid, 'video'); else alert("Blocked user"); };
 
     function createPC(callId, isCaller) {
+      window.isCaller = isCaller;
         peerConnection = new RTCPeerConnection(servers); iceCandidateQueue =[];
         peerConnection.onicecandidate = (event) => { if (event.candidate) push(ref(db, `calls/${callId}/${isCaller ? 'callerCand' : 'calleeCand'}`), event.candidate.toJSON()); };
         peerConnection.ontrack = (event) => { const remoteVid = getEl('remote-video'); if (remoteVid.srcObject !== event.streams[0]) remoteVid.srcObject = event.streams[0]; };
@@ -6475,7 +6511,7 @@ if (post.visibility === 'private' && !isPostOwner) {
             await set(ref(db, `users/${targetUid}/incomingCall`), { callId: currentCallId, caller: currentUser.uid, type });
 // --- Send Incoming Call Notification ---
             let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
-            notifyIncomingCall(targetUid, myName, currentUser.uid, window.myDpUrl, type, currentCallId);
+            //notifyIncomingCall(targetUid, myName, currentUser.uid, window.myDpUrl, type, currentCallId);
 
             // --- Missed Call Logic ---
             // যদি ৩০ সেকেন্ডের মধ্যে কল না ধরে, তবে কল কেটে যাবে এবং মিসড কল নোটিফিকেশন যাবে
@@ -6567,19 +6603,24 @@ if (currentCallId) {
         let callTypeStr = isVideo ? 'Video Call' : 'Voice Call';
         let txtMsg = durationStr === "Missed Call" ? `📞 Missed ${callTypeStr}` : `📞 ${callTypeStr} • ${durationStr}`;
         
-        if (currentChatUser && !isGroupChat) {
+        // শুধুমাত্র যে কল করেছে (Caller) সে মেসেজ সেন্ড করবে, এতে ডাবল বাবল হবে না
+        if (currentChatUser && !isGroupChat && window.isCaller) {
             let chatId = currentUser.uid < currentChatUser.uid ? `${currentUser.uid}_${currentChatUser.uid}` : `${currentChatUser.uid}_${currentUser.uid}`;
             push(ref(db, `messages/${chatId}`), {
                 from: currentUser.uid,
                 txt: txtMsg,
                 isCallLog: true, 
-                callType: isVideo ? 'video' : 'voice', // নতুন ফিল্ড
-                callStatus: durationStr === "Missed Call" ? 'missed' : 'answered', // নতুন ফিল্ড
-                callDuration: durationStr === "Missed Call" ? '' : durationStr, // নতুন ফিল্ড
+                callType: isVideo ? 'video' : 'voice',
+                callStatus: durationStr === "Missed Call" ? 'missed' : 'answered',
+                callDuration: durationStr === "Missed Call" ? '' : durationStr,
                 ts: serverTimestamp(),
                 seen: false
             });
         }
+        
+        // সবশেষে ভেরিয়েবলগুলো রিসেট করে দেওয়া
+        callStartTime = null;
+        isInCall = false;
         // --- End Call Logic ---
     
     set(ref(db, `users/${currentUser.uid}/incomingCall`), null); 
@@ -7188,4 +7229,4 @@ if (currentCallId) {
     
 </script>
 </body>
-</html>
+</html> 
