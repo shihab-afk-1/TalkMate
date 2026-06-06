@@ -146,7 +146,17 @@
         .post-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; position: relative; }
         .post-user { display: flex; align-items: center; gap: 10px; cursor: pointer;}
         .post-content { font-size: 0.95rem; margin-bottom: 10px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.5; color: var(--text-dark); text-align: left; }
-        .post-img { width: 100%; border-radius: 15px; margin-bottom: 10px; object-fit: cover; }
+        /* Post Image Standardization (Smart Crop) */
+.post-img { 
+    width: 100%; 
+    height: auto; /* স্কয়ার বা ছোট ছবিগুলো তাদের অরিজিনাল সাইজেই থাকবে */
+    max-height: 125cqw; /* শুধুমাত্র 4:5 (1080x1350) এর চেয়ে লম্বা হলে ক্রপ হবে */
+    border-radius: 15px; 
+    margin-bottom: 10px; 
+    object-fit: cover; /* স্ট্রেচ হওয়া রোধ করবে */
+    object-position: center; /* মাঝখানের ফোকাস ধরে রাখবে */
+    background-color: var(--border-color); 
+}
         .post-actions { display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 15px; }
         .post-action { display: flex; align-items: center; gap: 8px; color: var(--text-dark); cursor: pointer; transition: 0.2s; font-size: 1.1rem; font-weight: 500;}
         .post-action:hover { color: var(--primary-color); }
@@ -204,17 +214,37 @@
         .dropdown-item:hover { background: var(--border-color); }
         body.dark-mode .dropdown-menu { background: var(--bg-card); }
 
-        #chat-room { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+       
+#chat-room { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 20px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px;
+    -webkit-overflow-scrolling: touch; /* Scroll Smoothness Fix */
+    touch-action: pan-y; 
+}
         .date-divider { text-align: center; margin: 15px 0; position: sticky; top: 10px; z-index: 2; }
         .date-pill { background: rgba(0,0,0,0.1); color: var(--text-dark); padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; backdrop-filter: blur(5px); }
         body.dark-mode .date-pill { background: rgba(255,255,255,0.15); color: white; }
 
         .message-bubble { 
-            max-width: 75%; padding: 10px 15px; border-radius: 18px; 
-            font-size: 0.95rem; line-height: 1.4; position: relative; cursor: pointer;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; flex-direction: column;
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+    max-width: 75%; 
+    width: fit-content; /* Dynamic Bubble Size Fix */
+    padding: 10px 15px; 
+    border-radius: 18px; 
+    font-size: 0.95rem; 
+    line-height: 1.4; 
+    position: relative; 
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); 
+    display: flex; 
+    flex-direction: column;
+    word-break: break-word; /* লম্বা টেক্সট না ভাঙার জন্য */
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-bottom: 3px;
+}
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .msg-me { align-self: flex-end; margin-left: auto; background: var(--bubble-me); color: var(--bubble-me-text); border-bottom-right-radius: 4px; }
         .msg-other { align-self: flex-start; margin-right: auto; background: var(--bubble-other); color: var(--bubble-other-text); border-bottom-left-radius: 4px; }
@@ -237,7 +267,26 @@
         emoji-picker { position: absolute; bottom: 80px; left: 10px; z-index: 100; --background: var(--bg-card); --border-color: var(--border-color); display: none; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-radius: 20px; }
         emoji-picker.show { display: block; }
 
-        #context-menu { position: absolute; background: var(--bg-card); border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.2); z-index: 150; padding: 10px; display: none; min-width: 150px; flex-direction: column; gap: 5px; }
+        #context-menu { 
+    position: fixed; /* absolute এর বদলে fixed */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(1);
+    background: rgba(255, 255, 255, 0.95); 
+    backdrop-filter: blur(10px); 
+    border-radius: 15px; 
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3); 
+    z-index: 2000; /* অন্য সবকিছুর উপরে রাখতে */
+    padding: 10px; 
+    display: none; 
+    min-width: 220px; 
+    flex-direction: column; 
+    gap: 5px; 
+    transform-origin: center center; /* মাঝখান থেকে এনিমেশন হবে */
+    animation: popCenter 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+@keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+body.dark-mode #context-menu { background: rgba(30, 30, 30, 0.9); }
         .ctx-item { padding: 10px 15px; display: flex; align-items: center; gap: 10px; color: var(--text-dark); cursor: pointer; border-radius: 8px; }
         .ctx-item:hover { background: #f0f0f5; }
         body.dark-mode .ctx-item:hover { background: #333; }
@@ -459,6 +508,149 @@ body.dark-mode .skeleton {
     width: 50px; height: 50px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; color: white; cursor: pointer; transition: transform 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.1); flex-shrink: 0;
 }
 .ext-share-btn:active { transform: scale(0.9); }
+body.dark-mode #chatlist-context-menu { background: rgba(30, 30, 30, 0.95); }
+/* Multiple Selection Mode Styles */
+.message-bubble.selected-msg {
+    background: rgba(0, 188, 212, 0.2) !important;
+    border: 2px dashed var(--primary-color);
+    transform: scale(0.98);
+    transition: all 0.2s ease;
+}
+body.dark-mode .message-bubble.selected-msg {
+    background: rgba(0, 188, 212, 0.4) !important;
+}
+
+#chat-selection-header {
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    z-index: 20; 
+    background: var(--primary-color); 
+    color: white; 
+    padding: 40px 20px 20px 20px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border-bottom-left-radius: 30px; 
+    border-bottom-right-radius: 30px;
+    box-shadow: 0 10px 30px rgba(0, 188, 212, 0.4);
+    animation: slideDown 0.3s ease;
+}
+@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+/* Multiple Post Image Preview Styles */
+#post-preview-container {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-top: 10px;
+    scrollbar-width: none; /* Firefox */
+}
+#post-preview-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+.preview-item-wrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 100px;
+    height: 125px; /* 4:5 রেশিও অনুযায়ী */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+.preview-item-wrap img, .preview-item-wrap video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 10px;
+    background: var(--border-color);
+}
+.preview-item-remove {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(255, 60, 60, 0.9);
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    border: 1.5px solid white;
+    transition: transform 0.2s;
+}
+.preview-item-remove:active {
+    transform: scale(0.8);
+}
+/* Disable Native Browser Image Popup & Dragging */
+.chat-msg-img, .post-img, .shared-post-card img {
+    -webkit-touch-callout: none !important; /* iOS/Android এর Save Image মেনু ব্লক করবে */
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important; /* ছবি টেনে সরানো (Drag) ব্লক করবে */
+    pointer-events: auto;
+}
+/* Mention Popup Styles */
+#mention-popup {
+    position: fixed; /* Fixed করা হলো যাতে সব মোডালের উপর কাজ করে */
+    background: var(--bg-card);
+    border-radius: 15px;
+    box-shadow: 0 -10px 25px rgba(0,0,0,0.2);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 9999; /* সবার উপরে রাখার জন্য */
+    display: none;
+}
+#mention-popup.show { display: block; animation: fadeInUp 0.2s ease-out; }
+body.dark-mode #mention-popup { background: #2c2c2c; }
+
+.mention-item {
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    transition: 0.2s;
+}
+.mention-item:hover { background: var(--border-color); }
+.mention-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.mention-name { font-size: 0.9rem; font-weight: 500; color: var(--text-dark); }
+/* --- Mention Highlight Styles (Global) --- */
+
+/* ডিফল্ট ডিজাইন: কমেন্ট, পোস্ট এবং অন্যের মেসেজের জন্য (নীল রঙ) */
+.mention-tag {
+    font-weight: 600;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: var(--primary-color); /* এটি কমেন্টেও নীল রঙ আনবে */
+    background: rgba(0, 188, 212, 0.15);
+    transition: 0.2s ease;
+    display: inline-block;
+}
+
+body.dark-mode .mention-tag {
+    background: rgba(0, 188, 212, 0.25);
+}
+
+.mention-tag:hover {
+    background: rgba(0, 188, 212, 0.3);
+}
+
+/* শুধুমাত্র নিজের পাঠানো চ্যাট মেসেজের জন্য (সাদা রঙ) */
+.msg-me .mention-tag {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+.msg-me .mention-tag:hover {
+    background: rgba(255, 255, 255, 0.4);
+}
 
     </style>
 </head>
@@ -467,7 +659,7 @@ body.dark-mode .skeleton {
 <div id="toast">Copied!</div>
 
 <div id="app-container">
-
+<div id="mention-popup"></div>
     <!-- Splash Screen -->
     <div id="splash-screen" class="full-screen" style="display:flex; flex-direction:column; justify-content:center; align-items:center; background:var(--primary-gradient); color:white; z-index:9999; position:relative;">
         <div style="text-align:center;">
@@ -670,12 +862,21 @@ body.dark-mode .skeleton {
                 <div>
                     <div id="chat-header-name" style="font-weight:600; font-size:1rem; display:flex; align-items:center;">User</div>
                     <div id="chat-header-status" style="font-size:0.75rem; opacity:0.8;">Online</div>
+<!-- Chat Interface এর ভেতরে -->
+    <div id="chat-selection-header" class="hidden" onclick="event.stopPropagation();">
+        <div style="display:flex; align-items:center; gap:15px;">
+            <button class="btn-icon" style="color:white; padding:0;" onclick="cancelSelectionMode(event)"><i class="fas fa-times"></i></button>
+            <span id="selection-count" style="font-weight:600; font-size:1.1rem;">0 Selected</span>
+        </div>
+        <button class="btn-icon" style="color:white; padding:0;" onclick="deleteSelectedMessages(event)"><i class="fas fa-trash-alt"></i></button>
+    </div>
                 </div>
             </div>
             <div class="header-actions">
                 <div id="friend-actions" style="display:flex; gap:10px;">
                     <div class="action-btn" id="btn-audio-call"><i class="fas fa-phone"></i></div>
                     <div class="action-btn" id="btn-video-call"><i class="fas fa-video"></i></div>
+                    
                 </div>
                 <div id="group-actions" class="hidden" style="position:relative;">
                     <div class="action-btn" id="btn-group-options"><i class="fas fa-ellipsis-v"></i></div>
@@ -701,6 +902,8 @@ body.dark-mode .skeleton {
             
             <input type="file" id="chat-imgbb-file" accept="image/*" class="hidden" onchange="uploadChatImageToImgBB()">
             
+            
+            
             <div class="chat-input-pill">
                 <i class="far fa-smile" id="btn-emoji" style="color:var(--text-grey); font-size:1.2rem; margin-left:5px; cursor:pointer;"></i>
                 <i class="fas fa-image" id="btn-image-url" style="color:var(--text-grey); font-size:1.2rem; margin-left:10px; cursor:pointer;" onclick="document.getElementById('chat-imgbb-file').click()"></i>
@@ -712,17 +915,25 @@ body.dark-mode .skeleton {
 
     <!-- Context Menu (Long Press) -->
     <div id="context-menu">
-        <div class="reaction-bar">
-            <span class="reaction-emoji" data-r="❤️">❤️</span>
-            <span class="reaction-emoji" data-r="😂">😂</span>
-            <span class="reaction-emoji" data-r="👍">👍</span>
-            <span class="reaction-emoji" data-r="😮">😮</span>
-            <span class="reaction-emoji" data-r="😢">😢</span>
-        </div>
-        <div class="ctx-item" id="ctx-reply"><i class="fas fa-reply"></i> Reply</div>
-        <div class="ctx-item" id="ctx-copy"><i class="far fa-copy"></i> Copy</div>
-        <div class="ctx-item" id="ctx-delete" style="color:var(--danger);"><i class="far fa-trash-alt"></i> Delete</div>
+   <div class="reaction-bar" style="display:flex; gap:10px; padding: 5px 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 5px; justify-content: center; align-items: center;">
+        <span class="reaction-emoji" data-r="❤️">❤️</span>
+        <span class="reaction-emoji" data-r="😂">😂</span>
+        <span class="reaction-emoji" data-r="👍">👍</span>
+        <span class="reaction-emoji" data-r="😮">😮</span>
+        <span class="reaction-emoji" data-r="😢">😢</span>
+        
+        <!-- নতুন প্লাস আইকন -->
+        <span id="btn-custom-reaction" style="cursor:pointer; font-size:1.2rem; background: var(--border-color); border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; color: var(--text-dark);">
+            <i class="fas fa-plus" style="font-size: 0.9rem;"></i>
+        </span>
     </div>
+    <div class="ctx-item" id="ctx-reply"><i class="fas fa-reply" style="width:20px;"></i> Reply</div>
+    <div class="ctx-item" id="ctx-forward"><i class="fas fa-share" style="width:20px;"></i> Forward</div>
+    <div class="ctx-item" id="ctx-copy"><i class="far fa-copy" style="width:20px;"></i> Copy</div>
+    <div class="ctx-item" id="ctx-select"><i class="fas fa-check-square" style="width:20px;"></i> Select</div>
+    <div class="ctx-item" id="ctx-hide"><i class="fas fa-eye-slash" style="width:20px;"></i> Hide for me</div>
+    <div class="ctx-item" id="ctx-delete" style="color:var(--danger);"><i class="far fa-trash-alt" style="width:20px;"></i> Delete</div>
+</div>
 
     <!-- Call Screen -->
     <div id="call-screen" class="full-screen hidden">
@@ -795,7 +1006,8 @@ body.dark-mode .skeleton {
             </div>
 
             <textarea id="post-img-url" placeholder="Photo/Video URLs (comma separated, optional)" oninput="updatePostPreview()" style="height: 60px;"></textarea>
-            <img id="post-preview-img" class="hidden" style="width:100%; border-radius:15px; margin-top:10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <!-- Multiple Image Preview Container -->
+<div id="post-preview-container" class="hidden"></div>
             
             <div style="display:flex; align-items:center; gap:10px; margin-top:15px; margin-bottom: 20px;">
                 <label style="font-size:0.9rem; font-weight:500;">Privacy:</label>
@@ -904,7 +1116,44 @@ body.dark-mode .skeleton {
             <button class="send-btn" id="send-comment-btn"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
-
+<!-- Chat List Long-Press Context Menu -->
+    <div id="chatlist-context-menu" style="position: absolute; background: var(--bg-card); border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 250; padding: 10px; display: none; min-width: 180px; flex-direction: column; gap: 5px; transform-origin: top left; border: 1px solid var(--border-color);">
+        <div class="ctx-item" id="ctx-pin-chat"><i class="fas fa-thumbtack" style="width:20px;"></i> <span>Pin Chat</span></div>
+        <div class="ctx-item" id="ctx-delete-chat" style="color:var(--danger);"><i class="far fa-trash-alt" style="width:20px;"></i> Delete Conversation</div>
+    </div>
+<!-- Forward Message Modal -->
+    <div id="forward-modal" class="full-screen hidden" style="z-index: 2100; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); display: flex; flex-direction: column; justify-content: flex-end;">
+        <div class="share-bottom-sheet">
+            <div style="width: 40px; height: 5px; background: var(--border-color); border-radius: 5px; margin: 0 auto 15px;"></div>
+            <h3 style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; color: var(--text-dark);">
+                Forward Message <button class="btn-icon" onclick="toggleModal('forward-modal', false)"><i class="fas fa-times"></i></button>
+            </h3>
+            
+            <div class="chat-input-pill" style="margin-bottom: 15px; background: var(--bg-body);">
+                <i class="fas fa-search" style="color:var(--text-grey); margin-left:10px;"></i>
+                <input type="text" id="forward-search-input" placeholder="Search friends to forward..." onkeyup="filterForwardFriends()">
+            </div>
+            
+            <!-- Friend List Container -->
+            <div id="forward-friends-list" style="max-height: 45vh; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none;">
+                <!-- ফ্রেন্ড লিস্ট এখানে লোড হবে -->
+            </div>
+        </div>
+    </div>
+    <!-- Confirm Delete Conversation Modal -->
+    <div id="delete-chat-modal" class="full-screen hidden" style="z-index: 300; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <div style="background: var(--bg-card); width: 90%; max-width: 350px; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.2);">
+            <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: var(--danger); margin-bottom: 15px;"></i>
+            <h3 style="color: var(--text-dark); margin-bottom: 10px;">Delete Conversation?</h3>
+            <p style="color: var(--text-grey); font-size: 0.9rem; margin-bottom: 25px;">Are you sure you want to permanently delete all messages with <strong id="delete-chat-target-name">this user</strong>? This will clear the chat for everyone.</p>
+            <input type="hidden" id="delete-chat-target-id">
+            <input type="hidden" id="delete-chat-is-group">
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" style="flex: 1; background: var(--border-color); color: var(--text-dark);" onclick="toggleModal('delete-chat-modal', false)">Cancel</button>
+                <button class="btn btn-danger" id="btn-confirm-delete-chat" style="flex: 1;" onclick="executeDeleteConversation()">Delete</button>
+            </div>
+        </div>
+    </div>
    <!-- Modern Unified Share Modal -->
 <div id="share-post-modal" class="full-screen hidden" style="z-index:150; background:rgba(0,0,0,0.5); backdrop-filter:blur(3px); display:flex; flex-direction:column; justify-content:flex-end;">
     <div class="share-bottom-sheet">
@@ -926,9 +1175,12 @@ body.dark-mode .skeleton {
         <!-- Quick Internal Share -->
         <h4 style="font-size: 0.85rem; color: var(--text-grey); margin-bottom: 10px;">Send in TalkMate</h4>
         <div id="share-quick-list" class="horizontal-scroll-list" style="min-height: 90px;">
+          
             <!-- Avatars injected via JS -->
         </div>
-
+<div style="text-align: center; padding: 10px 15px;">
+    <button id="btn-send-selected" class="btn btn-primary hidden" style="width: 100%; border-radius: 20px;" onclick="sendSelectedShares()">Send to <span id="share-count-badge">0</span> Friends</button>
+</div>
         <!-- External Apps Share -->
         <div id="external-share-section">
             <h4 style="font-size: 0.85rem; color: var(--text-grey); margin-top: 15px; margin-bottom: 10px;">Share Outside</h4>
@@ -1381,6 +1633,16 @@ body.dark-mode .skeleton {
     </div>
 
 </div>
+<!-- Fullscreen Image Viewer Modal -->
+<div id="image-viewer-modal" class="full-screen hidden" style="z-index: 3000; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; flex-direction: column;">
+    <button class="btn-icon" style="position: absolute; top: 20px; right: 20px; color: white; font-size: 1.5rem; background: rgba(255,255,255,0.2); border-radius: 50%; width: 45px; height: 45px; z-index: 3001;" onclick="closeImageViewer()">
+        <i class="fas fa-times"></i>
+    </button>
+    <div style="width: 100%; height: 100%; overflow: auto; display: flex; align-items: center; justify-content: center;">
+        <!-- ডাবল ক্লিকে জুম ইন/আউট হবে -->
+        <img id="image-viewer-img" src="" style="max-width: 100%; max-height: 100%; object-fit: contain; transition: transform 0.3s ease; cursor: zoom-in;" ondblclick="this.style.transform = this.style.transform === 'scale(2)' ? 'scale(1)' : 'scale(2)'; this.style.cursor = this.style.transform === 'scale(2)' ? 'zoom-out' : 'zoom-in';">
+    </div>
+</div>
 <!-- PWA Install Modal (Modern Social App Style) -->
     <div id="pwa-install-modal" class="full-screen hidden" style="background:rgba(0,0,0,0.6); backdrop-filter:blur(5px); flex-direction:column; justify-content:flex-end; align-items:center; z-index:99999;">
         <div style="background:var(--bg-card); width:100%; max-width:414px; border-top-left-radius:30px; border-top-right-radius:30px; padding:30px 20px; text-align:center; box-shadow: 0 -10px 40px rgba(0,0,0,0.1); animation: fadeInUp 0.4s ease-out;">
@@ -1636,14 +1898,20 @@ window.trackStoryAnalytics = (type) => {
     const closeMenu = () => { getEl('side-menu').classList.remove('open'); getEl('menu-overlay').classList.remove('open'); };
     getEl('menu-overlay').onclick = closeMenu;
 getEl('back-chat').onclick = () => { 
+  if(window.isSelectionMode) cancelSelectionMode(); // চ্যাট থেকে বের হলে সিলেকশন বন্ধ হবে
         if (currentChatId && currentUser && !isGroupChat) {
             set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
             if (typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
         }
         if (unsubTypingStatus) { unsubTypingStatus(); unsubTypingStatus = null; }
+        
+        // নতুন লিসেনারগুলো ক্লিন করা
+        // Firebase 9 Modular নিয়মে লিসেনার বন্ধ করা হলো
+if (window.unsubMsgAdded) { window.unsubMsgAdded(); window.unsubMsgAdded = null; }
+if (window.unsubMsgChanged) { window.unsubMsgChanged(); window.unsubMsgChanged = null; }
+if (window.unsubMsgRemoved) { window.unsubMsgRemoved(); window.unsubMsgRemoved = null; }
         toggleModal('chat-interface', false); 
     };
-
     window.showToast = (msg) => {
         const t = getEl('toast'); t.innerText = msg; t.classList.add('show');
         setTimeout(() => t.classList.remove('show'), 3000);
@@ -2081,10 +2349,52 @@ window.injectBannerAd(container);
     }
     
     const linkify = (text) => {
-        if(!text) return '';
-        return text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();">${url}</a>`);
-    };
+    if(!text) return '';
+    
+    // ১. লিংক (URL) গুলোকে <a> ট্যাগে রূপান্তর
+    let linkedText = text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank" rel="noopener noreferrer" class="chat-link" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();">${url}</a>`);
+    
+    // ২. মেনশন (@username) গুলোকে কালার করা এবং প্রোফাইল লিংকের সাথে যুক্ত করা
+    linkedText = linkedText.replace(/@([a-zA-Z0-9_]+)/g, match => {
+        const username = match.substring(1); // '@' চিহ্ন বাদ দিয়ে শুধু নামটা নেওয়া
+        // event.stopPropagation() দেওয়া হয়েছে যাতে মেসেজে ক্লিক করলে মেনু ওপেন না হয়ে সরাসরি প্রোফাইল ওপেন হয়
+        return `<span class="mention-tag" onclick="event.stopPropagation(); window.visitMentionedProfile('${username}')">${match}</span>`;
+    });
+    
+    return linkedText;
+};
+// --- MENTION PROFILE VISIT LOGIC ---
+window.visitMentionedProfile = async (username) => {
+    let targetUid = null;
+    
+    // ১. প্রথমে আপনার লোকাল ফ্রেন্ড লিস্টে খুঁজবে (যাতে সাথে সাথে ওপেন হয়)
+    let foundFriend = myFriends.find(u => u.name.replace(/\s+/g, '').toLowerCase() === username.toLowerCase());
+    
+    if (foundFriend) {
+        targetUid = foundFriend.uid;
+    } else {
+        // ২. ফ্রেন্ড লিস্টে না পেলে ডাটাবেস থেকে খুঁজবে
+        showToast("Searching profile...");
+        try {
+            const snap = await get(ref(db, 'users'));
+            snap.forEach(child => {
+                const u = child.val();
+                if (u.name && u.name.replace(/\s+/g, '').toLowerCase() === username.toLowerCase()) {
+                    targetUid = child.key;
+                }
+            });
+        } catch(e) {
+            console.error(e);
+        }
+    }
 
+    // ৩. ইউজার আইডি পেলে প্রোফাইল ওপেন করবে, নাহলে এরর দেখাবে
+    if (targetUid) {
+        loadProfileById(targetUid);
+    } else {
+        showToast("User not found!");
+    }
+};
     const darkModeToggle = getEl('dark-mode-toggle');
     if(localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-mode'); darkModeToggle.checked = true; }
     darkModeToggle.onchange = () => {
@@ -2152,7 +2462,7 @@ await update(ref(db, `users/${currentUser.uid}`), updateData);
             // Exit Ad Modal শো করানো হচ্ছে
             document.getElementById('exit-ad-modal').classList.remove('hidden');
             
-            let timeLeft = 10; // ৩ সেকেন্ড পর অটো ক্লোজ হবে
+            let timeLeft = 3; // ৩ সেকেন্ড পর অটো ক্লোজ হবে
             document.getElementById('exit-timer').innerText = timeLeft;
             
             if(exitTimerInterval) clearInterval(exitTimerInterval);
@@ -3392,13 +3702,13 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
                 const pinHtml = pinned ? '<i class="fas fa-thumbtack" style="font-size:0.75rem; color:var(--text-grey); margin-left:5px; transform:rotate(45deg);"></i>' : '';
 
                 const el = document.createElement('div');
-
                 el.className = 'list-item swipe-container'; 
                 el.style.padding = '0'; 
        
+                // এখানে onclick="openChat..." সরিয়ে দেওয়া হয়েছে, কারণ আমরা JS দিয়ে click & long press কন্ট্রোল করব
                 el.innerHTML = `
                     <div class="swipe-delete-bg" onclick="deleteChatHistory('${id}')"><i class="fas fa-trash-alt"></i></div>
-                    <div class="swipe-content" data-chatid="${id}" style="padding: 15px 25px; width:100%; display:flex; align-items:center;" onclick="openChat('${id}', ${JSON.stringify(user).replace(/"/g, '&quot;')})">
+                    <div class="swipe-content" data-chatid="${id}" style="padding: 15px 25px; width:100%; display:flex; align-items:center;">
                         <img src="${user.dpUrl}" data-suid="${id}" class="avatar ${online ? 'online' : ''}" loading="lazy">
                         <div class="item-info" style="overflow: hidden;">
                             <div class="item-name" style="display:flex; justify-content:space-between; align-items:center;">
@@ -3414,6 +3724,35 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
                 `;
                 div.appendChild(el);
 
+                // --- Long Press ও Click Handle ---
+                const swipeContent = el.querySelector('.swipe-content');
+                let pressTimer;
+                let isLongPress = false;
+
+                const startPress = (e) => {
+                    isLongPress = false;
+                    pressTimer = setTimeout(() => {
+                        isLongPress = true;
+                        window.showChatListContextMenu(e, id, user.name, pinned, isGrp);
+                    }, 600); // 0.6 সেকেন্ড চাপলে মেনু আসবে
+                };
+                const cancelPress = () => { clearTimeout(pressTimer); };
+
+                swipeContent.addEventListener('mousedown', startPress);
+                swipeContent.addEventListener('touchstart', startPress, {passive: true});
+                swipeContent.addEventListener('mouseup', cancelPress);
+                swipeContent.addEventListener('touchend', cancelPress);
+                swipeContent.addEventListener('touchmove', cancelPress);
+                swipeContent.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
+
+                swipeContent.addEventListener('click', () => {
+                    // যদি Long press না হয়, তবেই চ্যাট ওপেন হবে
+                    if(!isLongPress) {
+                        openChat(id, user);
+                    }
+                });
+
+                // --- (এর নিচে আগের Real-time Preview Logic এর কোডগুলো যেমন ছিল তেমনই থাকবে) ---
                 // --- Real-time Preview Logic ---
                 const chatId = isGrp ? id : (currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`);
                 const previewEl = el.querySelector(`#preview-${id}`);
@@ -3435,10 +3774,14 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
                         : '';
                     
                     let text = currentLastMsg.txt || '';
-                    if (currentLastMsg.isStory || currentLastMsg.postId) text = `🔗 Shared a link`;
-                    else if (currentLastMsg.img) {
-                        text = window.isVideoURL(currentLastMsg.img) ? `🎥 Video` : `📷 Photo`;
-                    } else if (!text) text = `🎤 Voice message`;
+if (currentLastMsg.isStory || currentLastMsg.postId) text = `🔗 Shared a link`;
+else if (currentLastMsg.img) {
+    text = window.isVideoURL(currentLastMsg.img) ? `🎥 send a Video` : `📷 send a Photo`;
+} else if (currentLastMsg.isCallLog) {
+    text = currentLastMsg.callStatus === 'missed' ? `📞 Missed call` : `📞 Call ended`;
+} else if (!text) {
+    text = `📎 Attachment`; // খালি মেসেজ হলে Voice message এর বদলে এটি দেখাবে
+}
 
                     previewEl.innerHTML = `${tick}${prefix}${text}`;
                     
@@ -3599,95 +3942,229 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
         } else { toggleClass('friend-actions', 'hidden', true); toggleClass('group-actions', 'hidden', false); }
 
    const msgList = getEl('messages-list'); 
-       window.SkeletonManager.show('messages-list', 'chat', 1); // Chat bubble skeleton
-        if (unsubMessages) { unsubMessages(); unsubMessages = null; }
+    const chatRoom = getEl('chat-room'); 
 
-        unsubMessages = onValue(ref(db, `messages/${currentChatId}`), snapshot => {
-            msgList.innerHTML = ''; 
-            let lastDate = '';
-            let unreadUpdates = {}; // মেসেজ সিনের আপডেট একসাথে পাঠানোর জন্য
+    // আগের কোনো লিসেনার চালু থাকলে তা বন্ধ করা
+    if (window.unsubMsgAdded) { off(ref(db, `messages/${currentChatId}`), 'child_added', window.unsubMsgAdded); window.unsubMsgAdded = null; }
+    if (window.unsubMsgChanged) { off(ref(db, `messages/${currentChatId}`), 'child_changed', window.unsubMsgChanged); window.unsubMsgChanged = null; }
+    if (window.unsubMsgRemoved) { off(ref(db, `messages/${currentChatId}`), 'child_removed', window.unsubMsgRemoved); window.unsubMsgRemoved = null; }
 
-            snapshot.forEach(s => {
-                const m = s.val(); 
-                const msgId = s.key;
-                
-                // মেসেজ সিন করার কমান্ড ব্যাচ করা হচ্ছে
-                if(m.from !== currentUser.uid && !m.seen) {
-                    unreadUpdates[msgId + '/seen'] = true;
-                }
-                
-                const msgDate = getFriendlyDate(m.ts);
-                if(msgDate !== lastDate) { 
-                    const dateDiv = document.createElement('div');
-                    dateDiv.className = 'date-divider';
-                    dateDiv.innerHTML = `<span class="date-pill">${msgDate}</span>`;
-                    msgList.appendChild(dateDiv);
-                    lastDate = msgDate; 
-                }
-                
-                const isMe = m.from === currentUser.uid; 
-                const d = document.createElement('div'); 
-                d.className = `message-bubble ${isMe ? 'msg-me' : 'msg-other'}`;
-                
-                let tickIcon = isMe ? (m.seen ? '<i class="fas fa-check-double msg-tick read"></i>' : '<i class="fas fa-check msg-tick"></i>') : '';
-                
-                let imgHtml = '';
-                if (m.img) {
-                    imgHtml = window.isVideoURL(m.img) 
-                    ? `<video src="${m.img}" class="chat-msg-img" controls playsinline onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" style="width:100%; border-radius:10px; margin-top:5px;"></video>`
-                    : `<img src="${m.img}" class="chat-msg-img" loading="lazy" onclick="window.open('${m.img}','_blank');" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();">`;
-                }
-                
-                let postShareHtml = '';
-                if(m.postId) {
-                    imgHtml = ''; 
-                    let srcLink = (m.postPreviewImg || m.img || '').split(',')[0];
-                    let previewMediaHtml = '';
-                    if(srcLink) {
-                        previewMediaHtml = window.isVideoURL(srcLink) 
-                        ? `<video src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" controls playsinline onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();"></video>` 
-                        : `<img src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" loading="lazy">`;
-                    }
+    msgList.innerHTML = ''; 
+    window.SkeletonManager.show('messages-list', 'chat', 1);
+    
+    let lastDate = '';
 
-                    let action = m.isStory ? `openSharedStory('${m.storyUid}', '${m.postId}', '${srcLink}')` : `openSinglePost('${m.postId}')`;
-                    let title = m.isStory ? "View Story" : "View Shared Content";
+    // মেসেজের HTML বানানোর জন্য একটি হেল্পার ফাংশন (যাতে কোড ডুপ্লিকেট না হয়)
+    const getMessageInnerHtml = (m, isMe) => {
+        let tickIcon = isMe ? (m.seen ? '<i class="fas fa-check-double msg-tick read"></i>' : '<i class="fas fa-check msg-tick"></i>') : '';
+        
+        let imgHtml = '';
+        if (m.img) {
+            // ondragstart="return false;" যুক্ত করা হয়েছে 
+            imgHtml = window.isVideoURL(m.img) 
+            ? `<video src="${m.img}" class="chat-msg-img" controls playsinline style="width:100%; border-radius:10px; margin-top:5px;"></video>`
+            : `<img src="${m.img}" class="chat-msg-img" loading="lazy" ondragstart="return false;" onclick="if(!window.justLongPressed && !window.isSelectionMode) { event.stopPropagation(); window.openImageViewer && window.openImageViewer('${m.img}'); }" style="width:100%; border-radius:10px; margin-top:5px; cursor:pointer;">`;
+        }
+        
+        let postShareHtml = '';
+        if(m.postId) {
+            let srcLink = (m.postPreviewImg || m.img || '').split(',')[0];
+            let previewMediaHtml = '';
+            if(srcLink) {
+                // ondragstart="return false;" যুক্ত করা হয়েছে 
+                previewMediaHtml = window.isVideoURL(srcLink) 
+                ? `<video src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" controls playsinline></video>` 
+                : `<img src="${srcLink}" style="width:100%; border-radius:8px; max-height:160px; object-fit:cover;" loading="lazy" ondragstart="return false;">`;
+            }
+            let action = m.isStory ? `openSharedStory('${m.storyUid}', '${m.postId}', '${srcLink}')` : `openSinglePost('${m.postId}')`;
+            let title = m.isStory ? "View Story" : "View Shared Content";
+            
+            postShareHtml = `
+            <div class="shared-post-card" onclick="if(!window.justLongPressed && !window.isSelectionMode){ event.stopPropagation(); ${action}; }" 
+                 style="background:var(--bg-body); border-radius:10px; padding:10px; margin-top:5px; border:1px solid var(--border-color); cursor:pointer; color: var(--text-dark); display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s;"
+                 onmousedown="this.style.transform='scale(0.97)'" 
+                 onmouseup="this.style.transform='scale(1)'" 
+                 ontouchstart="this.style.transform='scale(0.97)'" 
+                 ontouchend="this.style.transform='scale(1)'">
+                <div style="font-size:0.8rem; font-weight:bold; color:var(--primary-color); display:flex; align-items:center; gap:5px;">
+                    <i class="fas fa-external-link-alt"></i> ${title}
+                </div>
+                ${m.postPreviewText ? `<div style="font-size:0.85rem; color:var(--text-dark); opacity: 0.9; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${m.postPreviewText}</div>` : ''}
+                ${previewMediaHtml}
+            </div>`;
+        }
+
+        // ... (উপরের postShareHtml বা imgHtml এর কোডগুলো আগের মতোই থাকবে) ...
+
+        let msgContentHtml = '';
+
+        // যদি মেসেজটি Call Log হয়, তবে WhatsApp-এর মতো ডিজাইন তৈরি হবে
+        if (m.isCallLog) {
+            // আগের ডাটাগুলোর সাথে কম্প্যাটিবিলিটি রাখার জন্য ফলব্যাক (Fallback)
+            let isVidCall = m.callType === 'video' || (m.txt && m.txt.toLowerCase().includes('video'));
+            let isMissedCall = m.callStatus === 'missed' || (m.txt && m.txt.toLowerCase().includes('missed'));
+            let duration = m.callDuration || (m.txt && m.txt.includes('•') ? m.txt.split('•')[1].trim() : '');
+
+            let iconBg = 'var(--border-color)'; // ডিফল্ট ধূসর বৃত্ত
+            let iconColor = 'var(--text-grey)'; // ডিফল্ট ধূসর আইকন
+            let iconClass = isVidCall ? 'fa-video' : 'fa-phone-alt';
+            let titleText = isVidCall ? 'Video call' : 'Voice call';
+            let subText = duration;
+            let callbackAction = '';
+
+            if (isMe) {
+                // Sender (যে কল করেছে) এর জন্য ডিজাইন
+                if (isMissedCall) {
+                    subText = 'No answer';
+                }
+            } else {
+                // Receiver (যাকে কল করা হয়েছে) এর জন্য ডিজাইন
+                if (isMissedCall) {
+                    iconBg = 'rgba(255, 71, 87, 0.15)'; // হালকা লাল ব্যাকগ্রাউন্ড
+                    iconColor = 'var(--danger)'; // গাঢ় লাল আইকন
+                    titleText = isVidCall ? 'Missed video call' : 'Missed voice call';
+                    subText = 'Tap to call back';
                     
-                    postShareHtml = `
-                    <div class="shared-post-card" onclick="event.stopPropagation(); ${action}" 
-                         style="background:var(--bg-body); border-radius:10px; padding:10px; margin-top:5px; border:1px solid var(--border-color); cursor:pointer; color: var(--text-dark); display: flex; flex-direction: column; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: transform 0.2s;"
-                         onmousedown="event.stopPropagation(); this.style.transform='scale(0.97)'" 
-                         onmouseup="event.stopPropagation(); this.style.transform='scale(1)'" 
-                         ontouchstart="event.stopPropagation(); this.style.transform='scale(0.97)'" 
-                         ontouchend="event.stopPropagation(); this.style.transform='scale(1)'">
-                         
-                        <div style="font-size:0.8rem; font-weight:bold; color:var(--primary-color); display:flex; align-items:center; gap:5px;">
-                            <i class="fas fa-external-link-alt"></i> ${title}
-                        </div>
-                        
-                        ${m.postPreviewText ? `<div style="font-size:0.85rem; color:var(--text-dark); opacity: 0.9; margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${m.postPreviewText}</div>` : ''}
-                        
-                        ${previewMediaHtml}
-                    </div>`;
+                    // Tap to call back বাটনে ক্লিক করলে কল যাবে
+                    callbackAction = `onclick="event.stopPropagation(); startCall(currentChatUser.uid, '${isVidCall ? 'video' : 'voice'}')"`;
                 }
+            }
 
-                d.innerHTML = `<div class="msg-text">${linkify(m.txt)}</div>${imgHtml}${postShareHtml}<div class="msg-meta"><span>${formatTime(m.ts)}</span>${tickIcon}</div>`;
-                
-                addLongPressListener(d, msgId, m.txt, isMe);
-                if(m.reactions) { 
-                    const rKey = Object.keys(m.reactions)[0]; 
-                    d.innerHTML += `<div class="msg-reaction-badge"><span style="background:var(--bg-card); padding:2px 5px; border-radius:10px; font-size:0.8rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:absolute; bottom:-10px; right:0;">${m.reactions[rKey]}</span></div>`; 
-                }
-                msgList.appendChild(d);
+            msgContentHtml = `
+            <div ${callbackAction} style="display:flex; align-items:center; gap:12px; padding: 5px 0; ${callbackAction ? 'cursor:pointer;' : ''}">
+                <div style="width:40px; height:40px; border-radius:50%; background:${iconBg}; display:flex; justify-content:center; align-items:center; font-size:1.1rem; color:${iconColor};">
+                    <i class="fas ${iconClass}"></i>
+                </div>
+                <div style="display:flex; flex-direction:column; line-height: 1.3;">
+                    <span style="font-weight:600; font-size:1rem; color:var(--text-dark);">${titleText}</span>
+                    <span style="font-size:0.85rem; color:var(--text-grey);">${subText}</span>
+                </div>
+            </div>`;
+        } else {
+            // সাধারণ টেক্সট মেসেজের জন্য
+            msgContentHtml = `<div class="msg-text">${linkify(m.txt)}</div>`;
+        }
+
+// ফরোয়ার্ড করা মেসেজের জন্য "Forwarded" ট্যাগ যুক্ত করা (কল লগ না হলে)
+        let forwardedHtml = (m.isForwarded && !m.isCallLog) 
+            ? `<div style="font-size: 0.75rem; color: var(--text-grey); margin-bottom: 5px; display: flex; align-items: center; gap: 5px; font-style: italic;"><i class="fas fa-share" style="font-size:0.7rem;"></i> Forwarded</div>` 
+            : '';
+
+        // ফাইনাল HTML এসেম্বল করা
+        let html = `${forwardedHtml}${msgContentHtml}${imgHtml}${postShareHtml}<div class="msg-meta"><span>${formatTime(m.ts)}</span>${tickIcon}</div>`;
+        
+        if(m.reactions) { 
+            let emojiCounts = {};
+            let myReaction = null;
+            
+            Object.keys(m.reactions).forEach(uid => {
+                let emoji = m.reactions[uid];
+                emojiCounts[emoji] = (emojiCounts[emoji] || 0) + 1;
+                if (uid === currentUser.uid) myReaction = emoji;
             });
             
-            // রিসিভার স্ক্রিনে লুপের বাইরে একসাথে মেসেজ সিন আপডেট পাঠানো হচ্ছে (ল্যাগ/ডাবল মেসেজ রিমুভ করতে)
-            if(Object.keys(unreadUpdates).length > 0) {
-                update(ref(db, `messages/${currentChatId}`), unreadUpdates);
-            }
+            let distinctEmojis = Object.keys(emojiCounts).slice(0, 2).join('');
+            let totalReacts = Object.keys(m.reactions).length;
+            let displayCount = totalReacts > 1 ? ` <span style="font-size:0.75rem; font-weight:bold; margin-left:3px;">${totalReacts}</span>` : '';
             
-            const chatRoom = getEl('chat-room'); 
-            chatRoom.scrollTo({ top: chatRoom.scrollHeight, behavior: 'smooth' });
-        });
+            let clickAction = myReaction 
+                ? `onclick="event.stopPropagation(); toggleMessageReaction('${m.id || ''}', '${myReaction}')"` 
+                : `onclick="event.stopPropagation(); window.showContextMenu && window.showContextMenu(event, '${m.id || ''}', '${(m.txt||'').replace(/'/g, "\\'")}', ${isMe})"`;
+            
+            let bgStyle = myReaction 
+                ? 'background: rgba(0, 188, 212, 0.2); border: 1px solid var(--primary-color);' 
+                : 'background: var(--bg-card); border: 1px solid var(--border-color);';
+
+            html += `<div class="msg-reaction-badge" ${clickAction} style="position:absolute; bottom:-12px; right: 10px; padding:3px 8px; border-radius:12px; font-size:0.9rem; box-shadow:0 2px 5px rgba(0,0,0,0.1); cursor:pointer; z-index:5; display:flex; align-items:center; ${bgStyle}">
+                ${distinctEmojis}${displayCount}
+            </div>`; 
+        }
+        return html;
+    };
+
+    // ১. নতুন মেসেজ এড হওয়া (Glitch-free appending)
+    window.unsubMsgAdded = onChildAdded(query(ref(db, `messages/${currentChatId}`), limitToLast(50)), s => {
+        const skeleton = msgList.querySelector('.is-skeleton');
+        if (skeleton) skeleton.remove(); // ডাটা আসার পর স্কেলিটন মুছে ফেলা
+
+        const m = s.val(); 
+        const msgId = s.key;
+        
+        // যদি মেসেজ হাইড করা থাকে
+        if (m.hiddenFor && m.hiddenFor[currentUser.uid] && !window.showHiddenMessages) return;
+        
+        // Seen স্ট্যাটাস আপডেট
+        if(m.from !== currentUser.uid && !m.seen) {
+            update(ref(db, `messages/${currentChatId}/${msgId}`), { seen: true });
+        }
+        
+        // Date Divider
+        const msgDate = getFriendlyDate(m.ts);
+        if(msgDate !== lastDate) { 
+            const dateDiv = document.createElement('div');
+            dateDiv.className = 'date-divider';
+            dateDiv.innerHTML = `<span class="date-pill">${msgDate}</span>`;
+            msgList.appendChild(dateDiv);
+            lastDate = msgDate; 
+        }
+        
+        const isMe = m.from === currentUser.uid; 
+        const d = document.createElement('div'); 
+        d.id = `msg-${msgId}`;
+        d.className = `message-bubble ${isMe ? 'msg-me' : 'msg-other'}`;
+        
+        d.innerHTML = getMessageInnerHtml(m, isMe);
+        addLongPressListener(d, msgId, m.txt, isMe);
+        
+        // Selection Mode এ মেসেজে ক্লিক করলে সিলেক্ট/আনসিলেক্ট হবে
+        d.onclick = (e) => {
+            if (window.isSelectionMode) {
+                e.stopPropagation(); // সিলেকশন মোডে থাকলে ইমেজ ওপেন হতে বাধা দেবে
+                e.preventDefault();
+                
+                if (!isMe) {
+                    showToast("You can only select your own messages.");
+                    return;
+                }
+                toggleMessageSelection(msgId);
+            }
+        };
+        
+        msgList.appendChild(d); // (এটি আগে থেকেই ছিল)
+        
+        // স্ক্রল সবসময় নিচে রাখা
+        chatRoom.scrollTop = chatRoom.scrollHeight;
+    });
+
+    // ২. মেসেজ চেঞ্জ হওয়া (Read receipt, Reaction) - শুধুমাত্র ওই মেসেজটি আপডেট হবে!
+    window.unsubMsgChanged = onChildChanged(ref(db, `messages/${currentChatId}`), s => {
+        const m = s.val();
+        const msgId = s.key;
+        const existingDiv = document.getElementById(`msg-${msgId}`);
+        
+        // যদি মেসেজটি পরে হাইড করা হয়
+        if (m.hiddenFor && m.hiddenFor[currentUser.uid] && !window.showHiddenMessages) {
+            if(existingDiv) existingDiv.remove();
+            return;
+        }
+
+        if (existingDiv) {
+            const isMe = m.from === currentUser.uid;
+            existingDiv.innerHTML = getMessageInnerHtml(m, isMe);
+        }
+    });
+
+    // ৩. মেসেজ রিমুভ/ডিলিট হওয়া
+    window.unsubMsgRemoved = onChildRemoved(ref(db, `messages/${currentChatId}`), s => {
+        const msgId = s.key;
+        const existingDiv = document.getElementById(`msg-${msgId}`);
+        if (existingDiv) {
+            existingDiv.style.transform = 'scale(0.8)';
+            existingDiv.style.opacity = '0';
+            existingDiv.style.transition = 'all 0.3s ease';
+            setTimeout(() => existingDiv.remove(), 300);
+        }
+    });
 
 // --- Receiver Typing Listener (Fix Applied) ---
         if (unsubTypingStatus) { unsubTypingStatus(); unsubTypingStatus = null; }
@@ -3731,30 +4208,176 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
 
     function addLongPressListener(el, msgId, txt, isMe) {
         let timer;
-        const start = (e) => { if(e.type === 'touchstart') e.preventDefault(); timer = setTimeout(() => showContextMenu(e, msgId, txt, isMe), 500); };
-        const end = () => clearTimeout(timer);
-        el.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
-        el.addEventListener('mousedown', start); el.addEventListener('touchstart', start); 
-        el.addEventListener('mouseup', end); el.addEventListener('touchend', end);
+        let isPressing = false;
+
+        const start = (e) => { 
+            isPressing = true;
+            timer = setTimeout(() => {
+                if (isPressing) {
+                    window.justLongPressed = true; // লং-প্রেস হয়েছে, তাই ক্লিক ব্লক করা হবে
+                    setTimeout(() => window.justLongPressed = false, 500); // আধা সেকেন্ড পর আবার ক্লিক কাজ করবে
+                    
+                    showContextMenu(e, msgId, txt, isMe);
+                }
+            }, 500); 
+        };
+        const end = () => {
+            isPressing = false;
+            clearTimeout(timer);
+        };
+        
+        // ব্রাউজারের ডিফল্ট পপ-আপ (যেমন: Save Image) ব্লক করা
+        el.oncontextmenu = (e) => { e.preventDefault(); return false; };
+
+        el.addEventListener('mousedown', start); 
+        el.addEventListener('touchstart', start, {passive: true}); 
+        el.addEventListener('mouseup', end); 
+        el.addEventListener('touchend', end);
+        el.addEventListener('touchmove', end); // স্ক্রল করলে লং-প্রেস বাতিল হবে
     }
+
+    // মেনু ফোর্স ক্লোজ করার গ্লোবাল ফাংশন (যাতে কোনো লিসেনার জমে না থাকে)
+    window.hideContextMenuForce = () => {
+        const menu = document.getElementById('context-menu');
+        if (menu) menu.style.display = 'none';
+        // মেনু হাইড হওয়ার সাথে সাথে সব লিসেনার ক্লিয়ার করা হবে
+        document.removeEventListener('click', window.closeContextMenuGlobal);
+        document.removeEventListener('touchstart', window.closeContextMenuGlobal);
+    };
+
+    // বাইরে ক্লিক করলে মেনু ক্লোজ করার ফাংশন
+    window.closeContextMenuGlobal = (ev) => {
+        const menu = document.getElementById('context-menu');
+        // মেনুর ভেতরে ক্লিক করলে এটি কাজ করবে না (কারণ ভেতরের বাটনগুলো নিজেদের কাজ করবে)
+        if (ev && menu.contains(ev.target)) return; 
+        
+        window.hideContextMenuForce();
+    };
 
     function showContextMenu(e, msgId, txt, isMe) {
-        selectedMsgId = msgId; const menu = getEl('context-menu'); menu.style.display = 'flex';
-        let x = e.clientX || e.touches[0].clientX; let y = e.clientY || e.touches[0].clientY;
-        if(x + 150 > window.innerWidth) x = window.innerWidth - 160; if(y + 200 > window.innerHeight) y = window.innerHeight - 210;
-        menu.style.left = x + 'px'; menu.style.top = y + 'px';
-        getEl('ctx-delete').onclick = () => { if(isMe) remove(ref(db, `messages/${currentChatId}/${msgId}`)); menu.style.display = 'none'; };
-        getEl('ctx-copy').onclick = () => { copyToClipboard(txt); menu.style.display = 'none'; };
-        getEl('ctx-reply').onclick = () => { getEl('msg-input').value = `Replying to: "${txt.substring(0,10)}..." `; menu.style.display = 'none'; };
-        document.querySelectorAll('.reaction-emoji').forEach(elem => { elem.onclick = () => { update(ref(db, `messages/${currentChatId}/${msgId}/reactions`), {[currentUser.uid]: elem.dataset.r }); menu.style.display = 'none'; } });
-        const close = (ev) => { if(!menu.contains(ev.target)) { menu.style.display='none'; document.removeEventListener('click', close); } };
-        setTimeout(() => document.addEventListener('click', close), 100);
-    }
+        window.hideContextMenuForce(); // আগের কোনো মেনু খোলা থাকলে তা ক্লিন করবে
+        
+        selectedMsgId = msgId; 
+        const menu = getEl('context-menu'); 
+        menu.style.display = 'flex';
+        
+        // CSS দিয়ে সেন্টারে করা আছে, তাই ইনলাইন স্টাইল ক্লিয়ার করে দেওয়া হলো
+        menu.style.left = ''; 
+        menu.style.top = ''; 
+        
+        // --- বাটনগুলোর লজিক সেট করা ---
+        const delBtn = getEl('ctx-delete');
+        if(isMe) { delBtn.style.display = 'flex'; } else { delBtn.style.display = 'none'; }
+        
+        delBtn.onclick = () => { 
+            if(isMe) remove(ref(db, `messages/${currentChatId}/${msgId}`)); 
+            window.hideContextMenuForce(); 
+        };
+        
+        getEl('ctx-copy').onclick = () => { 
+            copyToClipboard(txt); 
+            window.hideContextMenuForce(); 
+        };
+        
+        getEl('ctx-reply').onclick = () => { 
+            getEl('msg-input').value = `Replying to: "${txt.substring(0,10)}..." `; 
+            window.hideContextMenuForce(); 
+        };
+        
+        getEl('ctx-forward').onclick = async () => { 
+            window.hideContextMenuForce(); 
+            // ডাটাবেস থেকে মেসেজের ছবি এবং টেক্সট নিয়ে আসা
+            const snap = await get(ref(db, `messages/${currentChatId}/${msgId}`));
+            if(snap.exists()) {
+                const msgData = snap.val();
+                window.openForwardModal(msgData.txt, msgData.img);
+            }
+        };
 
-    const picker = getEl('emoji-picker'); const input = getEl('msg-input');
-    getEl('btn-emoji').onclick = (e) => { e.stopPropagation(); toggleClass('emoji-picker', 'show'); };
-    picker.addEventListener('emoji-click', event => { input.value += event.detail.unicode; toggleClass('emoji-picker', 'show', false); input.focus(); });
-    document.addEventListener('click', (e) => { if (!picker.contains(e.target) && e.target.id !== 'btn-emoji') picker.classList.remove('show'); });
+        getEl('ctx-hide').onclick = () => {
+            update(ref(db, `messages/${currentChatId}/${msgId}/hiddenFor`), { [currentUser.uid]: true });
+            showToast("Message hidden for you.");
+            window.hideContextMenuForce(); 
+        };
+        
+        getEl('ctx-select').onclick = () => { 
+            if(!isMe) {
+                showToast("You can only select your own messages to delete.");
+                window.hideContextMenuForce(); 
+                return;
+            }
+            startSelectionMode(msgId); 
+            window.hideContextMenuForce(); 
+        };
+
+        // --- Reaction লজিক ---
+        document.querySelectorAll('.reaction-emoji').forEach(elem => { 
+            elem.onclick = () => { 
+                toggleMessageReaction(msgId, elem.dataset.r); 
+                window.hideContextMenuForce(); 
+            } 
+        });
+
+        // --- Custom '+' Reaction Button লজিক ---
+        const plusBtn = getEl('btn-custom-reaction');
+        if (plusBtn) {
+            plusBtn.onclick = (ev) => {
+                ev.stopPropagation();
+                window.hideContextMenuForce(); // মেনু হাইড করবে
+                
+                // Emoji picker ওপেন করবে
+                window.emojiPickerTarget = 'reaction';
+                window.reactionMsgId = msgId;
+                const picker = getEl('emoji-picker');
+                picker.style.left = '50%';
+                picker.style.transform = 'translateX(-50%)'; 
+                picker.classList.add('show');
+            };
+        }
+        
+        // মেনু ওপেন হওয়ার ১০০ms পর বাইরে ক্লিক করার লিসেনার অ্যাক্টিভ হবে
+        setTimeout(() => {
+            document.addEventListener('click', window.closeContextMenuGlobal);
+            // টাচ স্ক্রিনের জন্য আলাদা লিসেনার (এটিই স্ক্রিন ফ্রিজ হওয়া থেকে বাঁচাবে)
+            document.addEventListener('touchstart', window.closeContextMenuGlobal, {passive: true});
+        }, 100);
+    };
+
+    const picker = getEl('emoji-picker'); 
+    const input = getEl('msg-input');
+    
+    window.emojiPickerTarget = 'input'; // ডিফল্টভাবে ইনপুট বক্স
+    window.reactionMsgId = null;
+
+    getEl('btn-emoji').onclick = (e) => { 
+        e.stopPropagation(); 
+        window.emojiPickerTarget = 'input';
+        picker.style.left = '10px';
+        picker.style.transform = 'none'; // পজিশন ঠিক করা
+        picker.classList.toggle('show'); 
+    };
+
+    // ইমোজি সিলেক্ট করলে সেটি রিয়েকশন হবে নাকি মেসেজ হবে তার লজিক
+    picker.addEventListener('emoji-click', event => { 
+        const emoji = event.detail.unicode;
+        picker.classList.remove('show'); 
+
+        if (window.emojiPickerTarget === 'reaction' && window.reactionMsgId) {
+            // Custom Reaction পাঠানো
+            window.toggleMessageReaction(window.reactionMsgId, emoji);
+        } else {
+            // Input Text এ ইমোজি যুক্ত করা
+            input.value += emoji; 
+            input.focus(); 
+        }
+    });
+
+    // স্ক্রিনের যেকোনো জায়গায় ক্লিক করলে পিকার হাইড হওয়া
+    document.addEventListener('click', (e) => { 
+        if (!picker.contains(e.target) && e.target.id !== 'btn-emoji' && !e.target.closest('#btn-custom-reaction')) {
+            picker.classList.remove('show'); 
+        }
+    });
 
     window.uploadChatImageToImgBB = async () => {
         const fileInput = getEl('chat-imgbb-file');
@@ -3792,7 +4415,92 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
             fileInput.value = ''; 
         }
     };
+// ==========================================
+    // PIN CHAT & DELETE CONVERSATION LOGIC
+    // ==========================================
 
+    window.showChatListContextMenu = (e, targetId, targetName, isPinned, isGrp) => {
+        const menu = getEl('chatlist-context-menu');
+        menu.style.display = 'flex';
+
+        // মাউস/টাচ পজিশন অনুযায়ী মেনু বসানো
+        let x = e.clientX || (e.touches && e.touches[0].clientX);
+        let y = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        if (x + 180 > window.innerWidth) x = window.innerWidth - 190; 
+        if (y + 100 > window.innerHeight) y = window.innerHeight - 110;
+        menu.style.left = x + 'px'; 
+        menu.style.top = y + 'px';
+
+        // Pinned Status চেক করে টেক্সট ও আইকন পরিবর্তন
+        const pinSpan = menu.querySelector('#ctx-pin-chat span');
+        const pinIcon = menu.querySelector('#ctx-pin-chat i');
+        if (isPinned) {
+            pinSpan.innerText = "Unpin Chat";
+            pinIcon.className = "fas fa-thumbtack";
+            pinIcon.style.transform = "rotate(45deg)";
+        } else {
+            pinSpan.innerText = "Pin Chat";
+            pinIcon.className = "fas fa-thumbtack";
+            pinIcon.style.transform = "rotate(0deg)";
+        }
+
+        // Pin Button Action
+        getEl('ctx-pin-chat').onclick = () => {
+            update(ref(db, `contacts/${currentUser.uid}/${targetId}`), { pinned: !isPinned });
+            showToast(isPinned ? "Chat Unpinned" : "Chat Pinned!");
+            menu.style.display = 'none';
+        };
+
+        // Delete Button Action
+        getEl('ctx-delete-chat').onclick = () => {
+            getEl('delete-chat-target-name').innerText = targetName;
+            getEl('delete-chat-target-id').value = targetId;
+            getEl('delete-chat-is-group').value = isGrp;
+            toggleModal('delete-chat-modal', true);
+            menu.style.display = 'none';
+        };
+
+        // মেনুর বাইরে ক্লিক করলে হাইড হবে
+        const closeMenu = (ev) => {
+            if(!menu.contains(ev.target)) {
+                menu.style.display = 'none';
+                document.removeEventListener('click', closeMenu);
+            }
+        };
+        setTimeout(() => document.addEventListener('click', closeMenu), 100);
+    };
+
+    // সব মেসেজ ডাটাবেস থেকে ডিলিট করার ফাংশন
+    window.executeDeleteConversation = async () => {
+        const targetId = getEl('delete-chat-target-id').value;
+        const isGrp = getEl('delete-chat-is-group').value === 'true';
+
+        const btn = getEl('btn-confirm-delete-chat');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+        btn.disabled = true;
+
+        try {
+            // ১. নিজের চ্যাট লিস্ট থেকে হাইড করে দেওয়া
+            await remove(ref(db, `contacts/${currentUser.uid}/${targetId}`));
+
+            // ২. দুইজনের চ্যাটের 'সব মেসেজ' ডাটাবেস থেকে পার্মানেন্ট ডিলিট করা
+            let chatId = isGrp ? targetId : (currentUser.uid < targetId ? `${currentUser.uid}_${targetId}` : `${targetId}_${currentUser.uid}`);
+            
+            await remove(ref(db, `messages/${chatId}`)); // সব মেসেজ ডিলিট
+            await remove(ref(db, `typing/${chatId}`));   // টাইপিং স্ট্যাটাস ডিলিট
+
+            showToast("Conversation deleted permanently.");
+        } catch (e) {
+            console.error(e);
+            showToast("Error deleting conversation.");
+        }
+
+        // মডেল ক্লোজ ও বাটন রিসেট
+        toggleModal('delete-chat-modal', false);
+        btn.innerHTML = 'Delete';
+        btn.disabled = false;
+    };
     window.openImageUrlPrompt = () => {
         const url = prompt("Enter Image/Video URL to send:");
         if(url && url.startsWith('http')) { 
@@ -3811,50 +4519,140 @@ notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
 
     function isBlocked(uid) { return blockedUsers.includes(uid); }
 
+// --- MENTION SYSTEM LOGIC (UPDATED) ---
+const mentionPopup = document.getElementById('mention-popup');
+let activeInput = null;
+let mentionStartIndex = -1;
+window.mentionedUsers = [];
+
+const handleMentionInput = (e) => {
+    activeInput = e.target;
+    const cursorPosition = activeInput.selectionStart;
+    const textToCursor = activeInput.value.slice(0, cursorPosition);
+    
+    // নতুন রেগুলার এক্সপ্রেশন, যা ডাবল @ এর সমস্যা দূর করবে
+    const match = textToCursor.match(/@([a-zA-Z0-9_]*)$/);
+
+    if (match) {
+        const query = match[1].toLowerCase();
+        mentionStartIndex = match.index; // ঠিক @ এর ইনডেক্স ধরবে
+        
+        // কিবোর্ড ওপেন থাকলেও পপআপ ঠিক ইনপুটের উপরে বসবে
+        const rect = activeInput.getBoundingClientRect();
+        mentionPopup.style.left = '10px';
+        mentionPopup.style.width = 'calc(100% - 20px)';
+        mentionPopup.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+
+        showMentionPopup(query);
+    } else {
+        hideMentionPopup();
+    }
+};
+
+// চ্যাট এবং কমেন্ট—উভয় ইনপুটে ইভেন্ট যুক্ত করা হলো
+document.getElementById('msg-input').addEventListener('input', handleMentionInput);
+document.getElementById('comment-input').addEventListener('input', handleMentionInput);
+
+// নতুন: পোস্ট ক্রিয়েট এবং এডিট বক্সে মেনশন চালু করা
+document.getElementById('post-caption').addEventListener('input', handleMentionInput);
+document.getElementById('edit-post-caption').addEventListener('input', handleMentionInput);
+
+function showMentionPopup(query) {
+    let searchList = myFriends; // চাইলে সাজেস্ট লিস্টও দিতে পারেন
+    let filtered = searchList.filter(u => u.name.replace(/\s+/g, '').toLowerCase().includes(query));
+
+    if (filtered.length === 0) { hideMentionPopup(); return; }
+
+    mentionPopup.innerHTML = '';
+    filtered.forEach(u => {
+        let div = document.createElement('div');
+        div.className = 'mention-item';
+        div.innerHTML = `<img src="${u.dpUrl}" class="mention-avatar"> <span class="mention-name">${u.name}</span>`;
+        
+        div.onclick = () => {
+            const val = activeInput.value;
+            const before = val.slice(0, mentionStartIndex); // @ এর আগের অংশ
+            const after = val.slice(activeInput.selectionStart);
+            const mentionText = u.name.replace(/\s+/g, ''); 
+            
+            // আগে থেকে থাকা @ রিমুভ হয়ে ফ্রেশ ভাবে একটি @ বসবে
+            activeInput.value = before + '@' + mentionText + ' ' + after;
+            
+            window.mentionedUsers.push({ uid: u.uid, mentionName: '@' + mentionText });
+            
+            hideMentionPopup();
+            activeInput.focus();
+        };
+        mentionPopup.appendChild(div);
+    });
+    mentionPopup.classList.add('show');
+}
+
+function hideMentionPopup() {
+    mentionPopup.classList.remove('show');
+    mentionStartIndex = -1;
+}
+
+document.addEventListener('click', (e) => {
+    if (!mentionPopup.contains(e.target) && e.target !== activeInput) {
+        hideMentionPopup();
+    }
+});
+
 // --- Message Send Button Logic (Fixed) ---
 getEl('send-msg-btn').onclick = async () => {
     if(!isGroupChat && isBlocked(currentChatUser.uid)) return alert("You blocked this user.");
     
     const inp = getEl('msg-input'); 
-    const txt = inp.value.trim();
+    const txt = inp.value.trim(); // সব স্পেস মুছে ফেলবে
     
-    if(txt || pendingImageUrl) { 
-        const tsNow = Date.now();
-        
-        // ১. ডাটাবেসে মেসেজ সেভ করা
-        await push(ref(db, `messages/${currentChatId}`), { 
-            from: currentUser.uid, 
-            txt: txt, 
-            img: pendingImageUrl || null, 
-            ts: serverTimestamp(), 
-            seen: false 
-        }); 
+    // STRICT CHECK: যদি টেক্সট এবং ছবি কোনোটাই না থাকে, তবে মেসেজ সেন্ড হবে না!
+    if(!txt && !pendingImageUrl) return; 
+    
+    // বাটনটিকে সাময়িক লক করা হলো (যাতে ডাবল ক্লিক না পড়ে)
+    const btn = getEl('send-msg-btn');
+    btn.style.pointerEvents = 'none';
+    
+    const tsNow = Date.now();
+    
+    // ১. ডাটাবেসে মেসেজ সেভ করা
+    await push(ref(db, `messages/${currentChatId}`), { 
+        from: currentUser.uid, 
+        txt: txt, 
+        img: pendingImageUrl || null, 
+        ts: serverTimestamp(), 
+        seen: false 
+    }); 
 
-        // ২. নোটিফিকেশন পাঠানো (নতুন কোড)
-        if (!isGroupChat && currentChatUser) {
-            let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
-            notifyNewMessage(currentChatUser.uid, myName, currentUser.uid, window.myDpUrl, currentChatId);
-        }
-
-        // ৩. কন্ট্যাক্ট লিস্টে লাস্ট মেসেজের টাইম আপডেট করা
-        const updates = {};
-        if(!isGroupChat) { 
-            updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; 
-            updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; 
-        }
-        if(Object.keys(updates).length > 0) update(ref(db), updates);
-        
-        // ৪. ইনপুট বক্স এবং ইমেজ প্রিভিউ ক্লিয়ার করা
-        inp.value = ''; 
-        clearImagePreview(); 
-        
-        // ৫. টাইপিং ইন্ডিকেটর রিমুভ করা
-        if(!isGroupChat && currentChatId) {
-            set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
-            if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
-        }
+    // ২. কন্ট্যাক্ট লিস্টে লাস্ট মেসেজের টাইম আপডেট করা
+    const updates = {};
+    if(!isGroupChat) { 
+        updates[`contacts/${currentUser.uid}/${currentChatUser.uid}/lastTs`] = tsNow; 
+        updates[`contacts/${currentChatUser.uid}/${currentUser.uid}/lastTs`] = tsNow; 
     }
+    if(Object.keys(updates).length > 0) update(ref(db), updates);
+    
+    // ৩. ইনপুট বক্স এবং ইমেজ প্রিভিউ ক্লিয়ার করা
+    inp.value = ''; 
+    clearImagePreview(); 
+    
+    // ৪. টাইপিং ইন্ডিকেটর রিমুভ করা
+    if(!isGroupChat && currentChatId) {
+        set(ref(db, `typing/${currentChatId}/${currentUser.uid}`), null);
+        if(typingTimeoutTimer) clearTimeout(typingTimeoutTimer);
+    }
+    
+    // বাটনটি আবার আনলক করা হলো
+    setTimeout(() => { btn.style.pointerEvents = 'auto'; }, 500);
 };
+
+// এন্টার (Enter) বাটন চাপলে সেন্ড হওয়ার সিকিউর লজিক যুক্ত করা হলো
+getEl('msg-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        getEl('send-msg-btn').click();
+    }
+});
   
     getEl('btn-group-options').onclick = () => { const menu = getEl('group-dropdown'); menu.style.display = menu.style.display === 'block' ? 'none' : 'block'; };
     getEl('btn-leave-group').onclick = async () => { if(confirm("Leave this group?")) { await remove(ref(db, `contacts/${currentUser.uid}/${currentChatUser.uid}`)); showToast("Left group"); toggleModal('chat-interface', false); } };
@@ -4069,6 +4867,16 @@ else div.classList.remove('has-more');
             let textMsg = '', icon = '', actionHtml = '';
             if(n.type === 'like') { textMsg = 'liked your post.'; icon = '<i class="fas fa-heart" style="color:var(--danger)"></i>'; actionHtml = `onclick="openSinglePost('${n.postId}'); isRequestsTabActive=true;"`; }
             else if(n.type === 'comment') { textMsg = `commented: "${n.text.substring(0, 20)}..."`; icon = '<i class="fas fa-comment" style="color:var(--primary-color)"></i>'; actionHtml = `onclick="openSinglePost('${n.postId}'); isRequestsTabActive=true;"`; }
+            else if(n.type === 'mention_comment') { 
+    textMsg = `mentioned you in a comment: "${n.text.substring(0, 20)}..."`; 
+    icon = '<i class="fas fa-at" style="color:var(--primary-color)"></i>'; 
+    actionHtml = `onclick="openSinglePost('${n.postId}'); isRequestsTabActive=true;"`; 
+}
+else if(n.type === 'mention_post') { 
+    textMsg = `mentioned you in a post: "${n.text.substring(0, 20)}..."`; 
+    icon = '<i class="fas fa-at" style="color:var(--primary-color)"></i>'; 
+    actionHtml = `onclick="openSinglePost('${n.postId}'); isRequestsTabActive=true;"`; 
+}
             else if(n.type === 'follow') { textMsg = 'started following you.'; icon = '<i class="fas fa-user-plus" style="color:var(--primary-color)"></i>'; actionHtml = `onclick="loadProfileById('${n.fromUid}')"`; }
 
             const elWrapper = document.createElement('div');
@@ -4296,38 +5104,99 @@ else div.classList.remove('has-more'); // New code
     callLogsContainer.addEventListener('pointercancel', (e) => { if (!activeSwipeEl) return; activeSwipeEl.style.transition = 'transform 0.3s ease-out'; activeSwipeEl.style.transform = `translateX(0)`; activeSwipeEl.releasePointerCapture(e.pointerId); activeSwipeEl = null; activeLogId = null; currentSwipeX = 0; });
 
     window.updatePostPreview = () => {
-        const urlInput = getEl('post-img-url').value;
-        const urls = urlInput.split(',').map(u => u.trim()).filter(u => u);
-        const img = getEl('post-preview-img');
-        if(urls.length > 0 && urls[0].startsWith('http')) { img.src = urls[0]; img.classList.remove('hidden'); } 
-        else { img.classList.add('hidden'); img.src = ''; }
+        const urlInput = getEl('post-img-url');
+        // কমা দিয়ে আলাদা করা URL গুলোকে লিস্টে রূপান্তর করা
+        const urls = urlInput.value.split(',').map(u => u.trim()).filter(u => u && u.startsWith('http'));
+        const container = getEl('post-preview-container');
+
+        container.innerHTML = ''; // আগের প্রিভিউ ক্লিয়ার করা
+
+        if (urls.length > 0) {
+            container.classList.remove('hidden');
+            
+            // লুপ চালিয়ে প্রতিটি ছবির জন্য প্রিভিউ তৈরি করা
+            urls.forEach((url, index) => {
+                const isVid = window.isVideoURL(url);
+                const wrap = document.createElement('div');
+                wrap.className = 'preview-item-wrap';
+                
+                const mediaHtml = isVid 
+                    ? `<video src="${url}" autoplay muted loop playsinline></video>`
+                    : `<img src="${url}" loading="lazy">`;
+
+                wrap.innerHTML = `
+                    ${mediaHtml}
+                    <div class="preview-item-remove" onclick="removePostPreview(${index})"><i class="fas fa-times"></i></div>
+                `;
+                container.appendChild(wrap);
+            });
+        } else {
+            container.classList.add('hidden');
+        }
+    };
+
+    // প্রিভিউ থেকে কোনো ছবি ডিলিট করার ফাংশন
+    window.removePostPreview = (index) => {
+        const urlInput = getEl('post-img-url');
+        let urls = urlInput.value.split(',').map(u => u.trim()).filter(u => u && u.startsWith('http'));
+        
+        urls.splice(index, 1); // নির্দিষ্ট ছবিটি লিস্ট থেকে রিমুভ করা
+        urlInput.value = urls.join(', '); // বাকি ছবিগুলো দিয়ে ইনপুট বক্স আপডেট করা
+        
+        updatePostPreview(); // প্রিভিউ রিফ্রেশ করা
     };
 
     window.submitPost = async () => {
-        const txt = getEl('post-caption').value.trim();
-        const imgUrl = getEl('post-img-url').value.trim();
-        const visibility = getEl('post-privacy').value;
-        const location = getEl('post-location').value.trim();
-        if(!txt && !imgUrl) return alert("Write something or add a photo/video.");
+    const txt = getEl('post-caption').value.trim();
+    const imgUrl = getEl('post-img-url').value.trim();
+    const visibility = getEl('post-privacy').value;
+    const location = getEl('post-location').value.trim();
+    if(!txt && !imgUrl) return alert("Write something or add a photo/video.");
 
-        const btn = getEl('btn-submit-post'); btn.disabled = true; btn.innerText = "Posting...";
-        await push(ref(db, 'posts'), { 
-    uid: currentUser.uid, 
-    text: txt, 
-    img: imgUrl || null, 
-    visibility: visibility, 
-    location: location || null, 
-    views: 0, 
-    ts: serverTimestamp(),
-    createdDate: new Date().toLocaleString() // এডমিন প্যানেলের জন্য
-});
-        
-        getEl('post-caption').value = ''; getEl('post-img-url').value = ''; getEl('post-location').value = ''; getEl('post-preview-img').classList.add('hidden');
-        btn.disabled = false; btn.innerText = "Post";
-        toggleModal('create-post-modal', false); showToast("Posted successfully!");
-        
-        document.querySelector('.nav-item[data-tab="feed"]').click(); 
-    };
+    const btn = getEl('btn-submit-post'); btn.disabled = true; btn.innerText = "Posting...";
+    
+    // নতুন পদ্ধতি: পুশ করার আগেই পোস্টের আইডি তৈরি করে নেওয়া
+    const newPostRef = push(ref(db, 'posts'));
+    const postId = newPostRef.key;
+
+    await set(newPostRef, { 
+        uid: currentUser.uid, 
+        text: txt, 
+        img: imgUrl || null, 
+        visibility: visibility, 
+        location: location || null, 
+        views: 0, 
+        ts: serverTimestamp(),
+        createdDate: new Date().toLocaleString()
+    });
+
+    // --- NEW: Mention Notification for Posts ---
+    if (window.mentionedUsers && window.mentionedUsers.length > 0) {
+        window.mentionedUsers.forEach(mu => {
+            if (txt.includes(mu.mentionName) && mu.uid !== currentUser.uid) {
+                push(ref(db, `user_notifications/${mu.uid}`), {
+                    type: 'mention_post',
+                    fromUid: currentUser.uid,
+                    postId: postId,
+                    text: txt,
+                    ts: serverTimestamp()
+                });
+            }
+        });
+        window.mentionedUsers = []; // ক্লিয়ার করা
+    }
+    // ------------------------------------------
+    
+    getEl('post-caption').value = ''; 
+    getEl('post-img-url').value = ''; 
+    getEl('post-location').value = ''; 
+    getEl('post-preview-container').innerHTML = ''; 
+    getEl('post-preview-container').classList.add('hidden');
+    btn.disabled = false; btn.innerText = "Post";
+    toggleModal('create-post-modal', false); showToast("Posted successfully!");
+    
+    document.querySelector('.nav-item[data-tab="feed"]').click(); 
+};
 
     window.toggleCaption = (id) => {
         const el = getEl(`caption-${id}`);
@@ -4459,10 +5328,10 @@ if (isAdsterra) {
                     const cleanSrc = src.trim();
                     const isVid = window.isVideoURL(cleanSrc);
                     return `
-                        <div>
+                        <div style="container-type: inline-size; position: relative;">
                           ${isVid 
-    ? `<video src="${cleanSrc}" class="post-img feed-video" style="width:100%; border-radius:15px; margin-bottom:0;" controls playsinline loop></video>`
-    : `<img src="${cleanSrc}" class="post-img" style="width:100%; border-radius:15px; margin-bottom:0;" loading="lazy" onclick="window.open('${cleanSrc}','_blank')">`
+    ? `<video src="${cleanSrc}" class="post-img feed-video" style="width:100%; height:auto; max-height:125cqw; object-fit:cover; object-position:center; border-radius:15px; margin-bottom:0; background: var(--border-color);" controls playsinline loop></video>`
+    : `<img src="${cleanSrc}" class="post-img" style="width:100%; height:auto; max-height:125cqw; object-fit:cover; object-position:center; border-radius:15px; margin-bottom:0; background: var(--border-color);" loading="lazy" onclick="event.stopPropagation(); window.openImageViewer && window.openImageViewer('${cleanSrc}')">`
 }
                             ${images.length > 1 ? `<div style="position:absolute; top:10px; right:10px; background:rgba(0,0,0,0.5); color:white; padding:4px 10px; border-radius:15px; font-size:0.75rem; font-weight:bold;">${i+1}/${images.length}</div>` : ''}
                         </div>
@@ -5051,6 +5920,21 @@ get(ref(db, `posts/${postId}/img`)).then(snap => {
                         text: txt,
                         ts: serverTimestamp()
                     });
+                    if (window.mentionedUsers && window.mentionedUsers.length > 0) {
+                window.mentionedUsers.forEach(mu => {
+                    // চেক করবে যে ফাইনালে মেসেজে সত্যিই তার মেনশনটা আছে কিনা
+                    if (txt.includes(mu.mentionName) && mu.uid !== currentUser.uid) {
+                        push(ref(db, `user_notifications/${mu.uid}`), {
+                            type: 'mention_comment',
+                            fromUid: currentUser.uid,
+                            postId: activeCommentPostId, // পোস্ট আইডি পাঠানো হচ্ছে
+                            text: txt,
+                            ts: serverTimestamp()
+                        });
+                    }
+                });
+                window.mentionedUsers = []; // ক্লিয়ার করা
+            }
 // --- Send Rich Push Notification ---
 let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
 notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeCommentPostId);
@@ -5104,7 +5988,7 @@ function populateQuickShare(postData) {
     // ফ্রেন্ড লিস্ট রেন্ডার
     myFriends.forEach(f => {
         const itemHtml = `
-            <div class="quick-share-item share-user-item" data-name="${f.name.toLowerCase()}" onclick="quickSendInternal('${f.uid}', this, '${(postData.text || '').replace(/'/g, "\\'")}', '${(postData.img || '').split(',')[0]}')">
+            <div class="quick-share-item share-user-item" data-name="${f.name.toLowerCase()}" onclick="toggleShareSelect('${f.uid}', this)">
                 <div style="position:relative;">
                     <img src="${f.dpUrl}" class="quick-share-avatar">
                     <div class="sent-overlay"><i class="fas fa-check-circle"></i></div>
@@ -5156,7 +6040,234 @@ window.quickSendInternal = async (targetUid, element, postText, postImg) => {
     trackShareAnalytics(postId, 'internal');
     showToast("Sent to chat!");
 };
+// ==========================================
+    // MULTIPLE MESSAGE SELECTION & DELETION
+    // ==========================================
+    window.isSelectionMode = false;
+    window.selectedMessageIds = new Set();
 
+    window.startSelectionMode = (msgId) => {
+        window.isSelectionMode = true;
+        window.selectedMessageIds.clear();
+        getEl('chat-selection-header').classList.remove('hidden');
+        toggleMessageSelection(msgId); // প্রথম মেসেজটি সিলেক্ট করা
+    };
+
+    window.toggleMessageSelection = (msgId) => {
+        const el = document.getElementById(`msg-${msgId}`);
+        if (!el) return;
+
+        if (window.selectedMessageIds.has(msgId)) {
+            window.selectedMessageIds.delete(msgId);
+            el.classList.remove('selected-msg');
+        } else {
+            window.selectedMessageIds.add(msgId);
+            el.classList.add('selected-msg');
+        }
+
+        getEl('selection-count').innerText = `${window.selectedMessageIds.size} Selected`;
+
+        // যদি সব আনসিলেক্ট হয়ে যায়, তবে সিলেকশন মোড বন্ধ করে দেওয়া
+        if (window.selectedMessageIds.size === 0) {
+            cancelSelectionMode();
+        }
+    };
+
+    window.cancelSelectionMode = (e) => {
+        if(e) e.stopPropagation(); // ক্লিক নিচে যাওয়া বন্ধ করবে
+        window.isSelectionMode = false;
+        
+        window.selectedMessageIds.forEach(id => {
+            const el = document.getElementById(`msg-${id}`);
+            if (el) el.classList.remove('selected-msg');
+        });
+        
+        window.selectedMessageIds.clear();
+        getEl('chat-selection-header').classList.add('hidden');
+    };
+
+    window.deleteSelectedMessages = async (e) => {
+        if(e) e.stopPropagation(); // ক্লিক নিচে যাওয়া বন্ধ করবে
+        
+        if (window.selectedMessageIds.size === 0) return;
+        
+        if (confirm(`Are you sure you want to delete ${window.selectedMessageIds.size} messages?`)) {
+            const updates = {};
+            // Firebase Batch Delete
+            window.selectedMessageIds.forEach(id => {
+                updates[id] = null; 
+            });
+            
+            try {
+                await update(ref(db, `messages/${currentChatId}`), updates);
+                showToast(`${window.selectedMessageIds.size} messages deleted.`);
+                cancelSelectionMode();
+            } catch(error) {
+                showToast("Error deleting messages.");
+                console.error(error);
+            }
+        }
+    };
+    // ==========================================
+    // REACTION TOGGLE LOGIC
+    // ==========================================
+    window.toggleMessageReaction = async (msgId, emoji) => {
+        const reactRef = ref(db, `messages/${currentChatId}/${msgId}/reactions/${currentUser.uid}`);
+        const snap = await get(reactRef);
+        
+        if (snap.exists() && snap.val() === emoji) {
+            // যদি আগে থেকেই এই রিয়েকশনটি থাকে, তবে রিমুভ (Remove) করবে
+            await remove(reactRef);
+        } else {
+            // নতুন রিয়েকশন দিলে ডাটাবেসে সেভ করবে
+            await set(reactRef, emoji);
+        }
+    };
+    // ==========================================
+    // FORWARD MESSAGE SYSTEM LOGIC
+    // ==========================================
+    window.openForwardModal = (txt, img) => {
+        window.forwardData = { txt: txt || '', img: img || null };
+        toggleModal('forward-modal', true);
+        renderForwardFriends();
+    };
+
+    window.renderForwardFriends = () => {
+        const listDiv = getEl('forward-friends-list');
+        listDiv.innerHTML = '';
+        if(!myFriends || myFriends.length === 0) {
+            listDiv.innerHTML = '<p style="color:var(--text-grey); text-align:center;">No friends to forward to.</p>';
+            return;
+        }
+        
+        myFriends.forEach(f => {
+            const itemHtml = `
+                <div class="list-item forward-user-item" data-name="${f.name.toLowerCase()}" style="padding: 10px; border-radius: 10px; border: 1px solid var(--border-color); background: var(--bg-card); display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display:flex; align-items:center; gap: 10px;">
+                        <img src="${f.dpUrl}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                        <div style="font-weight: 600; color: var(--text-dark);">${f.name}</div>
+                    </div>
+                    <button class="btn btn-primary" style="padding: 6px 15px; font-size: 0.85rem; border-radius: 20px; transition: 0.2s;" onclick="executeForward('${f.uid}', this)">Send</button>
+                </div>
+            `;
+            listDiv.insertAdjacentHTML('beforeend', itemHtml);
+        });
+    };
+
+    window.filterForwardFriends = () => {
+        const query = getEl('forward-search-input').value.toLowerCase();
+        document.querySelectorAll('.forward-user-item').forEach(el => {
+            if (el.dataset.name.includes(query)) el.style.display = 'flex';
+            else el.style.display = 'none';
+        });
+    };
+
+    window.executeForward = async (targetUid, btnEl) => {
+        // বাটন অ্যানিমেশন ও স্ট্যাটাস চেঞ্জ
+        btnEl.innerText = 'Sent';
+        btnEl.disabled = true;
+        btnEl.style.background = 'var(--success)';
+        btnEl.style.border = 'none';
+
+        let chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+        
+        // ডাটাবেসে মেসেজ পুশ করা (isForwarded: true ট্যাগ সহ)
+        await push(ref(db, `messages/${chatId}`), {
+            from: currentUser.uid,
+            txt: window.forwardData.txt,
+            img: window.forwardData.img,
+            isForwarded: true, 
+            ts: serverTimestamp(),
+            seen: false
+        });
+        
+        const tsNow = Date.now();
+        await update(ref(db), {
+            [`contacts/${currentUser.uid}/${targetUid}/lastTs`]: tsNow,
+            [`contacts/${targetUid}/${currentUser.uid}/lastTs`]: tsNow
+        });
+    };
+    
+window.openImageViewer = (url) => {
+  if(window.isSelectionMode) return;
+    getEl('image-viewer-img').src = url;
+    getEl('image-viewer-img').style.transform = 'scale(1)'; // জুম রিসেট
+    toggleModal('image-viewer-modal', true);
+};
+window.closeImageViewer = () => {
+    toggleModal('image-viewer-modal', false);
+    getEl('image-viewer-img').src = '';
+};
+window.selectedShareUsers = [];
+
+window.toggleShareSelect = (uid, el) => {
+    const idx = selectedShareUsers.indexOf(uid);
+    const overlay = el.querySelector('.sent-overlay');
+    
+    if (idx > -1) {
+        selectedShareUsers.splice(idx, 1);
+        overlay.style.display = 'none';
+    } else {
+        selectedShareUsers.push(uid);
+        overlay.style.display = 'flex';
+        overlay.innerHTML = '<i class="fas fa-check"></i>';
+        overlay.style.color = 'white';
+        overlay.style.background = 'rgba(0,188,212,0.8)'; // সিলেক্টেড স্টাইল
+    }
+    
+    const btn = getEl('btn-send-selected');
+    if(selectedShareUsers.length > 0) {
+        btn.classList.remove('hidden');
+        getEl('share-count-badge').innerText = selectedShareUsers.length;
+    } else {
+        btn.classList.add('hidden');
+    }
+};
+
+window.sendSelectedShares = async () => {
+    const postId = getEl('active-share-post-id').value;
+    const optionalMsg = getEl('share-optional-msg').value.trim();
+    const btn = getEl('btn-send-selected');
+    
+    btn.innerHTML = 'Sending...'; 
+    btn.disabled = true;
+
+    const pSnap = await get(ref(db, `posts/${postId}`));
+    const postData = pSnap.val();
+    const postText = (postData.text || '').substring(0,50);
+    const postImg = (postData.img || '').split(',')[0];
+
+    for (let targetUid of selectedShareUsers) {
+        let chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+        let textToSend = optionalMsg ? optionalMsg : "Check out this post!";
+        
+        await push(ref(db, `messages/${chatId}`), {
+            from: currentUser.uid,
+            txt: textToSend,
+            postId: postId,
+            postPreviewText: postText,
+            postPreviewImg: postImg,
+            ts: serverTimestamp(),
+            seen: false
+        });
+        
+        const tsNow = Date.now();
+        await update(ref(db), {
+            [`contacts/${currentUser.uid}/${targetUid}/lastTs`]: tsNow,
+            [`contacts/${targetUid}/${currentUser.uid}/lastTs`]: tsNow
+        });
+    }
+    
+    trackShareAnalytics(postId, 'internal');
+    showToast("Successfully sent!");
+    toggleModal('share-post-modal', false);
+    
+    // Reset Data
+    selectedShareUsers = [];
+    btn.innerHTML = 'Send to <span id="share-count-badge">0</span> Friends';
+    btn.disabled = false;
+    btn.classList.add('hidden');
+};
 // --- EXTERNAL SHARE LOGIC ---
 
 window.handleLinkCopy = () => {
@@ -5369,13 +6480,27 @@ if (post.visibility === 'private' && !isPostOwner) {
             // --- Missed Call Logic ---
             // যদি ৩০ সেকেন্ডের মধ্যে কল না ধরে, তবে কল কেটে যাবে এবং মিসড কল নোটিফিকেশন যাবে
             callTimeoutTimer = setTimeout(() => { 
-                if(currentCallId) { 
-                    alert("No Answer"); 
-                    // মিসড কল নোটিফিকেশন পাঠানো হচ্ছে
-                    notifyMissedCall(targetUid, myName, currentUser.uid, window.myDpUrl);
-                    hangup(); 
-                } 
-            }, 30000);
+    if(currentCallId) { 
+        alert("No Answer"); 
+        
+        // Push missed call message explicitly
+        let isVid = window.currentCallType === 'video';
+        let chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+        
+        push(ref(db, `messages/${chatId}`), {
+            from: currentUser.uid,
+            txt: `📞 Missed ${isVid ? 'Video' : 'Voice'} Call`,
+            isCallLog: true,
+            callType: isVid ? 'video' : 'voice',
+            callStatus: 'missed',
+            callDuration: '',
+            ts: serverTimestamp(),
+            seen: false
+        });
+        
+        hangup(); 
+    } 
+}, 30000);
             onValue(child(callRef, 'busy'), (snapshot) => { if(snapshot.val()) { alert("User is busy now"); hangup(); } });
             onValue(child(callRef, 'answer'), async (snapshot) => { const data = snapshot.val(); if (data && !peerConnection.currentRemoteDescription) { if(callTimeoutTimer) clearTimeout(callTimeoutTimer); stopTone(); await peerConnection.setRemoteDescription(new RTCSessionDescription(data)); processIceQueue(); } });
             onChildAdded(child(callRef, 'calleeCand'), (snapshot) => { if(snapshot.val()) handleRemoteCandidate(snapshot.val()); });
@@ -5421,11 +6546,46 @@ if (post.visibility === 'private' && !isPostOwner) {
         if (localStream) { localStream.getTracks().forEach(track => { track.stop(); track.enabled = false; }); localStream = null; }
         getEl('local-video').srcObject = null; getEl('remote-video').srcObject = null; toggleModal('call-screen', false);
 
-        if (currentCallId) {
-             const isVideo = window.currentCallType === 'video'; const name = getEl('call-name').innerText;
-             push(ref(db, `callLogs/${currentUser.uid}`), { type: isVideo ? 'video' : 'voice', with: name, ts: serverTimestamp() });
-             set(ref(db, `users/${currentUser.uid}/incomingCall`), null); if(currentChatUser) set(ref(db, `users/${currentChatUser.uid}/incomingCall`), null); currentCallId = null;
+        // hangup() ফাংশনের ভেতরে নিচের অংশটি যুক্ত করুন
+
+if (currentCallId) {
+    const isVideo = window.currentCallType === 'video'; 
+    const name = getEl('call-name').innerText;
+    push(ref(db, `callLogs/${currentUser.uid}`), { type: isVideo ? 'video' : 'voice', with: name, ts: serverTimestamp() });
+    
+// --- Call Message Bubble Logic ---
+        let durationStr = "Missed Call";
+        if (callStartTime && isInCall) {
+            let diff = Math.floor((Date.now() - callStartTime) / 1000);
+            let m = Math.floor(diff/60);
+            let s = diff % 60;
+            durationStr = m > 0 ? `${m}m ${s}s` : `${s}s`;
+        } else if (!isInCall) {
+            durationStr = "Missed Call";
         }
+
+        let callTypeStr = isVideo ? 'Video Call' : 'Voice Call';
+        let txtMsg = durationStr === "Missed Call" ? `📞 Missed ${callTypeStr}` : `📞 ${callTypeStr} • ${durationStr}`;
+        
+        if (currentChatUser && !isGroupChat) {
+            let chatId = currentUser.uid < currentChatUser.uid ? `${currentUser.uid}_${currentChatUser.uid}` : `${currentChatUser.uid}_${currentUser.uid}`;
+            push(ref(db, `messages/${chatId}`), {
+                from: currentUser.uid,
+                txt: txtMsg,
+                isCallLog: true, 
+                callType: isVideo ? 'video' : 'voice', // নতুন ফিল্ড
+                callStatus: durationStr === "Missed Call" ? 'missed' : 'answered', // নতুন ফিল্ড
+                callDuration: durationStr === "Missed Call" ? '' : durationStr, // নতুন ফিল্ড
+                ts: serverTimestamp(),
+                seen: false
+            });
+        }
+        // --- End Call Logic ---
+    
+    set(ref(db, `users/${currentUser.uid}/incomingCall`), null); 
+    if(currentChatUser) set(ref(db, `users/${currentChatUser.uid}/incomingCall`), null); 
+    currentCallId = null;
+}
     };
     getEl('hangup-btn').onclick = hangup;
 
