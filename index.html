@@ -1673,10 +1673,10 @@ body.dark-mode .mention-tag {
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updatePassword, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
     import { getDatabase, ref, set, get, onValue, push, child, update, serverTimestamp, onChildAdded, onChildChanged, onChildRemoved, onDisconnect, remove, off, query, limitToLast, orderByChild, endBefore } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
      // --- OneSignal Imports ---
-//import { initializeOneSignal } from './js/onesignal-init.js';
-//import { 
-    //notifyNewMessage, notifyPostLike, notifyPostComment, notifyNewFollower, notifyIncomingCall, notifyMissedCall 
-//} from './js/notification.js';
+import { initializeOneSignal } from './js/onesignal-init.js';
+import { 
+    notifyNewMessage, notifyPostLike, notifyPostComment, notifyNewFollower, notifyIncomingCall, notifyMissedCall 
+} from './js/notification.js';
     const firebaseConfig = {
       apiKey: "AIzaSyCjZV3yPpdVQ151o7tWcZFNARDnZQsKSVA",
       authDomain: "sm-chats-2026.firebaseapp.com",
@@ -2492,7 +2492,7 @@ await update(ref(db, `users/${currentUser.uid}`), updateData);
         if (user) {
             currentUser = user; 
             window.currentUser = user; 
-            //initializeOneSignal(user);
+            initializeOneSignal(user);
             toggleClass('auth-screen', 'hidden', true);
             try {
                 const s = await get(ref(db, `users/${user.uid}`));
@@ -3355,7 +3355,7 @@ window.prevStory = () => {
             });
 // --- Send Rich Push Notification ---
 let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
-//notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
+notifyNewFollower(targetUid, myName, currentUser.uid, window.myDpUrl);
 
             const snap = await get(ref(db, `follows/${targetUid}/${currentUser.uid}`));
             if(snap.exists()) {
@@ -4012,27 +4012,25 @@ let myName = document.getElementById('header-name-disp').innerText.trim() || "Us
 
         let msgContentHtml = '';
 
-        // যদি মেসেজটি Call Log হয়, তবে WhatsApp-এর মতো ডিজাইন তৈরি হবে
+// যদি মেসেজটি Call Log হয়, তবে WhatsApp-এর মতো ডিজাইন তৈরি হবে
         if (m.isCallLog) {
-            // আগের ডাটাগুলোর সাথে কম্প্যাটিবিলিটি রাখার জন্য ফলব্যাক (Fallback)
             let isVidCall = m.callType === 'video' || (m.txt && m.txt.toLowerCase().includes('video'));
             let isMissedCall = m.callStatus === 'missed' || (m.txt && m.txt.toLowerCase().includes('missed'));
             let duration = m.callDuration || (m.txt && m.txt.includes('•') ? m.txt.split('•')[1].trim() : '');
 
-            let iconBg = 'var(--border-color)'; // ডিফল্ট ধূসর বৃত্ত
-            let iconColor = 'var(--text-grey)'; // ডিফল্ট ধূসর আইকন
+            // WhatsApp স্টাইল ডিজাইন ভেরিয়েবল
+            let iconBg = 'var(--border-color)'; // ডিফল্ট গোল ব্যাকগ্রাউন্ড
+            let iconColor = 'var(--text-grey)'; // আইকনের কালার
             let iconClass = isVidCall ? 'fa-video' : 'fa-phone-alt';
             let titleText = isVidCall ? 'Video call' : 'Voice call';
             let subText = duration;
             let callbackAction = '';
 
             if (isMe) {
-                // Sender (যে কল করেছে) এর জন্য ডিজাইন
-                if (isMissedCall) {
-                    subText = 'No answer';
-                }
+                // Sender এর ডিজাইন
+                if (isMissedCall) subText = 'No answer';
             } else {
-                // Receiver (যাকে কল করা হয়েছে) এর জন্য ডিজাইন
+                // Receiver এর ডিজাইন
                 if (isMissedCall) {
                     iconBg = 'rgba(255, 71, 87, 0.15)'; // হালকা লাল ব্যাকগ্রাউন্ড
                     iconColor = 'var(--danger)'; // গাঢ় লাল আইকন
@@ -4045,13 +4043,13 @@ let myName = document.getElementById('header-name-disp').innerText.trim() || "Us
             }
 
             msgContentHtml = `
-            <div ${callbackAction} style="display:flex; align-items:center; gap:12px; padding: 5px 0; ${callbackAction ? 'cursor:pointer;' : ''}">
-                <div style="width:40px; height:40px; border-radius:50%; background:${iconBg}; display:flex; justify-content:center; align-items:center; font-size:1.1rem; color:${iconColor};">
+            <div ${callbackAction} style="display:flex; align-items:center; gap:15px; padding: 4px 0; ${callbackAction ? 'cursor:pointer;' : ''}">
+                <div style="width:46px; height:46px; border-radius:50%; background:${iconBg}; display:flex; justify-content:center; align-items:center; font-size:1.3rem; color:${iconColor}; flex-shrink: 0;">
                     <i class="fas ${iconClass}"></i>
                 </div>
-                <div style="display:flex; flex-direction:column; line-height: 1.3;">
-                    <span style="font-weight:600; font-size:1rem; color:var(--text-dark);">${titleText}</span>
-                    <span style="font-size:0.85rem; color:var(--text-grey);">${subText}</span>
+                <div style="display:flex; flex-direction:column; line-height: 1.4;">
+                    <span style="font-weight:600; font-size:1.05rem; color:var(--text-dark);">${titleText}</span>
+                    <span style="font-size:0.9rem; color:var(--text-grey);">${subText}</span>
                 </div>
             </div>`;
         } else {
@@ -5762,7 +5760,7 @@ get(ref(db, `posts/${postId}/img`)).then(snap => {
         postImage = snap.val().split(',')[0]; // প্রথম ছবিটি নেবো
     }
     // ফাংশন কল
-    //notifyPostLike(postOwnerUid, myName, currentUser.uid, window.myDpUrl, postId, postImage);
+    notifyPostLike(postOwnerUid, myName, currentUser.uid, window.myDpUrl, postId, postImage);
 });
             }
         }
@@ -5972,7 +5970,7 @@ get(ref(db, `posts/${postId}/img`)).then(snap => {
             }
 // --- Send Rich Push Notification ---
 let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
-//notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeCommentPostId);
+notifyPostComment(ownerUid, myName, currentUser.uid, window.myDpUrl, activeCommentPostId);
                 }
             });
 
@@ -6434,13 +6432,14 @@ if (post.visibility === 'private' && !isPostOwner) {
     getEl('btn-video-call').onclick = () => { if(!isBlocked(currentChatUser.uid)) startCall(currentChatUser.uid, 'video'); else alert("Blocked user"); };
 
     function createPC(callId, isCaller) {
-      window.isCaller = isCaller;
+        window.isCaller = isCaller; // কে কল করেছে তা মনে রাখার জন্য
         peerConnection = new RTCPeerConnection(servers); iceCandidateQueue =[];
         peerConnection.onicecandidate = (event) => { if (event.candidate) push(ref(db, `calls/${callId}/${isCaller ? 'callerCand' : 'calleeCand'}`), event.candidate.toJSON()); };
         peerConnection.ontrack = (event) => { const remoteVid = getEl('remote-video'); if (remoteVid.srcObject !== event.streams[0]) remoteVid.srcObject = event.streams[0]; };
         
         peerConnection.onconnectionstatechange = () => { 
             if (peerConnection.connectionState === 'connected') {
+                isInCall = true; // কল রিসিভ হলে এটি ট্রু হবে (টাইম দেখানোর জন্য এটি জরুরি)
                 setupCallUI(window.currentCallType, currentChatUser, 'connected');
                 startCallTimer();
             }
@@ -6511,7 +6510,7 @@ if (post.visibility === 'private' && !isPostOwner) {
             await set(ref(db, `users/${targetUid}/incomingCall`), { callId: currentCallId, caller: currentUser.uid, type });
 // --- Send Incoming Call Notification ---
             let myName = document.getElementById('header-name-disp').innerText.trim() || "User";
-            //notifyIncomingCall(targetUid, myName, currentUser.uid, window.myDpUrl, type, currentCallId);
+            notifyIncomingCall(targetUid, myName, currentUser.uid, window.myDpUrl, type, currentCallId);
 
             // --- Missed Call Logic ---
             // যদি ৩০ সেকেন্ডের মধ্যে কল না ধরে, তবে কল কেটে যাবে এবং মিসড কল নোটিফিকেশন যাবে
@@ -6519,20 +6518,7 @@ if (post.visibility === 'private' && !isPostOwner) {
     if(currentCallId) { 
         alert("No Answer"); 
         
-        // Push missed call message explicitly
-        let isVid = window.currentCallType === 'video';
-        let chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
-        
-        push(ref(db, `messages/${chatId}`), {
-            from: currentUser.uid,
-            txt: `📞 Missed ${isVid ? 'Video' : 'Voice'} Call`,
-            isCallLog: true,
-            callType: isVid ? 'video' : 'voice',
-            callStatus: 'missed',
-            callDuration: '',
-            ts: serverTimestamp(),
-            seen: false
-        });
+
         
         hangup(); 
     } 
@@ -6593,9 +6579,17 @@ if (currentCallId) {
         let durationStr = "Missed Call";
         if (callStartTime && isInCall) {
             let diff = Math.floor((Date.now() - callStartTime) / 1000);
-            let m = Math.floor(diff/60);
+            let m = Math.floor(diff / 60);
             let s = diff % 60;
-            durationStr = m > 0 ? `${m}m ${s}s` : `${s}s`;
+            
+            // WhatsApp স্টাইলে সময় ফরম্যাট করা (যেমন: 1 min 15 secs বা 15 secs)
+            if (m > 0 && s > 0) {
+                durationStr = `${m} min ${s} secs`;
+            } else if (m > 0) {
+                durationStr = `${m} min`;
+            } else {
+                durationStr = `${s} secs`;
+            }
         } else if (!isInCall) {
             durationStr = "Missed Call";
         }
